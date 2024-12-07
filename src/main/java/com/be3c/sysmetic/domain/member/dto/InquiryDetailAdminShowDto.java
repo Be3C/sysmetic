@@ -10,8 +10,11 @@ import lombok.*;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "관리자 문의 목록 요청 DTO")
-public class InquiryAdminListShowRequestDto {
+@Schema(description = "관리자 상세 조회 쿼리 파라미터 DTO")
+public class InquiryDetailAdminShowDto {
+
+    @Schema(description = "지금 문의 ID", example = "123")
+    private Long inquiryId;
 
     @Schema(description = "답변 상태 탭 (all, closed, unclosed) (전체, 답변완료, 답변대기)", example = "ALL")
     private InquiryStatus closed; // ALL, CLOSED, UNCLOSED

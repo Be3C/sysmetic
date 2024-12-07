@@ -32,29 +32,29 @@ public interface InquiryRepository extends JpaRepository<Inquiry, Long>, Inquiry
     @Query("delete Inquiry i where i.id in :idList")
     int bulkDelete(@Param("idList") List<Long> idList);
 
-    // 관리자 이전 문의 조회
-    @Query("select i from Inquiry i where i.id < :inquiryId order by i.id desc")
-    List<Inquiry> adminFindPreviousInquiry(@Param("inquiryId") Long inquiryId, Pageable pageable);
-
-    // 관리자 다음 문의 조회
-    @Query("select i from Inquiry i where i.id > :inquiryId order by i.id asc")
-    List<Inquiry> adminFindNextInquiry(@Param("inquiryId") Long inquiryId, Pageable pageable);
-
-    // 트레이더 이전 문의 조회
-    @Query("select i from Inquiry i where i.id < :inquiryId and i.traderId = :traderId order by i.id desc")
-    List<Inquiry> traderFindPreviousInquiry(@Param("inquiryId") Long inquiryId, @Param("traderId") Long traderId, Pageable pageable);
-
-    // 트레이더 다음 문의 조회
-    @Query("select i from Inquiry i where i.id > :inquiryId and i.traderId = :traderId order by i.id asc")
-    List<Inquiry> traderFindNextInquiry(@Param("inquiryId") Long inquiryId, @Param("traderId") Long traderId, Pageable pageable);
-
-    // 질문자 이전 문의 조회
-    @Query("select i from Inquiry i where i.id < :inquiryId and i.inquirer.id = :inquirerId order by i.id desc")
-    List<Inquiry> inquirerFindPreviousInquiry(@Param("inquiryId") Long inquiryId, @Param("inquirerId") Long inquirerId, Pageable pageable);
-
-    // 질문자 다음 문의 조회
-    @Query("select i from Inquiry i where i.id > :inquiryId and i.inquirer.id = :inquirerId order by i.id asc")
-    List<Inquiry> inquirerFindNextInquiry(@Param("inquiryId") Long inquiryId, @Param("inquirerId") Long inquirerId, Pageable pageable);
+//    // 관리자 이전 문의 조회
+//    @Query("select i from Inquiry i where i.id < :inquiryId order by i.id desc")
+//    List<Inquiry> adminFindPreviousInquiry(@Param("inquiryId") Long inquiryId, Pageable pageable);
+//
+//    // 관리자 다음 문의 조회
+//    @Query("select i from Inquiry i where i.id > :inquiryId order by i.id asc")
+//    List<Inquiry> adminFindNextInquiry(@Param("inquiryId") Long inquiryId, Pageable pageable);
+//
+//    // 트레이더 이전 문의 조회
+//    @Query("select i from Inquiry i where i.id < :inquiryId and i.traderId = :traderId order by i.id desc")
+//    List<Inquiry> traderFindPreviousInquiry(@Param("inquiryId") Long inquiryId, @Param("traderId") Long traderId, Pageable pageable);
+//
+//    // 트레이더 다음 문의 조회
+//    @Query("select i from Inquiry i where i.id > :inquiryId and i.traderId = :traderId order by i.id asc")
+//    List<Inquiry> traderFindNextInquiry(@Param("inquiryId") Long inquiryId, @Param("traderId") Long traderId, Pageable pageable);
+//
+//    // 질문자 이전 문의 조회
+//    @Query("select i from Inquiry i where i.id < :inquiryId and i.inquirer.id = :inquirerId order by i.id desc")
+//    List<Inquiry> inquirerFindPreviousInquiry(@Param("inquiryId") Long inquiryId, @Param("inquirerId") Long inquirerId, Pageable pageable);
+//
+//    // 질문자 다음 문의 조회
+//    @Query("select i from Inquiry i where i.id > :inquiryId and i.inquirer.id = :inquirerId order by i.id asc")
+//    List<Inquiry> inquirerFindNextInquiry(@Param("inquiryId") Long inquiryId, @Param("inquirerId") Long inquirerId, Pageable pageable);
 
     // 이전 문의 조회
     @Query("select i from Inquiry i where i.id < :inquiryId order by i.id desc")

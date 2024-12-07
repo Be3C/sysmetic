@@ -16,6 +16,12 @@ import java.time.LocalDateTime;
 @Schema(description = "관리자 문의 답변 조회 응답 DTO")
 public class InquiryAnswerInquirerShowResponseDto {
 
+    @Schema(description = "답변 상태 탭 (all, closed, unclosed) (전체, 답변완료, 답변대기)", example = "ALL")
+    private InquiryStatus closed; // ALL, CLOSED, UNCLOSED
+
+    @Schema(description = "정렬 순서 (registrationDate, strategyName) ('최신순', '전략명')", example = "최신순")
+    private String sort;
+
     @Schema(description = "문의 ID", example = "12345")
     private Long inquiryId;
 

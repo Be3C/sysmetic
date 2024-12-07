@@ -40,15 +40,17 @@ public interface InquiryService {
 
     InquiryAdminListOneShowResponseDto inquiryToInquiryAdminOneResponseDto(Inquiry inquiry);
 
-    InquiryAnswerAdminShowResponseDto inquiryIdToInquiryAnswerAdminShowResponseDto (Long inquiryId);
+    InquiryAnswerAdminShowResponseDto inquiryIdToInquiryAnswerAdminShowResponseDto (InquiryDetailAdminShowDto inquiryDetailAdminShowDto);
 
-    InquiryListOneShowResponseDto inquiryToInquiryOneResponseDto(Inquiry inquiry);
+    InquiryListOneShowResponseDto InquiryToInquiryInquirerOneResponseDto(Inquiry inquiry);
+
+    InquiryListOneShowResponseDto inquiryToInquirytraderOneResponseDto(Inquiry inquiry);
 
     InquirySavePageShowResponseDto strategyToInquirySavePageShowResponseDto(Strategy strategy);
 
-    InquiryAnswerInquirerShowResponseDto inquiryIdToInquiryAnswerInquirerShowResponseDto(Long inquiryId);
+    InquiryAnswerInquirerShowResponseDto inquiryIdToInquiryAnswerInquirerShowResponseDto(InquiryDetailTraderInquirerShowDto inquiryDetailTraderInquirerShowDto);
 
-    InquiryAnswerTraderShowResponseDto inquiryIdToInquiryAnswerTraderShowResponseDto(Long inquiryId);
+    InquiryAnswerTraderShowResponseDto inquiryIdToInquiryAnswerTraderShowResponseDto(InquiryDetailTraderInquirerShowDto inquiryDetailTraderInquirerShowDto);
 
     // 문의자 검색 조회
     // 정렬 순 셀렉트 박스 (최신순, 전략명)
