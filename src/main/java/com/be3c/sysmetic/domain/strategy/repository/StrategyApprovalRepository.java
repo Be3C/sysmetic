@@ -78,7 +78,7 @@ public interface StrategyApprovalRepository extends JpaRepository<StrategyApprov
             ) sa ON sa.strategyId = s.id
             WHERE
                 (:openStatus IS NULL OR s.statusCode = :openStatus)
-                AND (:approvalStatusCode IS NULL OR COALESCE(sa.statusCode, 'SA001') = :approvalStatusCode)
+                AND (:approvalStatusCode IS NULL OR COALESCE(sa.statusCode, 'SA000') = :approvalStatusCode)
                 AND (:strategyName IS NULL OR s.name LIKE CONCAT('%', :strategyName, '%'))
             ORDER BY s.createdAt ASC
         """,
@@ -98,7 +98,7 @@ public interface StrategyApprovalRepository extends JpaRepository<StrategyApprov
             ) sa ON sa.strategyId = s.id
             WHERE
                 (:openStatus IS NULL OR s.statusCode = :openStatus)
-                AND (:approvalStatusCode IS NULL OR COALESCE(sa.statusCode, 'SA001') = :approvalStatusCode)
+                AND (:approvalStatusCode IS NULL OR COALESCE(sa.statusCode, 'SA000') = :approvalStatusCode)
                 AND (:strategyName IS NULL OR s.name LIKE CONCAT('%', :strategyName, '%'))
             ORDER BY s.createdAt ASC
         """)
