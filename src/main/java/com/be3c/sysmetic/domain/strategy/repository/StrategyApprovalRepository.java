@@ -49,7 +49,7 @@ public interface StrategyApprovalRepository extends JpaRepository<StrategyApprov
             SELECT DISTINCT new com.be3c.sysmetic.domain.strategy.dto.AdminStrategyGetResponseDto(
                 s.id,
                 s.name,
-                m.name,
+                m.nickname,
                 s.statusCode,
                 coalesce(sa.statusCode, 'SA000'),
                 s.createdAt,
@@ -77,6 +77,7 @@ public interface StrategyApprovalRepository extends JpaRepository<StrategyApprov
                 ) sub ON sah.strategy.id = sub.strategyId AND sah.modifiedAt = sub.maxModifiedAt
             ) sa ON sa.strategyId = s.id
             WHERE
+                s.statusCode != 'NOT_USING_STATE' AND
                 (:openStatus IS NULL OR s.statusCode = :openStatus)
                 AND (:approvalStatusCode IS NULL OR COALESCE(sa.statusCode, 'SA000') = :approvalStatusCode)
                 AND (:strategyName IS NULL OR s.name LIKE CONCAT('%', :strategyName, '%'))
