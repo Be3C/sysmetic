@@ -371,11 +371,12 @@ public class NoticeServiceImpl implements NoticeService {
             nextNoticeWriteDate = nextNoticeOptional.orElse(null).getWriteDate();
         }
 
-        List<NoticeDetailFileShowResponseDto> fileDtoList = null;
-        if (notice.getFileExists()) {
+        List<FileWithInfoResponse> fileList = fileService.getFileWithInfos(new FileRequest(FileReferenceType.NOTICE_BOARD_FILE, notice.getId()));
+        List<NoticeDetailFileShowResponseDto> fileDtoList;
+        if (fileList.isEmpty()) {
+            fileDtoList = null;
+        } else {
             fileDtoList = new ArrayList<>();
-            List<FileWithInfoResponse> fileList = fileService.getFileWithInfos(new FileRequest(FileReferenceType.NOTICE_BOARD_FILE, notice.getId()));
-
             for (FileWithInfoResponse f : fileList) {
                 NoticeDetailFileShowResponseDto noticeDetailFileShowResponseDto = NoticeDetailFileShowResponseDto.builder()
                         .fileId(f.id())
@@ -387,11 +388,12 @@ public class NoticeServiceImpl implements NoticeService {
             }
         }
 
-        List<NoticeDetailImageShowResponseDto> imageDtoList = null;
-        if (notice.getImageExists()) {
+        List<FileWithInfoResponse> imageList = fileService.getFileWithInfos(new FileRequest(FileReferenceType.NOTICE_BOARD_IMAGE, notice.getId()));
+        List<NoticeDetailImageShowResponseDto> imageDtoList;
+        if (imageList.isEmpty()) {
+            imageDtoList = null;
+        } else {
             imageDtoList = new ArrayList<>();
-            List<FileWithInfoResponse> imageList = fileService.getFileWithInfos(new FileRequest(FileReferenceType.NOTICE_BOARD_IMAGE, notice.getId()));
-
             for (FileWithInfoResponse f : imageList) {
                 NoticeDetailImageShowResponseDto noticeDetailImageShowResponseDto = NoticeDetailImageShowResponseDto.builder()
                         .fileId(f.id())
@@ -510,11 +512,12 @@ public class NoticeServiceImpl implements NoticeService {
 
         Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException("공지사항이 없습니다."));
 
-        List<NoticeDetailFileShowResponseDto> fileDtoList = null;
-        if (notice.getFileExists()) {
+        List<FileWithInfoResponse> fileList = fileService.getFileWithInfos(new FileRequest(FileReferenceType.NOTICE_BOARD_FILE, notice.getId()));
+        List<NoticeDetailFileShowResponseDto> fileDtoList;
+        if (fileList.isEmpty()) {
+            fileDtoList = null;
+        } else {
             fileDtoList = new ArrayList<>();
-            List<FileWithInfoResponse> fileList = fileService.getFileWithInfos(new FileRequest(FileReferenceType.NOTICE_BOARD_FILE, notice.getId()));
-
             for (FileWithInfoResponse f : fileList) {
                 NoticeDetailFileShowResponseDto noticeDetailFileShowResponseDto = NoticeDetailFileShowResponseDto.builder()
                         .fileId(f.id())
@@ -526,11 +529,12 @@ public class NoticeServiceImpl implements NoticeService {
             }
         }
 
-        List<NoticeDetailImageShowResponseDto> imageDtoList = null;
-        if (notice.getImageExists()) {
+        List<FileWithInfoResponse> imageList = fileService.getFileWithInfos(new FileRequest(FileReferenceType.NOTICE_BOARD_IMAGE, notice.getId()));
+        List<NoticeDetailImageShowResponseDto> imageDtoList;
+        if (imageList.isEmpty()) {
+            imageDtoList = null;
+        } else {
             imageDtoList = new ArrayList<>();
-            List<FileWithInfoResponse> imageList = fileService.getFileWithInfos(new FileRequest(FileReferenceType.NOTICE_BOARD_IMAGE, notice.getId()));
-
             for (FileWithInfoResponse f : imageList) {
                 NoticeDetailImageShowResponseDto noticeDetailImageShowResponseDto = NoticeDetailImageShowResponseDto.builder()
                         .fileId(f.id())
