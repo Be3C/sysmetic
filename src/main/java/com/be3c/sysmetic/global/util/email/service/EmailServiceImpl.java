@@ -99,9 +99,10 @@ public class EmailServiceImpl implements EmailService {
                 .then(Mono.fromRunnable(() -> {
 
                     Mono<String> sendMonoResponse = emailApiClient.sendAuthEmailRequest(new AuthCodeRequest(toEmail, authCode));
+                    redisUtils.saveEmailAuthCodeWithExpireTime(toEmail, authCode, TimeUnit.HOURS.toMillis(1));
 
                     sendMonoResponse.subscribe(response -> {
-                        // 응답값 "ok"로 처리
+                        // 정상 응답값 : "ok"
                         if (!"ok".equals(response)) {
                             log.error("이메일 인증코드 발송 실패: 응답 'ok'가 아님 응답: {} 수신자: {}", response, toEmail);
                         }
@@ -110,7 +111,6 @@ public class EmailServiceImpl implements EmailService {
                 .then(Mono.delay(Duration.ofSeconds(5))) // 5초 지연
                 .then(Mono.fromRunnable(() -> {
 
-                    redisUtils.saveEmailAuthCodeWithExpireTime(toEmail, authCode, TimeUnit.HOURS.toMillis(1));
                     emailApiClient.deleteTempSubscriberRequest(List.of(toEmail));
                 }));
     }

@@ -18,10 +18,10 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
+@Slf4j @Transactional
 public class FileServiceImpl implements FileService {
 
-    /* FileRepository와 S3Service는 @Transactional 불가, 수동으로 일관성을 관리해줘야 함 */
+    /* S3Service는 @Transactional 불가, 수동으로 일관성을 관리해줘야 함 */
     final FileRepository fileRepository;
     final S3Service s3Service;
 
@@ -39,8 +39,8 @@ public class FileServiceImpl implements FileService {
     @Override
     public void uploadImage(MultipartFile file, FileRequest fileRequest) {
 
-        checkFileSize(file);
-        checkFileExtension(file, List.of("jpeg", "png", "gif"));
+        validFileSize(file);
+        validFileExtension(file, List.of("jpeg", "png", "gif"));
 
         String path = s3Service.upload(file, fileRequest);
         File fileEntity = buildFileEntity(file, path, fileRequest);
@@ -50,19 +50,18 @@ public class FileServiceImpl implements FileService {
     @Override
     public void uploadPdf(MultipartFile file, FileRequest fileRequest) {
 
-        checkFileSize(file);
-        checkFileExtension(file, List.of("pdf"));
+        validFileSize(file);
+        validFileExtension(file, List.of("pdf"));
 
         String path = s3Service.upload(file, fileRequest);
         File fileEntity = buildFileEntity(file, path, fileRequest);
         saveFileOrRollback(fileEntity, path, fileRequest);
     }
 
-    @Transactional
     @Override
     public void uploadAnyFile(MultipartFile file, FileRequest fileRequest) {
 
-        checkFileSize(file);
+        validFileSize(file);
 
         String originalName = file.getOriginalFilename();
         if (originalName == null || originalName.isEmpty()) {
@@ -134,7 +133,7 @@ public class FileServiceImpl implements FileService {
     public List<String> getFilePaths(FileRequest fileRequest) {
 
         List<File> files = fileRepository.findFilesByFileReference(fileRequest);
-        checkFilesNotEmpty(files, fileRequest);
+        validFilesNotEmpty(files, fileRequest);
 
         List<String> paths = new ArrayList<>(files.size());
         for (File f : files)
@@ -165,7 +164,7 @@ public class FileServiceImpl implements FileService {
     public List<FileWithInfoResponse> getFileWithInfos(FileRequest fileRequest) {
 
         List<File> files = fileRepository.findFilesByFileReference(fileRequest);
-        checkFilesNotEmpty(files, fileRequest);
+        validFilesNotEmpty(files, fileRequest);
 
         List<FileWithInfoResponse> fileWithInfoResponses = new ArrayList<>();
 
@@ -178,6 +177,24 @@ public class FileServiceImpl implements FileService {
         return fileWithInfoResponses;
     }
 
+    @Override
+    public List<FileWithInfoResponse> getFileWithInfosNullable(FileRequest fileRequest) {
+
+        List<File> files = fileRepository.findFilesByFileReference(fileRequest);
+
+        if(files.isEmpty())
+            return null;
+
+        List<FileWithInfoResponse> fileWithInfoResponses = new ArrayList<>();
+
+        for (File f : files) {
+            String url = s3Service.createPresignedGetUrl(f.getPath());
+            FileWithInfoResponse fileWithInfoResponse = new FileWithInfoResponse(f.getId(), url, f.getOriginalName(), f.getSize());
+            fileWithInfoResponses.add(fileWithInfoResponse);
+        }
+
+        return fileWithInfoResponses;
+    }
 
   /*
   download
@@ -186,60 +203,77 @@ public class FileServiceImpl implements FileService {
    */
 
 
-    @Transactional
     @Override
     public void updateImage(MultipartFile file, FileRequest fileRequest) {
 
-        checkFileSize(file);
-        checkFileExtension(file, List.of("jpeg", "png", "gif"));
+        boolean isFileNull = isNullableFileNull(fileRequest);
 
-        String path = s3Service.upload(file, fileRequest);
-        File fileEntity = buildUpdatedFileEntity(file, path, fileRequest);
-        saveFileOrRollback(fileEntity, path, fileRequest);
+        if(isFileNull){
+            uploadImage(file, fileRequest);
+
+        } else {
+            validFileSize(file);
+            validFileExtension(file, List.of("jpeg", "png", "gif"));
+
+            String path = s3Service.upload(file, fileRequest);
+            File fileEntity = buildUpdatedFileEntity(file, path, fileRequest);
+            saveFileOrRollback(fileEntity, path, fileRequest);
+        }
     }
 
-    @Transactional
     @Override
     public void updatePdf(MultipartFile file, FileRequest fileRequest) {
+        boolean isFileNull = isNullableFileNull(fileRequest);
 
-        checkFileSize(file);
-        checkFileExtension(file, List.of("pdf"));
+        if(isFileNull) {
+            uploadPdf(file, fileRequest);
 
-        String path = s3Service.upload(file, fileRequest);
-        File fileEntity = buildUpdatedFileEntity(file, path, fileRequest);
-        saveFileOrRollback(fileEntity, path, fileRequest);
+        } else {
+            validFileSize(file);
+            validFileExtension(file, List.of("pdf"));
+
+            String path = s3Service.upload(file, fileRequest);
+            File fileEntity = buildUpdatedFileEntity(file, path, fileRequest);
+            saveFileOrRollback(fileEntity, path, fileRequest);
+        }
     }
 
     @Override
     public void updateAnyFile(MultipartFile file, FileRequest fileRequest) {
+        boolean isFileNull = isNullableFileNull(fileRequest);
 
-        checkFileSize(file);
+        if(isFileNull) {
+            uploadAnyFile(file, fileRequest);
 
-        String path = s3Service.upload(file, fileRequest);
-        File fileEntity = buildUpdatedFileEntity(file, path, fileRequest);
-        saveFileOrRollback(fileEntity, path, fileRequest);
+        } else {
+            validFileSize(file);
+
+            String path = s3Service.upload(file, fileRequest);
+            File fileEntity = buildUpdatedFileEntity(file, path, fileRequest);
+            saveFileOrRollback(fileEntity, path, fileRequest);
+        }
     }
 
     @Override
     public void updateImageById(MultipartFile file, Long updateTargetId) {
 
-        checkFileSize(file);
-        checkFileExtension(file, List.of("jpeg", "png", "gif"));
+        validFileSize(file);
+        validFileExtension(file, List.of("jpeg", "png", "gif"));
         updateFile(file, updateTargetId);
     }
 
     @Override
     public void updatePdfById(MultipartFile file, Long updateTargetId) {
 
-        checkFileSize(file);
-        checkFileExtension(file, List.of("pdf"));
+        validFileSize(file);
+        validFileExtension(file, List.of("pdf"));
         updateFile(file, updateTargetId);
     }
 
     @Override
     public void updateAnyFileById(MultipartFile file, Long updateTargetId) {
 
-        checkFileSize(file);
+        validFileSize(file);
         updateFile(file, updateTargetId);
     }
 
@@ -279,7 +313,7 @@ public class FileServiceImpl implements FileService {
   */
 
     @Override
-    public boolean deleteFile( FileRequest fileRequest) {
+    public boolean deleteFile(FileRequest fileRequest) {
 
         List<File> files = fileRepository.findFilesByFileReference(fileRequest);
         if (files.isEmpty()) {
@@ -310,7 +344,7 @@ public class FileServiceImpl implements FileService {
 
         List<File> files = fileRepository.findFilesByFileReference(fileRequest);
 
-        checkFilesNotEmpty(files, fileRequest);
+        validFilesNotEmpty(files, fileRequest);
 
         try {
             for (File file : files) {
@@ -381,7 +415,7 @@ public class FileServiceImpl implements FileService {
 
         List<File> existingEntities = fileRepository.findFilesByFileReference(fileRequest);
 
-        checkFilesNotEmpty(existingEntities, fileRequest);
+        validFilesNotEmpty(existingEntities, fileRequest);
 
         return File.builder()
                 .id(existingEntities.get(0).getId())
@@ -422,12 +456,7 @@ public class FileServiceImpl implements FileService {
      *
      * @param file 체크할 파일
      */
-    private void checkFileSize(MultipartFile file) {
-        if (file.isEmpty()) {
-            log.error("업로드된 파일이 비어있습니다. 파일 이름: {}", file.getOriginalFilename());
-            throw new InvalidFileFormatException("파일이 비어있습니다.");
-        }
-
+    private void validFileSize(MultipartFile file) {
         if (file.getSize() > maxFileSize) {
             log.error("파일 크기가 너무 큽니다. 파일 이름: {}, 크기: {}MB, 최대 크기: {}MB",
                     file.getOriginalFilename(), file.getSize() / 1024 / 1024, maxFileSize / 1024 / 1024);
@@ -435,7 +464,14 @@ public class FileServiceImpl implements FileService {
         }
     }
 
-    private void checkFilesNotEmpty(List<File> files, FileRequest fileRequest){
+    private boolean isNullableFileNull(FileRequest fileRequest){
+
+        List<File> files = fileRepository.findFilesByFileReference(fileRequest);
+
+        return files.isEmpty();
+    }
+
+    private void validFilesNotEmpty(List<File> files, FileRequest fileRequest){
         if (files.isEmpty()) {
             log.error("파일이 비어 있습니다. 파일 참조 정보: {}", fileRequest);
             throw new InvalidFileFormatException("파일이 비어 있습니다.");
@@ -450,7 +486,7 @@ public class FileServiceImpl implements FileService {
      * @return 검사된 컨텐트 타입
      * @throws InvalidFileFormatException 파일 형식이 맞지 않으면 예외 발생
      */
-    private String checkFileExtension(MultipartFile file, List<String> allowedContentTypes) {
+    private String validFileExtension(MultipartFile file, List<String> allowedContentTypes) {
 
         String contentType = file.getContentType();
         if (contentType == null || contentType.isEmpty()) {
