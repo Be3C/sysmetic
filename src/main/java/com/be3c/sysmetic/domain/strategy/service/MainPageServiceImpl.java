@@ -82,7 +82,7 @@ public class MainPageServiceImpl implements MainPageService {
             traders.add(TraderRankingDto.builder()
                     .id(s.getId())
                     .nickname((s.getTrader().getNickname()))
-                    .traderProfileImage(fileService.getFilePathNullable(new FileRequest(FileReferenceType.MEMBER, s.getId())))
+                    .traderProfileImage(fileService.getFilePathNullable(new FileRequest(FileReferenceType.MEMBER, s.getTrader().getId())))
                     .followerCount(s.getFollowerCount())
                     .accumProfitLossRate(s.getAccumulatedProfitLossRate())
                     .build()

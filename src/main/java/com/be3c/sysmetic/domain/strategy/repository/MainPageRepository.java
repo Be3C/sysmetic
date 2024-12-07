@@ -17,6 +17,7 @@ public interface MainPageRepository extends JpaRepository<Strategy, Long> {
     Page<Strategy> findTop3ByFollowerCount(Pageable pageable);
 
     // 총 전략 수
+    @Query("SELECT count(s) FROM Strategy s WHERE s.statusCode != 'NOT_USING_STATE'")
     long count();
 
     // SM Score Top 5개
