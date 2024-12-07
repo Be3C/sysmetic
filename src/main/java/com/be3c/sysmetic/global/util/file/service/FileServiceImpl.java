@@ -164,9 +164,7 @@ public class FileServiceImpl implements FileService {
     public List<FileWithInfoResponse> getFileWithInfos(FileRequest fileRequest) {
 
         List<File> files = fileRepository.findFilesByFileReference(fileRequest);
-
-        if(files.isEmpty())
-            return null;
+        validFilesNotEmpty(files, fileRequest);
 
         List<FileWithInfoResponse> fileWithInfoResponses = new ArrayList<>();
 
@@ -183,7 +181,9 @@ public class FileServiceImpl implements FileService {
     public List<FileWithInfoResponse> getFileWithInfosNullable(FileRequest fileRequest) {
 
         List<File> files = fileRepository.findFilesByFileReference(fileRequest);
-        validFilesNotEmpty(files, fileRequest);
+
+        if(files.isEmpty())
+            return null;
 
         List<FileWithInfoResponse> fileWithInfoResponses = new ArrayList<>();
 
