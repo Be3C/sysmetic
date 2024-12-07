@@ -121,7 +121,7 @@ public class NoticeServiceImpl implements NoticeService {
             int nowCountFile = nowFileDtoList.size();
 
             if (newFileList != null) {
-                if (deleteFileIdList != null) {
+                if (!deleteFileIdList.isEmpty()) {
                     for (Long fileId : deleteFileIdList) {
                         if (nowFileIdList.contains(fileId)) {
                             fileService.deleteFileById(fileId);
@@ -144,7 +144,7 @@ public class NoticeServiceImpl implements NoticeService {
                     }
                 }
             } else {
-                if (deleteFileIdList != null) {
+                if (!deleteFileIdList.isEmpty()) {
                     for (Long fileId : deleteFileIdList) {
                         if (nowFileIdList.contains(fileId)) {
                             fileService.deleteFileById(fileId);
@@ -158,12 +158,18 @@ public class NoticeServiceImpl implements NoticeService {
             }
         } else {
             if (newFileList != null) {
-                if (deleteFileIdList == null) {
+                if (!deleteFileIdList.isEmpty()) {
+                    throw new EntityNotFoundException("삭제하려는 파일이 이 공지사항에 존재하지 않습니다.");
+                } else {
                     int newFileListSize = newFileList.size();
                     if (newFileListSize > 3) {
                         throw new IllegalArgumentException("파일이 3개 이상입니다.");
                     }
                     fileExists = true;
+                }
+            } else {
+                if (!deleteFileIdList.isEmpty()) {
+                    throw new EntityNotFoundException("삭제하려는 파일이 이 공지사항에 존재하지 않습니다.");
                 }
             }
         }
@@ -180,7 +186,7 @@ public class NoticeServiceImpl implements NoticeService {
             int nowCountImage = nowImageDtoList.size();
 
             if (newImageList != null) {
-                if (deleteImageIdList != null) {
+                if (!deleteImageIdList.isEmpty()) {
                     for (Long imageId : deleteImageIdList) {
                         if (nowImageIdList.contains(imageId)) {
                             fileService.deleteFileById(imageId);
@@ -203,7 +209,7 @@ public class NoticeServiceImpl implements NoticeService {
                     }
                 }
             } else {
-                if (deleteImageIdList != null) {
+                if (!deleteImageIdList.isEmpty()) {
                     for (Long imageId : deleteImageIdList) {
                         if (nowImageIdList.contains(imageId)) {
                             fileService.deleteFileById(imageId);
@@ -217,12 +223,18 @@ public class NoticeServiceImpl implements NoticeService {
             }
         } else {
             if (newImageList != null) {
-                if (deleteImageIdList == null) {
+                if (!deleteImageIdList.isEmpty()) {
+                    throw new EntityNotFoundException("삭제하려는 이미지가 이 공지사항에 존재하지 않습니다.");
+                } else {
                     int newImageListSize = newImageList.size();
                     if (newImageListSize > 3) {
                         throw new IllegalArgumentException("이미지가 5개 이상입니다.");
                     }
                     imageExists = true;
+                }
+            } else {
+                if (!deleteFileIdList.isEmpty()) {
+                    throw new EntityNotFoundException("삭제하려는 이미지가 이 공지사항에 존재하지 않습니다.");
                 }
             }
         }
@@ -276,7 +288,7 @@ public class NoticeServiceImpl implements NoticeService {
     @Transactional
     public Map<Long, String> deleteAdminNoticeList(List<Long> noticeIdList) {
 
-        if (noticeIdList == null) {
+        if (noticeIdList == null || noticeIdList.isEmpty()) {
             throw new IllegalArgumentException("공지가 한 개도 선택되지 않았습니다.");
         }
 
