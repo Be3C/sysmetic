@@ -11,7 +11,6 @@ import com.be3c.sysmetic.global.util.file.dto.FileWithInfoResponse;
 import com.be3c.sysmetic.global.util.file.service.FileService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.apache.poi.sl.draw.geom.GuideIf;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -111,9 +110,9 @@ public class NoticeServiceImpl implements NoticeService {
 
         Boolean fileExists = notice.getFileExists();
 
-        if (fileExists) {
+        List<FileWithInfoResponse> nowFileDtoList = fileService.getFileWithInfosNullable(new FileRequest(FileReferenceType.NOTICE_BOARD_FILE, noticeId));
+        if (nowFileDtoList != null) {
 
-            List<FileWithInfoResponse> nowFileDtoList = fileService.getFileWithInfos(new FileRequest(FileReferenceType.NOTICE_BOARD_FILE, noticeId));
             List<Long> nowFileIdList = new ArrayList<>();
             for (FileWithInfoResponse file : nowFileDtoList) {
                 nowFileIdList.add(file.id());
@@ -176,9 +175,9 @@ public class NoticeServiceImpl implements NoticeService {
 
         Boolean imageExists = notice.getImageExists();
 
-        if (imageExists) {
+        List<FileWithInfoResponse> nowImageDtoList = fileService.getFileWithInfosNullable(new FileRequest(FileReferenceType.NOTICE_BOARD_IMAGE, noticeId));
+        if (nowImageDtoList != null) {
 
-            List<FileWithInfoResponse> nowImageDtoList = fileService.getFileWithInfos(new FileRequest(FileReferenceType.NOTICE_BOARD_IMAGE, noticeId));
             List<Long> nowImageIdList = new ArrayList<>();
             for (FileWithInfoResponse image : nowImageDtoList) {
                 nowImageIdList.add(image.id());
@@ -371,9 +370,9 @@ public class NoticeServiceImpl implements NoticeService {
             nextNoticeWriteDate = nextNoticeOptional.orElse(null).getWriteDate();
         }
 
-        List<FileWithInfoResponse> fileList = fileService.getFileWithInfos(new FileRequest(FileReferenceType.NOTICE_BOARD_FILE, notice.getId()));
+        List<FileWithInfoResponse> fileList = fileService.getFileWithInfosNullable(new FileRequest(FileReferenceType.NOTICE_BOARD_FILE, notice.getId()));
         List<NoticeDetailFileShowResponseDto> fileDtoList;
-        if (fileList.isEmpty()) {
+        if (fileList == null) {
             fileDtoList = null;
         } else {
             fileDtoList = new ArrayList<>();
@@ -388,9 +387,9 @@ public class NoticeServiceImpl implements NoticeService {
             }
         }
 
-        List<FileWithInfoResponse> imageList = fileService.getFileWithInfos(new FileRequest(FileReferenceType.NOTICE_BOARD_IMAGE, notice.getId()));
+        List<FileWithInfoResponse> imageList = fileService.getFileWithInfosNullable(new FileRequest(FileReferenceType.NOTICE_BOARD_IMAGE, notice.getId()));
         List<NoticeDetailImageShowResponseDto> imageDtoList;
-        if (imageList.isEmpty()) {
+        if (imageList == null) {
             imageDtoList = null;
         } else {
             imageDtoList = new ArrayList<>();
@@ -460,11 +459,12 @@ public class NoticeServiceImpl implements NoticeService {
             nextNoticeWriteDate = nextNoticeOptional.orElse(null).getWriteDate();
         }
 
-        List<NoticeDetailFileShowResponseDto> fileDtoList = null;
-        if (notice.getFileExists()) {
+        List<FileWithInfoResponse> fileList = fileService.getFileWithInfosNullable(new FileRequest(FileReferenceType.NOTICE_BOARD_FILE, notice.getId()));
+        List<NoticeDetailFileShowResponseDto> fileDtoList;
+        if (fileList == null) {
+            fileDtoList = null;
+        } else {
             fileDtoList = new ArrayList<>();
-            List<FileWithInfoResponse> fileList = fileService.getFileWithInfos(new FileRequest(FileReferenceType.NOTICE_BOARD_FILE, notice.getId()));
-
             for (FileWithInfoResponse f : fileList) {
                 NoticeDetailFileShowResponseDto noticeDetailFileShowResponseDto = NoticeDetailFileShowResponseDto.builder()
                         .fileId(f.id())
@@ -476,11 +476,12 @@ public class NoticeServiceImpl implements NoticeService {
             }
         }
 
-        List<NoticeDetailImageShowResponseDto> imageDtoList = null;
-        if (notice.getImageExists()) {
+        List<FileWithInfoResponse> imageList = fileService.getFileWithInfosNullable(new FileRequest(FileReferenceType.NOTICE_BOARD_IMAGE, notice.getId()));
+        List<NoticeDetailImageShowResponseDto> imageDtoList;
+        if (imageList == null) {
+            imageDtoList = null;
+        } else {
             imageDtoList = new ArrayList<>();
-            List<FileWithInfoResponse> imageList = fileService.getFileWithInfos(new FileRequest(FileReferenceType.NOTICE_BOARD_IMAGE, notice.getId()));
-
             for (FileWithInfoResponse f : imageList) {
                 NoticeDetailImageShowResponseDto noticeDetailImageShowResponseDto = NoticeDetailImageShowResponseDto.builder()
                         .fileId(f.id())
@@ -512,9 +513,9 @@ public class NoticeServiceImpl implements NoticeService {
 
         Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException("공지사항이 없습니다."));
 
-        List<FileWithInfoResponse> fileList = fileService.getFileWithInfos(new FileRequest(FileReferenceType.NOTICE_BOARD_FILE, notice.getId()));
+        List<FileWithInfoResponse> fileList = fileService.getFileWithInfosNullable(new FileRequest(FileReferenceType.NOTICE_BOARD_FILE, notice.getId()));
         List<NoticeDetailFileShowResponseDto> fileDtoList;
-        if (fileList.isEmpty()) {
+        if (fileList == null) {
             fileDtoList = null;
         } else {
             fileDtoList = new ArrayList<>();
@@ -529,9 +530,9 @@ public class NoticeServiceImpl implements NoticeService {
             }
         }
 
-        List<FileWithInfoResponse> imageList = fileService.getFileWithInfos(new FileRequest(FileReferenceType.NOTICE_BOARD_IMAGE, notice.getId()));
+        List<FileWithInfoResponse> imageList = fileService.getFileWithInfosNullable(new FileRequest(FileReferenceType.NOTICE_BOARD_IMAGE, notice.getId()));
         List<NoticeDetailImageShowResponseDto> imageDtoList;
-        if (imageList.isEmpty()) {
+        if (imageList == null) {
             imageDtoList = null;
         } else {
             imageDtoList = new ArrayList<>();
