@@ -87,10 +87,10 @@ public interface NoticeControllerDocs {
             @RequestParam(value = "searchText", required = false) String searchText);
 
 
-    // 관리자 공지사항 목록 공개여부 수정 API
+    // 관리자 공지사항 공개여부 수정 API
     @Operation(
-            summary = "관리자 공지사항 목록에서 개별 공개여부 수정",
-            description = "관리자가 공지사항 목록에서 개별 공지사항의 공개여부를 수정하는 API"
+            summary = "관리자 공지사항 개별 공개여부 수정",
+            description = "관리자가 개별 공지사항의 공개여부를 수정하는 API"
     )
     @ApiResponses({
             @ApiResponse(
@@ -140,8 +140,14 @@ public interface NoticeControllerDocs {
                     content = @Content(schema = @Schema(implementation = APIResponse.class))
             )
     })
+    @Parameters({
+            @Parameter(name = "searchType", description = "검색 유형 (사용: title, content, titlecontent, writer) (설명: 제목, 내용, 제목+내용, 작성자)"),
+            @Parameter(name = "searchText", description = "검색 텍스트")
+    })
     ResponseEntity<APIResponse<NoticeDetailAdminShowResponseDto>> showAdminNoticeDetail(
-            @PathVariable(name="noticeId") Long noticeId);
+            @PathVariable(name="noticeId") Long noticeId,
+            @RequestParam(value = "searchType", required = false, defaultValue = "title") String searchType,
+            @RequestParam(value = "searchText", required = false) String searchText);
 
 
     // 관리자 공지사항 수정 화면 조회 API
@@ -314,6 +320,10 @@ public interface NoticeControllerDocs {
                     content = @Content(schema = @Schema(implementation = APIResponse.class))
             )
     })
+    @Parameters({
+            @Parameter(name = "searchText", description = "검색 텍스트")
+    })
     ResponseEntity<APIResponse<NoticeDetailShowResponseDto>> showNoticeDetail(
-            @PathVariable(name="noticeId") Long noticeId);
+            @PathVariable(name="noticeId") Long noticeId,
+            @RequestParam(value = "searchText", required = false) String searchText);
 }

@@ -132,7 +132,7 @@ public class NoticeContoller implements NoticeControllerDocs {
 
 
     /*
-        관리자 공지사항 목록 공개여부 수정 API
+        관리자 공지사항 공개여부 수정 API
         1. 사용자 인증 정보가 없음 : FORBIDDEN
         2. 공개여부 수정에 성공했을 때 : OK
         3. 공개여부 수정에 실패했을 때 : INTERNAL_SERVER_ERROR
@@ -171,11 +171,13 @@ public class NoticeContoller implements NoticeControllerDocs {
 //    @PreAuthorize("hasRole('ROLE_USER_MANAGER') or hasRole('ROLE_TRADER_MANAGER') or hasRole('ROLE_ADMIN')")
     @GetMapping("/admin/notice/{noticeId}")
     public ResponseEntity<APIResponse<NoticeDetailAdminShowResponseDto>> showAdminNoticeDetail(
-            @PathVariable(name="noticeId") Long noticeId) {
+            @PathVariable(name="noticeId") Long noticeId,
+            @RequestParam(value = "searchType", required = false, defaultValue = "title") String searchType,
+            @RequestParam(value = "searchText", required = false) String searchText) {
 
         try {
 
-            NoticeDetailAdminShowResponseDto noticeDetailAdminShowResponseDto = noticeService.noticeIdToNoticeDetailAdminShowResponseDto(noticeId);
+            NoticeDetailAdminShowResponseDto noticeDetailAdminShowResponseDto = noticeService.noticeIdToNoticeDetailAdminShowResponseDto(noticeId, searchType, searchText);
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(APIResponse.success(noticeDetailAdminShowResponseDto));
@@ -393,12 +395,13 @@ public class NoticeContoller implements NoticeControllerDocs {
     @Override
     @GetMapping("/notice/{noticeId}")
     public ResponseEntity<APIResponse<NoticeDetailShowResponseDto>> showNoticeDetail(
-            @PathVariable(name="noticeId") Long noticeId) {
+            @PathVariable(name="noticeId") Long noticeId,
+            @RequestParam(value = "searchText", required = false) String searchText) {
 
         try {
             noticeService.upHits(noticeId);
 
-            NoticeDetailShowResponseDto noticeDetailShowResponseDto = noticeService.noticeIdToticeDetailShowResponseDto(noticeId);
+            NoticeDetailShowResponseDto noticeDetailShowResponseDto = noticeService.noticeIdToticeDetailShowResponseDto(noticeId, searchText);
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(APIResponse.success(noticeDetailShowResponseDto));

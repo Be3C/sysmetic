@@ -30,21 +30,21 @@ public interface NoticeRepository extends JpaRepository<Notice, Long> , NoticeRe
     // 제목으로 찾기
     List<Notice> findByNoticeTitle(String noticeTitle);
 
-    // 관리자 이전 문의 조회
-    @Query("select n from Notice n where n.id < :noticeId order by n.id desc")
-    List<Notice> findPreviousNoticeAdmin(@Param("noticeId") Long noticeId, Pageable pageable);
-
-    // 관리자 다음 문의 조회
-    @Query("select n from Notice n where n.id > :noticeId order by n.id asc")
-    List<Notice> findNextNoticeAdmin(@Param("noticeId") Long noticeId, Pageable pageable);
-
-    // 일반 이전 문의 조회
-    @Query("select n from Notice n where n.id < :noticeId and n.isOpen = true order by n.id desc")
-    List<Notice> findPreviousNotice(@Param("noticeId") Long noticeId, Pageable pageable);
-
-    // 일반 다음 문의 조회
-    @Query("select n from Notice n where n.id > :noticeId and n.isOpen = true order by n.id asc")
-    List<Notice> findNextNotice(@Param("noticeId") Long noticeId, Pageable pageable);
+//    // 관리자 이전 문의 조회
+//    @Query("select n from Notice n where n.id < :noticeId order by n.id desc")
+//    List<Notice> findPreviousNoticeAdmin(@Param("noticeId") Long noticeId, Pageable pageable);
+//
+//    // 관리자 다음 문의 조회
+//    @Query("select n from Notice n where n.id > :noticeId order by n.id asc")
+//    List<Notice> findNextNoticeAdmin(@Param("noticeId") Long noticeId, Pageable pageable);
+//
+//    // 일반 이전 문의 조회
+//    @Query("select n from Notice n where n.id < :noticeId and n.isOpen = true order by n.id desc")
+//    List<Notice> findPreviousNotice(@Param("noticeId") Long noticeId, Pageable pageable);
+//
+//    // 일반 다음 문의 조회
+//    @Query("select n from Notice n where n.id > :noticeId and n.isOpen = true order by n.id asc")
+//    List<Notice> findNextNotice(@Param("noticeId") Long noticeId, Pageable pageable);
 
     @Query("SELECT new com.be3c.sysmetic.global.util.admin.dto.AdminNoticeResponseDto(" +
             "n.id, n.noticeTitle, n.createdAt) FROM Notice n")

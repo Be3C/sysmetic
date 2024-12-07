@@ -278,7 +278,6 @@ public class ReplyServiceTest {
         Reply reply = replyRepository.findAll().get(0);
 
         replyService.deleteReply(ReplyDeleteRequestDto.builder()
-                        .id(reply.getId())
                         .strategyId(strategy.getId())
                         .build()
         );

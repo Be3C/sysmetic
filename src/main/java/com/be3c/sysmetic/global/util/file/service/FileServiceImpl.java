@@ -317,6 +317,7 @@ public class FileServiceImpl implements FileService {
                 fileRepository.delete(file);
                 s3Service.deleteObject(file.getPath());
             }
+            fileRepository.flush();
         } catch (Exception e) {
             log.error("파일 삭제 실패. 파일 참조 정보: {}", fileRequest, e);
             fileRepository.saveAll(files);

@@ -43,20 +43,21 @@ public class InquiryServiceTest {
     @Autowired
     private InquiryAnswerRepository inquiryAnswerRepository;
 
-//    @Test
-////    @Rollback(value = false)
-//    public void dummy_data() throws Exception {
-////        Member member1 = createMember("일반닉네임1");
-////        Member member2 = createMember("일반닉네임2");
-////        Member member3 = createMember("일반닉네임3");
-////        Member member4 = createMember("일반닉네임4");
-//        Member member1 = createMember("테스트1"); // user
-//        Member member2 = createMember("테스트2"); // trader
-//        Member member3 = createMember("테스트3"); // user manager
-//        Member member4 = createMember("테스트4"); // trader manager
-//        Member member6 = createMember("테스트");
-//        Member member7 = createMember("테스트");
-//        Member member8 = createMember("테스트");
+    @Test
+    @Rollback(value = false)
+    public void dummy_data() throws Exception {
+//        Member member1 = createMember("일반닉네임1");
+//        Member member2 = createMember("일반닉네임2");
+//        Member member3 = createMember("일반닉네임3");
+//        Member member4 = createMember("일반닉네임4");
+        Member member1 = createMember("테스트1"); // user
+        Member member2 = createMember("테스트2"); // trader
+        Member member3 = createMember("테스트3"); // user manager
+        Member member4 = createMember("테스트4"); // trader manager
+        Member member5 = createMember("테스트5"); // trader manager
+        Member member6 = createMember("테스트");
+        Member member7 = createMember("테스트");
+        Member member8 = createMember("테스트");
 //        Member member9 = createMember("테스트");
 //        Member member10 = createMember("테스트");
 //        Member member11 = createMember("테스트");
@@ -64,80 +65,83 @@ public class InquiryServiceTest {
 //        Member member13 = createMember("테스트");
 //        Member member14 = createMember("테스트");
 //        Member member15 = createMember("테스트");
-//
+
 //        for (int i = 1; i < 124; i++) {
 //            createStrategyWithMember("빈 전략", StrategyStatusCode.PUBLIC.getCode(), member2);
 //        }
-//        Strategy strategy1 = createStrategyWithMember("삼성전자", StrategyStatusCode.PUBLIC.getCode(), member11);
-//        Strategy strategy2 = createStrategyWithMember("LG전자", StrategyStatusCode.PUBLIC.getCode(), member12);
-//        Strategy strategy3 = createStrategyWithMember("애플", StrategyStatusCode.NOT_USING_STATE.getCode(), member13);
-//        Strategy strategy4 = createStrategyWithMember("테슬라", StrategyStatusCode.REQUEST.getCode(), member14);
-////
-////        for (int i = 1; i < 204; i++) {
-////            Inquiry preInquiry = Inquiry.builder()
-////                    .strategy(strategy1)
-////                    .inquirer(member5)
-////                    .traderId(strategy1.getTrader().getId())
-////                    .inquiryStatus(InquiryStatus.closed)
-////                    .inquiryTitle("문의제목")
-////                    .inquiryContent("문의내용")
-////                    .inquiryRegistrationDate(LocalDateTime.now())
-////                    .build();
-////            inquiryRepository.save(preInquiry);
-////            if (i < 102) {
-////                InquiryAnswer inquiryAnswer = InquiryAnswer.builder()
-////                        .inquiry(preInquiry)
-////                        .answerTitle("답변제목")
-////                        .answerContent("답변내용")
-////                        .answerRegistrationDate(LocalDateTime.now())
-////                        .build();
-////                inquiryAnswerRepository.save(inquiryAnswer);
-////            }
-////        }
+        Strategy strategy1 = createStrategyWithMember("삼성전자", StrategyStatusCode.PUBLIC.getCode(), member7);
+        Strategy strategy2 = createStrategyWithMember("LG전자", StrategyStatusCode.PUBLIC.getCode(), member6);
+        Strategy strategy3 = createStrategyWithMember("애플", StrategyStatusCode.PUBLIC.getCode(), member8);
+        Strategy strategy4 = createStrategyWithMember("테슬라", StrategyStatusCode.PRIVATE.getCode(), member7);
 //
-//        int countInquiry = 1;
-////        int countInquiryAnswer = 1;
-//        Strategy strategy = null;
-//        Member member = null;
-//        InquiryStatus inquiryStatus = null;
-//        for(int i = 1; i <= 4; i++) {
-//            if (i == 1) { strategy = strategy1; }
-//            else if (i == 2) { strategy = strategy2; }
-//            else if (i == 3) { strategy = strategy3; }
-//            else if (i == 4) { strategy = strategy4; }
-//            for(int j = 1; j <= 3; j=j+2) {
-//                if (j == 1) { member = member1; }
-//                else if (j == 3) { member = member3; }
-//                for(int k = 1; k <= 2; k++) {
-//                    if (k == 1) { inquiryStatus = InquiryStatus.closed; }
-//                    if (k == 2) { inquiryStatus = InquiryStatus.unclosed; }
-//                    for(int l = 1; l <= 10; l++) {
-//                        Inquiry inquiry = Inquiry.builder()
-//                                .strategy(strategy)
-//                                .inquirer(member)
-//                                .traderId(strategy.getTrader().getId())
-//                                .inquiryStatus(inquiryStatus)
-//                                .inquiryTitle("문의제목" + countInquiry)
-//                                .inquiryContent("문의내용" + countInquiry)
-//                                .inquiryRegistrationDate(LocalDateTime.now())
-//                                .build();
-//                        inquiryRepository.save(inquiry);
-//                        if (inquiryStatus == InquiryStatus.closed) {
-//                            InquiryAnswer inquiryAnswer = InquiryAnswer.builder()
-//                                    .inquiry(inquiry)
-//                                    .answerTitle("답변제목" + countInquiry)
-//                                    .answerContent("답변내용" + countInquiry)
-//                                    .answerRegistrationDate(LocalDateTime.now())
-//                                    .build();
-//                            inquiryAnswerRepository.save(inquiryAnswer);
-////                            countInquiryAnswer++;
-//                        }
-//                        countInquiry++;
-//                    }
-//                }
+//        for (int i = 1; i < 204; i++) {
+//            Inquiry preInquiry = Inquiry.builder()
+//                    .strategy(strategy1)
+//                    .inquirer(member5)
+//                    .traderId(strategy1.getTrader().getId())
+//                    .inquiryStatus(InquiryStatus.closed)
+//                    .inquiryTitle("문의제목")
+//                    .inquiryContent("문의내용")
+//                    .inquiryRegistrationDate(LocalDateTime.now())
+//                    .build();
+//            inquiryRepository.save(preInquiry);
+//            if (i < 102) {
+//                InquiryAnswer inquiryAnswer = InquiryAnswer.builder()
+//                        .inquiry(preInquiry)
+//                        .answerTitle("답변제목")
+//                        .answerContent("답변내용")
+//                        .answerRegistrationDate(LocalDateTime.now())
+//                        .build();
+//                inquiryAnswerRepository.save(inquiryAnswer);
 //            }
 //        }
-//    }
+
+        int countInquiry = 1;
+//        int countInquiryAnswer = 1;
+        Strategy strategy = null;
+        Member member = null;
+        InquiryStatus inquiryStatus = null;
+        for(int i = 1; i <= 4; i++) {
+            if (i == 1) { strategy = strategy1; }
+            else if (i == 2) { strategy = strategy2; }
+            else if (i == 3) { strategy = strategy3; }
+            else if (i == 4) { strategy = strategy4; }
+            for(int j = 1; j <= 5; j++) {
+                if (j == 1) { member = member1; }
+                else if (j == 2) { member = member2; }
+                else if (j == 3) { member = member3; }
+                else if (j == 4) { member = member4; }
+                else if (j == 5) { member = member5; }
+                for(int k = 1; k <= 1; k++) {
+                    if (k == 1) { inquiryStatus = InquiryStatus.unclosed; }
+//                    if (k == 2) { inquiryStatus = InquiryStatus.closed; }
+                    for(int l = 1; l <= 1; l++) {
+                        Inquiry inquiry = Inquiry.builder()
+                                .strategy(strategy)
+                                .inquirer(member)
+                                .traderId(strategy.getTrader().getId())
+                                .inquiryStatus(inquiryStatus)
+                                .inquiryTitle("문의제목" + countInquiry)
+                                .inquiryContent("문의내용" + countInquiry)
+                                .inquiryRegistrationDate(LocalDateTime.now())
+                                .build();
+                        inquiryRepository.save(inquiry);
+                        if (inquiryStatus == InquiryStatus.closed) {
+                            InquiryAnswer inquiryAnswer = InquiryAnswer.builder()
+                                    .inquiry(inquiry)
+                                    .answerTitle("답변제목" + countInquiry)
+                                    .answerContent("답변내용" + countInquiry)
+                                    .answerRegistrationDate(LocalDateTime.now())
+                                    .build();
+                            inquiryAnswerRepository.save(inquiryAnswer);
+//                            countInquiryAnswer++;
+                        }
+                        countInquiry++;
+                    }
+                }
+            }
+        }
+    }
 
 
     @Test

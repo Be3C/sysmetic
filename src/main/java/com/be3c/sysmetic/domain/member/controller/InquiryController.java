@@ -3,7 +3,6 @@ package com.be3c.sysmetic.domain.member.controller;
 import com.be3c.sysmetic.domain.member.dto.*;
 import com.be3c.sysmetic.domain.member.entity.Inquiry;
 import com.be3c.sysmetic.domain.member.entity.InquiryStatus;
-import com.be3c.sysmetic.domain.member.exception.MemberBadRequestException;
 import com.be3c.sysmetic.domain.member.service.InquiryAnswerService;
 import com.be3c.sysmetic.domain.member.service.InquiryService;
 import com.be3c.sysmetic.domain.strategy.entity.Strategy;
@@ -69,10 +68,11 @@ public class InquiryController implements InquiryControllerDocs {
                     .body(APIResponse.fail(ErrorCode.BAD_REQUEST, "쿼리 파라미터 searchType이 올바르지 않습니다."));
         }
 
-        InquiryAdminListShowRequestDto inquiryAdminListShowRequestDto = new InquiryAdminListShowRequestDto();
-        inquiryAdminListShowRequestDto.setTab(inquiryStatus);
-        inquiryAdminListShowRequestDto.setSearchType(searchType);
-        inquiryAdminListShowRequestDto.setSearchText(searchText);
+        InquiryAdminListShowRequestDto inquiryAdminListShowRequestDto = InquiryAdminListShowRequestDto.builder()
+                .closed(inquiryStatus)
+                .searchType(searchType)
+                .searchText(searchText)
+                .build();
 
         Page<Inquiry> inquiryList = inquiryService.findInquiriesAdmin(inquiryAdminListShowRequestDto, page);
 
@@ -103,11 +103,22 @@ public class InquiryController implements InquiryControllerDocs {
 //    @PreAuthorize("hasRole('ROLE_USER_MANAGER') or hasRole('ROLE_TRADER_MANAGER') or hasRole('ROLE_ADMIN')")
     @GetMapping("/admin/qna/{qnaId}")
     public ResponseEntity<APIResponse<InquiryAnswerAdminShowResponseDto>> showAdminInquiryDetail (
-            @PathVariable(value = "qnaId") Long inquiryId) {
+            @PathVariable(value = "qnaId") Long inquiryId,
+            @RequestParam(value = "closed", required = false, defaultValue = "all") String closed,
+            @RequestParam(value = "searchType", required = false, defaultValue = "strategy") String searchType,
+            @RequestParam(value = "searchText", required = false) String searchText) {
+        InquiryStatus inquiryStatus = InquiryStatus.valueOf(closed);
 
         try {
 
-            InquiryAnswerAdminShowResponseDto inquiryAnswerAdminShowResponseDto = inquiryService.inquiryIdToInquiryAnswerAdminShowResponseDto(inquiryId);
+            InquiryDetailAdminShowDto inquiryDetailAdminShowDto = InquiryDetailAdminShowDto.builder()
+                    .inquiryId(inquiryId)
+                    .closed(inquiryStatus)
+                    .searchType(searchType)
+                    .searchText(searchText)
+                    .build();
+
+            InquiryAnswerAdminShowResponseDto inquiryAnswerAdminShowResponseDto = inquiryService.inquiryIdToInquiryAnswerAdminShowResponseDto(inquiryDetailAdminShowDto);
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(APIResponse.success(inquiryAnswerAdminShowResponseDto));
@@ -298,11 +309,20 @@ public class InquiryController implements InquiryControllerDocs {
 //     @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_USER_MANAGER")
      @GetMapping("/member/qna/{qnaId}")
     public ResponseEntity<APIResponse<InquiryAnswerInquirerShowResponseDto>> showInquirerInquiryDetail (
-            @PathVariable(value = "qnaId") Long inquiryId) {
+            @PathVariable(value = "qnaId") Long inquiryId,
+            @RequestParam(value = "sort", defaultValue = "registrationDate") String sort,
+            @RequestParam(value = "closed", defaultValue = "all") String closed) {
+         InquiryStatus inquiryStatus = InquiryStatus.valueOf(closed);
 
          try {
 
-             InquiryAnswerInquirerShowResponseDto inquiryAnswerInquirerShowResponseDto = inquiryService.inquiryIdToInquiryAnswerInquirerShowResponseDto(inquiryId);
+             InquiryDetailTraderInquirerShowDto inquiryDetailTraderInquirerShowDto = InquiryDetailTraderInquirerShowDto.builder()
+                     .inquiryId(inquiryId)
+                     .closed(inquiryStatus)
+                     .sort(sort)
+                     .build();
+
+             InquiryAnswerInquirerShowResponseDto inquiryAnswerInquirerShowResponseDto = inquiryService.inquiryIdToInquiryAnswerInquirerShowResponseDto(inquiryDetailTraderInquirerShowDto);
 
              return ResponseEntity.status(HttpStatus.OK)
                      .body(APIResponse.success(inquiryAnswerInquirerShowResponseDto));
@@ -523,11 +543,20 @@ public class InquiryController implements InquiryControllerDocs {
 //    @PreAuthorize("hasRole('ROLE_TRADER') or hasRole('ROLE_TRADER_MANAGER')")
     @GetMapping("/trader/qna/{qnaId}")
     public ResponseEntity<APIResponse<InquiryAnswerTraderShowResponseDto>> showTraderInquiryDetail (
-            @PathVariable(value = "qnaId") Long inquiryId) {
+            @PathVariable(value = "qnaId") Long inquiryId,
+            @RequestParam(value = "sort", defaultValue = "registrationDate") String sort,
+            @RequestParam(value = "closed", defaultValue = "all") String closed) {
+        InquiryStatus inquiryStatus = InquiryStatus.valueOf(closed);
 
         try {
 
-            InquiryAnswerTraderShowResponseDto inquiryAnswerTraderShowResponseDto = inquiryService.inquiryIdToInquiryAnswerTraderShowResponseDto(inquiryId);
+            InquiryDetailTraderInquirerShowDto inquiryDetailTraderInquirerShowDto = InquiryDetailTraderInquirerShowDto.builder()
+                    .inquiryId(inquiryId)
+                    .sort(sort)
+                    .closed(inquiryStatus)
+                    .build();
+
+            InquiryAnswerTraderShowResponseDto inquiryAnswerTraderShowResponseDto = inquiryService.inquiryIdToInquiryAnswerTraderShowResponseDto(inquiryDetailTraderInquirerShowDto);
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(APIResponse.success(inquiryAnswerTraderShowResponseDto));

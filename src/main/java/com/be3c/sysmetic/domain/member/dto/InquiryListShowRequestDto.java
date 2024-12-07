@@ -18,11 +18,7 @@ public class InquiryListShowRequestDto {
     @Schema(description = "트레이더 ID", example = "9876")
     private Long traderId;
 
-    // 정렬 순 셀렉트 박스
-    @Schema(description = "정렬 순서 (registrationDate, strategyName) ('최신순', '전략명')", example = "최신순")
-    private String sort;
-
     // 답변상태 셀렉트 박스
     @Schema(description = "답변 상태 (all, closed, unclosed)", example = "ALL")
-    private InquiryStatus tab;
+    private InquiryStatus closed;
 }

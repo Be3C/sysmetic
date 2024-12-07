@@ -15,6 +15,9 @@ import java.util.List;
 @Schema(description = "공지사항 상세 조회 응답 DTO")
 public class NoticeDetailShowResponseDto {
 
+    @Schema(description = "검색했던 검색 단어", example = "searchText")
+    private String searchText;
+
     @Schema(description = "공지사항 ID", example = "123")
     private Long noticeId;
 
