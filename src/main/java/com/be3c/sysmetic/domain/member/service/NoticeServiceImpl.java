@@ -121,7 +121,7 @@ public class NoticeServiceImpl implements NoticeService {
             int nowCountFile = nowFileDtoList.size();
 
             if (newFileList != null) {
-                if (!deleteFileIdList.isEmpty()) {
+                if (!(deleteFileIdList == null || deleteFileIdList.isEmpty())) {
                     for (Long fileId : deleteFileIdList) {
                         if (nowFileIdList.contains(fileId)) {
                             fileService.deleteFileById(fileId);
@@ -144,7 +144,7 @@ public class NoticeServiceImpl implements NoticeService {
                     }
                 }
             } else {
-                if (!deleteFileIdList.isEmpty()) {
+                if (!(deleteFileIdList == null || deleteFileIdList.isEmpty())) {
                     for (Long fileId : deleteFileIdList) {
                         if (nowFileIdList.contains(fileId)) {
                             fileService.deleteFileById(fileId);
@@ -158,7 +158,7 @@ public class NoticeServiceImpl implements NoticeService {
             }
         } else {
             if (newFileList != null) {
-                if (!deleteFileIdList.isEmpty()) {
+                if (!(deleteFileIdList == null || deleteFileIdList.isEmpty())) {
                     throw new EntityNotFoundException("삭제하려는 파일이 이 공지사항에 존재하지 않습니다.");
                 } else {
                     int newFileListSize = newFileList.size();
@@ -168,7 +168,7 @@ public class NoticeServiceImpl implements NoticeService {
                     fileExists = true;
                 }
             } else {
-                if (!deleteFileIdList.isEmpty()) {
+                if (!(deleteFileIdList == null || deleteFileIdList.isEmpty())) {
                     throw new EntityNotFoundException("삭제하려는 파일이 이 공지사항에 존재하지 않습니다.");
                 }
             }
@@ -186,7 +186,7 @@ public class NoticeServiceImpl implements NoticeService {
             int nowCountImage = nowImageDtoList.size();
 
             if (newImageList != null) {
-                if (!deleteImageIdList.isEmpty()) {
+                if (!(deleteImageIdList == null || deleteImageIdList.isEmpty())) {
                     for (Long imageId : deleteImageIdList) {
                         if (nowImageIdList.contains(imageId)) {
                             fileService.deleteFileById(imageId);
@@ -195,8 +195,8 @@ public class NoticeServiceImpl implements NoticeService {
                             throw new EntityNotFoundException("삭제하려는 이미지가 이 공지사항에 존재하지 않습니다.");
                         }
                     }
-                    int newFileListSize = newFileList.size();
-                    nowCountImage = nowCountImage + newFileListSize;
+                    int newImageListSize = newImageList.size();
+                    nowCountImage = nowCountImage + newImageListSize;
                     if (nowCountImage > 3) {
                         throw new IllegalArgumentException("이미지가 5개 이상입니다.");
                     }
@@ -209,7 +209,7 @@ public class NoticeServiceImpl implements NoticeService {
                     }
                 }
             } else {
-                if (!deleteImageIdList.isEmpty()) {
+                if (!(deleteImageIdList == null || deleteImageIdList.isEmpty())) {
                     for (Long imageId : deleteImageIdList) {
                         if (nowImageIdList.contains(imageId)) {
                             fileService.deleteFileById(imageId);
@@ -223,7 +223,7 @@ public class NoticeServiceImpl implements NoticeService {
             }
         } else {
             if (newImageList != null) {
-                if (!deleteImageIdList.isEmpty()) {
+                if (!(deleteImageIdList == null || deleteImageIdList.isEmpty())) {
                     throw new EntityNotFoundException("삭제하려는 이미지가 이 공지사항에 존재하지 않습니다.");
                 } else {
                     int newImageListSize = newImageList.size();
@@ -233,7 +233,7 @@ public class NoticeServiceImpl implements NoticeService {
                     imageExists = true;
                 }
             } else {
-                if (!deleteFileIdList.isEmpty()) {
+                if (!(deleteImageIdList == null || deleteImageIdList.isEmpty())) {
                     throw new EntityNotFoundException("삭제하려는 이미지가 이 공지사항에 존재하지 않습니다.");
                 }
             }

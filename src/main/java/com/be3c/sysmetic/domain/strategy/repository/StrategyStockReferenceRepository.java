@@ -15,6 +15,7 @@ public interface StrategyStockReferenceRepository extends JpaRepository<Strategy
     @Query("""
         SELECT sr.stock.id FROM StrategyStockReference sr 
         WHERE sr.strategy.id = :strategyId
+        ORDER BY sr.stock.id
     """)
     List<Long> findStockIdsByStrategyId(Long strategyId);
 
@@ -34,7 +35,7 @@ public interface StrategyStockReferenceRepository extends JpaRepository<Strategy
     List<StrategyStockReference> findByStrategyId(Long id);
 
     // 상세 검색에서 사용!
-    @Query("SELECT s FROM StrategyStockReference s WHERE s.stock.id IN :ids")
+    @Query("SELECT s FROM StrategyStockReference s WHERE s.stock.id IN :ids ORDER BY s.stock.id")
     List<StrategyStockReference> findAllByStockIds(@Param("ids") List<Long> ids);
 
     // StockGetter에서 사용
