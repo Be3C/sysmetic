@@ -164,7 +164,9 @@ public class FileServiceImpl implements FileService {
     public List<FileWithInfoResponse> getFileWithInfos(FileRequest fileRequest) {
 
         List<File> files = fileRepository.findFilesByFileReference(fileRequest);
-        validFilesNotEmpty(files, fileRequest);
+
+        if(files.isEmpty())
+            return null;
 
         List<FileWithInfoResponse> fileWithInfoResponses = new ArrayList<>();
 
@@ -177,6 +179,22 @@ public class FileServiceImpl implements FileService {
         return fileWithInfoResponses;
     }
 
+    @Override
+    public List<FileWithInfoResponse> getFileWithInfosNullable(FileRequest fileRequest) {
+
+        List<File> files = fileRepository.findFilesByFileReference(fileRequest);
+        validFilesNotEmpty(files, fileRequest);
+
+        List<FileWithInfoResponse> fileWithInfoResponses = new ArrayList<>();
+
+        for (File f : files) {
+            String url = s3Service.createPresignedGetUrl(f.getPath());
+            FileWithInfoResponse fileWithInfoResponse = new FileWithInfoResponse(f.getId(), url, f.getOriginalName(), f.getSize());
+            fileWithInfoResponses.add(fileWithInfoResponse);
+        }
+
+        return fileWithInfoResponses;
+    }
 
   /*
   download

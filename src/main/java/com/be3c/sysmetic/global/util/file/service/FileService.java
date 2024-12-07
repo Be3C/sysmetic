@@ -65,6 +65,12 @@ public interface FileService {
      */
     List<FileWithInfoResponse> getFileWithInfos(FileRequest fileRequest);
 
+    /**
+     * presignedUrl과 파일 정보 리스트를 제공하거나 null 제공
+     * @param fileRequest ReferenceType(참조 테이블명)과 ReferenceId(참조 id) 입력
+     * @return 파일 url과 파일 메타 정보 리스트 혹은 null
+     */
+    List<FileWithInfoResponse> getFileWithInfosNullable(FileRequest fileRequest);
 
 
     /**
