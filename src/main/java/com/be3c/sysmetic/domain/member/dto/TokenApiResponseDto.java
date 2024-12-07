@@ -18,5 +18,7 @@ public class TokenApiResponseDto {
     private String profileImage;
     private Integer totalFollowerCount;
     private Integer totalStrategyCount;
+    private Boolean receiveInfoConsent;
+    private Boolean receiveMarketingConsent;
 
 }

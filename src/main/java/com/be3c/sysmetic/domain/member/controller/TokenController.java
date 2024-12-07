@@ -77,6 +77,8 @@ public class TokenController {
                 .profileImage(profileImage)
                 .totalFollowerCount(member.getTotalFollow())
                 .totalStrategyCount(member.getTotalStrategyCount())
+                .receiveInfoConsent(Boolean.valueOf(member.getReceiveInfoConsent()))
+                .receiveMarketingConsent(Boolean.valueOf(member.getReceiveMarketingConsent()))
                 .build();
 
         // 회원 정보 반환
