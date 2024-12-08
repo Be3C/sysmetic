@@ -95,7 +95,7 @@ public class EmailServiceImpl implements EmailService {
                             .subscribers(List.of(Subscriber.builder().email(toEmail).build()))
                             .build());
                 })
-                .then(Mono.delay(Duration.ofSeconds(5))) // 5초 지연 : 스티비 작동 안 됨 문제로 필수
+                .then(Mono.delay(Duration.ofSeconds(10))) // 10초 지연 : 스티비 작동 안 됨 문제로 필수
                 .then(Mono.fromRunnable(() -> {
 
                     Mono<String> sendMonoResponse = emailApiClient.sendAuthEmailRequest(new AuthCodeRequest(toEmail, authCode));
@@ -108,7 +108,7 @@ public class EmailServiceImpl implements EmailService {
                         }
                     });
                 }))
-                .then(Mono.delay(Duration.ofSeconds(5))) // 5초 지연
+                .then(Mono.delay(Duration.ofSeconds(10))) // 10초 지연
                 .then(Mono.fromRunnable(() -> {
 
                     emailApiClient.deleteTempSubscriberRequest(List.of(toEmail));
