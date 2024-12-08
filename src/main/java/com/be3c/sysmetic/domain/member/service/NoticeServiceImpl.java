@@ -238,13 +238,11 @@ public class NoticeServiceImpl implements NoticeService {
             }
         }
 
-        Member corrector = memberRepository.findById(correctorId).orElseThrow(() -> new EntityNotFoundException("회원이 없습니다."));
-
         notice.setNoticeTitle(noticeTitle);
         notice.setNoticeContent(noticeContent);
         notice.setFileExists(fileExists);
         notice.setImageExists(imageExists);
-        notice.setCorrector(corrector);
+        notice.setCorrectorId(correctorId);
         notice.setCorrectDate(LocalDateTime.now());
         notice.setIsOpen(isOpen);
 

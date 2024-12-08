@@ -37,9 +37,8 @@ public class Notice extends BaseEntity {
     private LocalDateTime writeDate;
 
     // 화면엔 안 보임
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "corrector_id", nullable = false)
-    private Member corrector;
+    @Column(name = "corrector_id", nullable = false)
+    private Long correctorId;
 
     @Column(name = "correct_date", nullable = false)
     private LocalDateTime correctDate;
@@ -69,7 +68,7 @@ public class Notice extends BaseEntity {
                 .writer(writer)
                 .writerNickname(writer.getNickname())
                 .writeDate(LocalDateTime.now())
-                .corrector(writer)
+                .correctorId(writer.getId())
                 .correctDate(LocalDateTime.now())
                 .hits(0L)
                 .fileExists(fileExists)
