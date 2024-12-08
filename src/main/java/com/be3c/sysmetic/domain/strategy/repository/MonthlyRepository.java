@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 import java.time.YearMonth;
+import java.util.Optional;
 
 @Repository
 public interface MonthlyRepository extends JpaRepository<Monthly, Long> {
@@ -60,4 +61,11 @@ public interface MonthlyRepository extends JpaRepository<Monthly, Long> {
     @Modifying
     @Query("DELETE FROM Monthly m WHERE m.strategy.id = :strategyId")
     void deleteByStrategyId(Long strategyId);
+
+    @Query("SELECT m FROM Monthly m WHERE m.strategy.id = :strategyId AND m.yearNumber = :year AND m.monthNumber = :month")
+    Optional<Monthly> findByYearAndMonth(@Param("strategyId") Long strategyId, @Param("year") int year, @Param("month") int month);
+
+    @Modifying
+    @Query("DELETE FROM Monthly m WHERE m.strategy.id = :strategyId AND m.yearNumber = :year AND m.monthNumber = :month")
+    void deleteSpecificMonthlyData(@Param("strategyId") Long strategyId, @Param("year") int year, @Param("month") int month);
 }

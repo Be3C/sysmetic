@@ -21,11 +21,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -55,6 +57,7 @@ public class MonthlyServiceImpl implements MonthlyService {
 
     // 월간분석 업데이트
     @Override
+    @Transactional
     public void updateMonthly(Long strategyId, List<LocalDate> updatedDateList) {
         Set<YearMonth> yearMonthSet = updatedDateList.stream()
                 .map(YearMonth::from)
@@ -64,8 +67,14 @@ public class MonthlyServiceImpl implements MonthlyService {
             int year = yearMonth.getYear();
             int month = yearMonth.getMonthValue();
 
+            Optional<Monthly> existingMonthly = monthlyRepository.findByYearAndMonth(strategyId, year, month);
+
+            existingMonthly.ifPresent(monthly ->
+                    monthlyRepository.deleteSpecificMonthlyData(strategyId, year, month)
+            );
+
             Monthly updatedMonthly = calculateMonthlyData(strategyId, year, month);
-            monthlyRepository.save(updatedMonthly);
+            monthlyRepository.saveAndFlush(updatedMonthly);
         });
     }
 
