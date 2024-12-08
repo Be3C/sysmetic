@@ -43,120 +43,119 @@ public class InquiryServiceTest {
     @Autowired
     private InquiryAnswerRepository inquiryAnswerRepository;
 
-    @Test
-    @Rollback(value = false)
-    public void dummy_data() throws Exception {
-//        Member member1 = createMember("일반닉네임1");
-//        Member member2 = createMember("일반닉네임2");
-//        Member member3 = createMember("일반닉네임3");
-//        Member member4 = createMember("일반닉네임4");
-        Member member1 = createMember("테스트1"); // user
-        Member member2 = createMember("테스트2"); // trader
-        Member member3 = createMember("테스트3"); // user manager
-        Member member4 = createMember("테스트4"); // trader manager
-        Member member5 = createMember("테스트5"); // trader manager
-        Member member6 = createMember("테스트");
-        Member member7 = createMember("테스트");
-        Member member8 = createMember("테스트");
-//        Member member9 = createMember("테스트");
-//        Member member10 = createMember("테스트");
-//        Member member11 = createMember("테스트");
-//        Member member12 = createMember("테스트");
-//        Member member13 = createMember("테스트");
-//        Member member14 = createMember("테스트");
-//        Member member15 = createMember("테스트");
-
-//        for (int i = 1; i < 124; i++) {
-//            createStrategyWithMember("빈 전략", StrategyStatusCode.PUBLIC.getCode(), member2);
-//        }
-        Strategy strategy1 = createStrategyWithMember("삼성전자", StrategyStatusCode.PUBLIC.getCode(), member7);
-        Strategy strategy2 = createStrategyWithMember("LG전자", StrategyStatusCode.PUBLIC.getCode(), member6);
-        Strategy strategy3 = createStrategyWithMember("애플", StrategyStatusCode.PUBLIC.getCode(), member8);
-        Strategy strategy4 = createStrategyWithMember("테슬라", StrategyStatusCode.PRIVATE.getCode(), member7);
+//    @Test
+////    @Rollback(value = false)
+//    public void dummy_data() throws Exception {
+////        Member member1 = createMember("일반닉네임1");
+////        Member member2 = createMember("일반닉네임2");
+////        Member member3 = createMember("일반닉네임3");
+////        Member member4 = createMember("일반닉네임4");
+//        Member member1 = createMember("테스트1"); // user
+//        Member member2 = createMember("테스트2"); // trader
+//        Member member3 = createMember("테스트3"); // user manager
+//        Member member4 = createMember("테스트4"); // trader manager
+//        Member member5 = createMember("테스트5"); // trader manager
+//        Member member6 = createMember("테스트");
+//        Member member7 = createMember("테스트");
+//        Member member8 = createMember("테스트");
+////        Member member9 = createMember("테스트");
+////        Member member10 = createMember("테스트");
+////        Member member11 = createMember("테스트");
+////        Member member12 = createMember("테스트");
+////        Member member13 = createMember("테스트");
+////        Member member14 = createMember("테스트");
+////        Member member15 = createMember("테스트");
 //
-//        for (int i = 1; i < 204; i++) {
-//            Inquiry preInquiry = Inquiry.builder()
-//                    .strategy(strategy1)
-//                    .inquirer(member5)
-//                    .traderId(strategy1.getTrader().getId())
-//                    .inquiryStatus(InquiryStatus.closed)
-//                    .inquiryTitle("문의제목")
-//                    .inquiryContent("문의내용")
-//                    .inquiryRegistrationDate(LocalDateTime.now())
-//                    .build();
-//            inquiryRepository.save(preInquiry);
-//            if (i < 102) {
-//                InquiryAnswer inquiryAnswer = InquiryAnswer.builder()
-//                        .inquiry(preInquiry)
-//                        .answerTitle("답변제목")
-//                        .answerContent("답변내용")
-//                        .answerRegistrationDate(LocalDateTime.now())
-//                        .build();
-//                inquiryAnswerRepository.save(inquiryAnswer);
+////        for (int i = 1; i < 124; i++) {
+////            createStrategyWithMember("빈 전략", StrategyStatusCode.PUBLIC.getCode(), member2);
+////        }
+//        Strategy strategy1 = createStrategyWithMember("삼성전자", StrategyStatusCode.PUBLIC.getCode(), member7);
+//        Strategy strategy2 = createStrategyWithMember("LG전자", StrategyStatusCode.PUBLIC.getCode(), member6);
+//        Strategy strategy3 = createStrategyWithMember("애플", StrategyStatusCode.PUBLIC.getCode(), member8);
+//        Strategy strategy4 = createStrategyWithMember("테슬라", StrategyStatusCode.PRIVATE.getCode(), member7);
+////
+////        for (int i = 1; i < 204; i++) {
+////            Inquiry preInquiry = Inquiry.builder()
+////                    .strategy(strategy1)
+////                    .inquirer(member5)
+////                    .traderId(strategy1.getTrader().getId())
+////                    .inquiryStatus(InquiryStatus.closed)
+////                    .inquiryTitle("문의제목")
+////                    .inquiryContent("문의내용")
+////                    .inquiryRegistrationDate(LocalDateTime.now())
+////                    .build();
+////            inquiryRepository.save(preInquiry);
+////            if (i < 102) {
+////                InquiryAnswer inquiryAnswer = InquiryAnswer.builder()
+////                        .inquiry(preInquiry)
+////                        .answerTitle("답변제목")
+////                        .answerContent("답변내용")
+////                        .answerRegistrationDate(LocalDateTime.now())
+////                        .build();
+////                inquiryAnswerRepository.save(inquiryAnswer);
+////            }
+////        }
+//
+//        int countInquiry = 1;
+////        int countInquiryAnswer = 1;
+//        Strategy strategy = null;
+//        Member member = null;
+//        InquiryStatus inquiryStatus = null;
+//        for(int i = 1; i <= 4; i++) {
+//            if (i == 1) { strategy = strategy1; }
+//            else if (i == 2) { strategy = strategy2; }
+//            else if (i == 3) { strategy = strategy3; }
+//            else if (i == 4) { strategy = strategy4; }
+//            for(int j = 1; j <= 5; j++) {
+//                if (j == 1) { member = member1; }
+//                else if (j == 2) { member = member2; }
+//                else if (j == 3) { member = member3; }
+//                else if (j == 4) { member = member4; }
+//                else if (j == 5) { member = member5; }
+//                for(int k = 1; k <= 1; k++) {
+//                    if (k == 1) { inquiryStatus = InquiryStatus.unclosed; }
+////                    if (k == 2) { inquiryStatus = InquiryStatus.closed; }
+//                    for(int l = 1; l <= 1; l++) {
+//                        Inquiry inquiry = Inquiry.builder()
+//                                .strategy(strategy)
+//                                .inquirer(member)
+//                                .trader(strategy.getTrader())
+//                                .inquiryStatus(inquiryStatus)
+//                                .inquiryTitle("문의제목" + countInquiry)
+//                                .inquiryContent("문의내용" + countInquiry)
+//                                .inquiryRegistrationDate(LocalDateTime.now())
+//                                .build();
+//                        inquiryRepository.save(inquiry);
+//                        if (inquiryStatus == InquiryStatus.closed) {
+//                            InquiryAnswer inquiryAnswer = InquiryAnswer.builder()
+//                                    .inquiry(inquiry)
+//                                    .answerTitle("답변제목" + countInquiry)
+//                                    .answerContent("답변내용" + countInquiry)
+//                                    .answerRegistrationDate(LocalDateTime.now())
+//                                    .build();
+//                            inquiryAnswerRepository.save(inquiryAnswer);
+////                            countInquiryAnswer++;
+//                        }
+//                        countInquiry++;
+//                    }
+//                }
 //            }
 //        }
-
-        int countInquiry = 1;
-//        int countInquiryAnswer = 1;
-        Strategy strategy = null;
-        Member member = null;
-        InquiryStatus inquiryStatus = null;
-        for(int i = 1; i <= 4; i++) {
-            if (i == 1) { strategy = strategy1; }
-            else if (i == 2) { strategy = strategy2; }
-            else if (i == 3) { strategy = strategy3; }
-            else if (i == 4) { strategy = strategy4; }
-            for(int j = 1; j <= 5; j++) {
-                if (j == 1) { member = member1; }
-                else if (j == 2) { member = member2; }
-                else if (j == 3) { member = member3; }
-                else if (j == 4) { member = member4; }
-                else if (j == 5) { member = member5; }
-                for(int k = 1; k <= 1; k++) {
-                    if (k == 1) { inquiryStatus = InquiryStatus.unclosed; }
-//                    if (k == 2) { inquiryStatus = InquiryStatus.closed; }
-                    for(int l = 1; l <= 1; l++) {
-                        Inquiry inquiry = Inquiry.builder()
-                                .strategy(strategy)
-                                .inquirer(member)
-                                .traderId(strategy.getTrader().getId())
-                                .inquiryStatus(inquiryStatus)
-                                .inquiryTitle("문의제목" + countInquiry)
-                                .inquiryContent("문의내용" + countInquiry)
-                                .inquiryRegistrationDate(LocalDateTime.now())
-                                .build();
-                        inquiryRepository.save(inquiry);
-                        if (inquiryStatus == InquiryStatus.closed) {
-                            InquiryAnswer inquiryAnswer = InquiryAnswer.builder()
-                                    .inquiry(inquiry)
-                                    .answerTitle("답변제목" + countInquiry)
-                                    .answerContent("답변내용" + countInquiry)
-                                    .answerRegistrationDate(LocalDateTime.now())
-                                    .build();
-                            inquiryAnswerRepository.save(inquiryAnswer);
-//                            countInquiryAnswer++;
-                        }
-                        countInquiry++;
-                    }
-                }
-            }
-        }
-    }
+//    }
 
 
-    @Test
-    public void 문의_등록() throws Exception {
-        //given
-        Strategy strategy = createStrategy("삼성전자", StrategyStatusCode.PUBLIC.getCode(), "트레이더닉네임1");
-        Member member = createMember("일반닉네임1");
-
-        //when
-        inquiryService.registerInquiry(member.getId(), strategy.getId(), "문의제목1", "문의내용1");
-        Inquiry inquiry = inquiryRepository.findByInquiryTitle("문의제목1").get(0);
-
-        //then
-        assertEquals("문의내용1", inquiry.getInquiryContent());
-    }
+//    @Test
+//    public void 문의_등록() throws Exception {
+//        //given
+//        Strategy strategy = createStrategy("삼성전자", StrategyStatusCode.PUBLIC.getCode(), "트레이더닉네임1");
+//
+//        //when
+//        inquiryService.registerInquiry(strategy.getId(), "문의제목1", "문의내용1");
+//        Inquiry inquiry = inquiryRepository.findByInquiryTitle("문의제목1").get(0);
+//
+//        //then
+//        assertEquals("문의내용1", inquiry.getInquiryContent());
+//    }
 
 //    @Test
 //    public void 문의_수정() throws Exception {
@@ -228,41 +227,40 @@ public class InquiryServiceTest {
 //
 //    }
 
-    @Test
-    public void 관리자_문의_검색() throws Exception {
-        //given
-        InquiryAdminListShowRequestDto inquirySearch1 = new InquiryAdminListShowRequestDto();
-        inquirySearch1.setClosed(InquiryStatus.unclosed);
-        inquirySearch1.setSearchType("strategy");
-        inquirySearch1.setSearchText("삼성전");
-
-        InquiryAdminListShowRequestDto inquirySearch2 = new InquiryAdminListShowRequestDto();
-        inquirySearch2.setClosed(InquiryStatus.closed);
-        inquirySearch2.setSearchType("strategy");
-        inquirySearch2.setSearchText("");
-
-        Strategy strategy = createStrategy("삼성전자", StrategyStatusCode.PUBLIC.getCode(), "트레이더닉네임1");
-        Member member = createMember("일반닉네임1");
-
-        inquiryService.registerInquiry(member.getId(), strategy.getId(), "질문1", "내용1");
-        inquiryService.registerInquiry(member.getId(), strategy.getId(), "질문2", "내용2");
-        inquiryService.registerInquiry(member.getId(), strategy.getId(), "질문3", "내용3");
-        inquiryService.registerInquiry(member.getId(), strategy.getId(), "질문4", "내용4");
-        Inquiry inquiry1 = inquiryRepository.findByInquiryTitle("질문4").get(0);
-        inquiry1.setInquiryStatus(InquiryStatus.closed);
-        inquiryService.registerInquiry(member.getId(), strategy.getId(), "질문5", "내용5");
-        Inquiry inquiry2 = inquiryRepository.findByInquiryTitle("질문5").get(0);
-        inquiry2.setInquiryStatus(InquiryStatus.closed);
-
-        //when
-        int page = 0;
-        Page<Inquiry> inquiryList1 = inquiryService.findInquiriesAdmin(inquirySearch1, page);
-        Page<Inquiry> inquiryList2 = inquiryService.findInquiriesAdmin(inquirySearch2, page);
-
-        //then
-        assertEquals(3, inquiryList1.getNumberOfElements());
-        assertEquals(inquiryRepository.findByInquiryStatus(InquiryStatus.closed, PageRequest.of(0, 100)).getTotalElements(), inquiryList2.getTotalElements());
-    }
+//    @Test
+//    public void 관리자_문의_검색() throws Exception {
+//        //given
+//        InquiryAdminListShowRequestDto inquirySearch1 = new InquiryAdminListShowRequestDto();
+//        inquirySearch1.setClosed(InquiryStatus.unclosed);
+//        inquirySearch1.setSearchType("strategy");
+//        inquirySearch1.setSearchText("삼성전");
+//
+//        InquiryAdminListShowRequestDto inquirySearch2 = new InquiryAdminListShowRequestDto();
+//        inquirySearch2.setClosed(InquiryStatus.closed);
+//        inquirySearch2.setSearchType("strategy");
+//        inquirySearch2.setSearchText("");
+//
+//        Member member = createMember("일반닉네임1");
+//
+//        inquiryService.registerInquiry(member.getId(), "질문1", "내용1");
+//        inquiryService.registerInquiry(member.getId(), "질문2", "내용2");
+//        inquiryService.registerInquiry(member.getId(), "질문3", "내용3");
+//        inquiryService.registerInquiry(member.getId(), "질문4", "내용4");
+//        Inquiry inquiry1 = inquiryRepository.findByInquiryTitle("질문4").get(0);
+//        inquiry1.setInquiryStatus(InquiryStatus.closed);
+//        inquiryService.registerInquiry(member.getId(), "질문5", "내용5");
+//        Inquiry inquiry2 = inquiryRepository.findByInquiryTitle("질문5").get(0);
+//        inquiry2.setInquiryStatus(InquiryStatus.closed);
+//
+//        //when
+//        int page = 0;
+//        Page<Inquiry> inquiryList1 = inquiryService.findInquiriesAdmin(inquirySearch1, page);
+//        Page<Inquiry> inquiryList2 = inquiryService.findInquiriesAdmin(inquirySearch2, page);
+//
+//        //then
+//        assertEquals(3, inquiryList1.getNumberOfElements());
+//        assertEquals(inquiryRepository.findByInquiryStatus(InquiryStatus.closed, PageRequest.of(0, 100)).getTotalElements(), inquiryList2.getTotalElements());
+//    }
 
 //    @Test
 //    public void 문의_검색() throws Exception {

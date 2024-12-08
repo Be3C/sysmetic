@@ -6,6 +6,7 @@ import com.be3c.sysmetic.domain.member.entity.Notice;
 import com.be3c.sysmetic.domain.member.message.NoticeFailMessage;
 import com.be3c.sysmetic.domain.member.repository.MemberRepository;
 import com.be3c.sysmetic.domain.member.repository.NoticeRepository;
+import com.be3c.sysmetic.global.util.SecurityUtils;
 import com.be3c.sysmetic.global.util.file.dto.FileReferenceType;
 import com.be3c.sysmetic.global.util.file.dto.FileRequest;
 import com.be3c.sysmetic.global.util.file.dto.FileWithInfoResponse;
@@ -28,6 +29,8 @@ import static com.be3c.sysmetic.domain.member.message.NoticeFailMessage.NOT_FOUN
 @Transactional(readOnly = true)
 public class NoticeServiceImpl implements NoticeService {
 
+    private final SecurityUtils securityUtils;
+
     private final MemberRepository memberRepository;
     private final NoticeRepository noticeRepository;
     private final FileService fileService;
@@ -35,16 +38,21 @@ public class NoticeServiceImpl implements NoticeService {
     // 등록
     @Override
     @Transactional
-    public boolean registerNotice(Long writerId, String noticeTitle, String noticeContent,
-                                  Boolean isOpen,
+    public boolean registerNotice(NoticeSaveRequestDto noticeSaveRequestDto,
                                   List<MultipartFile> fileList, List<MultipartFile> imageList) {
+
+        Long writerId = securityUtils.getUserIdInSecurityContext();
 
         Member writer = memberRepository.findById(writerId).orElseThrow(() -> new EntityNotFoundException("회원이 없습니다."));
 
         Boolean fileExists = (fileList != null);
         Boolean imageExists = (imageList != null);
 
-        Notice notice = Notice.createNotice(noticeTitle, noticeContent, writer, fileExists, imageExists, isOpen);
+        Notice notice = Notice.createNotice(
+                noticeSaveRequestDto.getNoticeTitle(),
+                noticeSaveRequestDto.getNoticeContent(),
+                writer, fileExists, imageExists,
+                noticeSaveRequestDto.getIsOpen());
 
         noticeRepository.save(notice);
 
@@ -103,25 +111,26 @@ public class NoticeServiceImpl implements NoticeService {
     // 관리자 공지사항 수정
     @Override
     @Transactional
-    public boolean modifyNotice(Long noticeId, String noticeTitle, String noticeContent, Long correctorId, Boolean isOpen,
-                                List<Long> deleteFileIdList, List<Long> deleteImageIdList,
+    public boolean modifyNotice(Long noticeId, NoticeModifyRequestDto noticeModifyRequestDto,
                                 List<MultipartFile> newFileList, List<MultipartFile> newImageList) {
+
+        Long correctorId = securityUtils.getUserIdInSecurityContext();
 
         Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException("공지사항이 없습니다."));
 
         Boolean fileExists = notice.getFileExists();
-        modifyNoticeNewDelete(FileReferenceType.NOTICE_BOARD_FILE, noticeId, newFileList, deleteFileIdList);
+        modifyNoticeNewDelete(FileReferenceType.NOTICE_BOARD_FILE, noticeId, newFileList, noticeModifyRequestDto.getDeleteFileIdList());
 
         Boolean imageExists = notice.getImageExists();
-        modifyNoticeNewDelete(FileReferenceType.NOTICE_BOARD_IMAGE, noticeId, newImageList, deleteImageIdList);
+        modifyNoticeNewDelete(FileReferenceType.NOTICE_BOARD_IMAGE, noticeId, newImageList, noticeModifyRequestDto.getDeleteImageIdList());
 
-        notice.setNoticeTitle(noticeTitle);
-        notice.setNoticeContent(noticeContent);
+        notice.setNoticeTitle(noticeModifyRequestDto.getNoticeTitle());
+        notice.setNoticeContent(noticeModifyRequestDto.getNoticeContent());
         notice.setFileExists(fileExists);
         notice.setImageExists(imageExists);
         notice.setCorrectorId(correctorId);
         notice.setCorrectDate(LocalDateTime.now());
-        notice.setIsOpen(isOpen);
+        notice.setIsOpen(noticeModifyRequestDto.getIsOpen());
 
         if(newFileList != null) {
             for (MultipartFile file : newFileList) {

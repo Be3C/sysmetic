@@ -19,7 +19,7 @@ public interface InquiryService {
     Strategy findStrategyForInquiryPage(Long strategyId);
 
     // 등록
-    boolean registerInquiry(Long memberId, Long strategyId, String inquiryTitle, String inquiryContent);
+    boolean registerInquiry(Long strategyId, String inquiryTitle, String inquiryContent);
 
     // 수정
     boolean modifyInquiry(Long inquiryId, String inquiryTitle, String inquiryContent);

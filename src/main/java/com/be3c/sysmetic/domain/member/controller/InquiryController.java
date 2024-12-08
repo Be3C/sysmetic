@@ -6,7 +6,6 @@ import com.be3c.sysmetic.domain.member.entity.InquiryStatus;
 import com.be3c.sysmetic.domain.member.service.InquiryAnswerService;
 import com.be3c.sysmetic.domain.member.service.InquiryService;
 import com.be3c.sysmetic.domain.strategy.entity.Strategy;
-import com.be3c.sysmetic.domain.strategy.exception.StrategyBadRequestException;
 import com.be3c.sysmetic.global.common.response.APIResponse;
 import com.be3c.sysmetic.global.common.response.ErrorCode;
 import com.be3c.sysmetic.global.common.response.PageResponse;
@@ -233,11 +232,8 @@ public class InquiryController implements InquiryControllerDocs {
             @PathVariable(value = "strategyId") Long strategyId,
             @RequestBody @Valid InquirySaveRequestDto inquirySaveRequestDto) {
 
-        Long userId = securityUtils.getUserIdInSecurityContext();
-
         try {
             if (inquiryService.registerInquiry(
-                    userId,
                     strategyId,
                     inquirySaveRequestDto.getInquiryTitle(),
                     inquirySaveRequestDto.getInquiryContent())) {
@@ -440,10 +436,6 @@ public class InquiryController implements InquiryControllerDocs {
         catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(APIResponse.fail(ErrorCode.BAD_REQUEST, "답변이 등록된 문의는 수정할 수 없습니다."));
-        }
-        catch (StrategyBadRequestException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(APIResponse.fail(e.getErrorCode(), e.getMessage()));
         }
     }
 
