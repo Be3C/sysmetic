@@ -204,11 +204,11 @@ public class DailyServiceImpl implements DailyService {
 
     private List<Daily> requestDtoListToEntity(Long strategyId, Long dailyId, List<DailyRequestDto> requestDtoList) {
         final Daily beforeDaily = dailyRepository.findTopByStrategyIdOrderByDateDesc(strategyId);
-        List<Daily> dailyList = new ArrayList<>();
+        List<Daily> toAddDailyList = new ArrayList<>();
 
-        // 요청 데이터가 여러 개일 경우, date 기준 최신순으로 정렬
+        // 요청 데이터가 여러 개일 경우, date 기준 오래된 순으로 정렬
         if(requestDtoList.size() > 1) {
-            requestDtoList.sort(Comparator.comparing(DailyRequestDto::getDate).reversed());
+            requestDtoList.sort(Comparator.comparing(DailyRequestDto::getDate));
         }
 
         for(DailyRequestDto requestDto : requestDtoList) {
@@ -217,26 +217,27 @@ public class DailyServiceImpl implements DailyService {
             // 일간분석 등록이면서 이미 존재하는 일자일 경우 미저장
             if(dailyId == null && existingDaily != null) continue;
 
-            if(dailyList.stream().map(daily -> daily.getDate()).toList().contains(requestDto.getDate())) {
+            // 입력한 값 중 이미 입력한 일자가 존재할 경우 미저장
+            if(toAddDailyList.stream().map(toAddDaily -> toAddDaily.getDate()).toList().contains(requestDto.getDate())) {
                 continue;
             }
 
-            if(dailyList.isEmpty()) {
+            if(toAddDailyList.isEmpty()) {
                 if(beforeDaily == null) {
                     // DB 데이터 미존재
-                    dailyList.add(dtoToEntity(dailyId, strategyId, true, requestDto, 0.0, 0.0, 0.0));
+                    toAddDailyList.add(dtoToEntity(dailyId, strategyId, true, requestDto, 0.0, 0.0, 0.0));
                 } else {
                     // DB 데이터 존재
-                    dailyList.add(dtoToEntity(dailyId, strategyId, false, requestDto, beforeDaily.getPrincipal(), beforeDaily.getCurrentBalance(), beforeDaily.getStandardAmount()));
+                    toAddDailyList.add(dtoToEntity(dailyId, strategyId, false, requestDto, beforeDaily.getPrincipal(), beforeDaily.getCurrentBalance(), beforeDaily.getStandardAmount()));
                 }
             } else {
                 // 요청 데이터가 여러 개일 경우, 이전 요청 데이터
-                Daily beforeRequestDaily = dailyList.get(dailyList.size()-1);
-                dailyList.add(dtoToEntity(dailyId, strategyId, false, requestDto, beforeRequestDaily.getPrincipal(), beforeRequestDaily.getCurrentBalance(), beforeRequestDaily.getStandardAmount()));
+                Daily beforeRequestDaily = toAddDailyList.get(toAddDailyList.size()-1);
+                toAddDailyList.add(dtoToEntity(dailyId, strategyId, false, requestDto, beforeRequestDaily.getPrincipal(), beforeRequestDaily.getCurrentBalance(), beforeRequestDaily.getStandardAmount()));
             }
         }
 
-        return dailyList;
+        return toAddDailyList;
     }
 
     // 현재 로그인한 유저와 전략 업로드한 유저가 일치하는지 검증
