@@ -77,6 +77,7 @@ public class RedisConfig {
         RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration();
         redisStandaloneConfiguration.setHostName(host);
         redisStandaloneConfiguration.setPort(port);
+        redisStandaloneConfiguration.setPassword("12345");
         // setDatabase : 데이터베이스 번호 지정
         redisStandaloneConfiguration.setDatabase(index);
         return new LettuceConnectionFactory(redisStandaloneConfiguration);
