@@ -170,33 +170,22 @@ public interface DailyRepository extends JpaRepository<Daily, Long> {
 
     // 일간분석데이터 최대연속이익일수 조회
     @Query(value = """
-        WITH profit_groups AS (
+        SELECT MAX(streak) AS max_consecutive_days
+        FROM (
             SELECT 
                 d.date,
-                d.profit_loss_amount,
-                CASE 
-                    WHEN d.profit_loss_amount > 0 THEN 1
-                    ELSE 0
-                END AS is_profit, -- 현재 손익 상태
-                CASE 
-                    WHEN LAG(d.profit_loss_amount) OVER (PARTITION BY d.strategy_id ORDER BY d.date ASC) >= 0 THEN 1
-                    ELSE 0
-                END AS prev_is_profit -- 이전 일의 손익 상태
+                d.strategy_id,
+                CASE
+                    WHEN d.profit_loss_amount > 0 THEN @profit_streak := @profit_streak + 1
+                    ELSE @profit_streak := 0
+                END AS streak
             FROM daily d
+            CROSS JOIN (SELECT @profit_streak := 0) init 
             WHERE d.strategy_id = :strategyId
-        ),
-        grouped AS (
-            SELECT 
-                *,
-                SUM(CASE WHEN is_profit != prev_is_profit THEN 1 ELSE 0 END) -- 상태 변경시 새로운 그룹
-                OVER (PARTITION BY strategy_id ORDER BY date ASC) AS group_id
-            FROM profit_groups
-        )
-        SELECT MAX(COUNT(*)) AS consecutive_days
-        FROM grouped
-        WHERE is_profit = 1 -- 연속 이익
-        GROUP BY group_id;
-    """, nativeQuery = true)
+            ORDER BY d.date
+        ) AS streaks;
+    """, nativeQuery = true
+    )
     Long findMaxConsecutiveProfitDays(@Param("strategyId") Long strategyId);
 
     // 일간분석데이터 총손실일수 조회 - 손익금이 음수인 데이터 카운트
@@ -209,33 +198,22 @@ public interface DailyRepository extends JpaRepository<Daily, Long> {
 
     // 일간분석데이터 최대연속손실일수 조회
     @Query(value = """
-        WITH loss_groups AS (
+        SELECT MAX(streak) AS max_consecutive_loss_days
+        FROM (
             SELECT 
                 d.date,
-                d.profit_loss_amount,
-                CASE 
-                    WHEN d.profit_loss_amount < 0 THEN 1
-                    ELSE 0
-                END AS is_loss, -- 현재 손익 상태
-                CASE 
-                    WHEN LAG(d.profit_loss_amount) OVER (PARTITION BY d.strategy_id ORDER BY d.date ASC) < 0 THEN 1
-                    ELSE 0
-                END AS prev_is_profit -- 이전 일의 손익 상태
+                d.strategy_id,
+                CASE
+                    WHEN d.profit_loss_amount < 0 THEN @loss_streak := @loss_streak + 1
+                    ELSE @loss_streak := 0
+                END AS streak
             FROM daily d
+            CROSS JOIN (SELECT @loss_streak := 0) init 
             WHERE d.strategy_id = :strategyId
-        ),
-        grouped AS (
-            SELECT 
-                *,
-                SUM(CASE WHEN is_loss != prev_is_loss THEN 1 ELSE 0 END) -- 상태 변경시 새로운 그룹
-                OVER (PARTITION BY strategy_id ORDER BY date ASC) AS group_id
-            FROM loss_groups
-        )
-        SELECT MAX(COUNT(*)) AS consecutive_days
-        FROM grouped
-        WHERE is_loss = 1 -- 연속 이익
-        GROUP BY group_id;
-    """, nativeQuery = true)
+            ORDER BY d.date
+        ) AS streaks;
+    """, nativeQuery = true
+    )
     Long findMaxConsecutiveLossDays(@Param("strategyId") Long strategyId);
 
     @Query(value = """
@@ -280,9 +258,14 @@ public interface DailyRepository extends JpaRepository<Daily, Long> {
     Object[] findMaxAndMinProfitLossAmount(@Param("strategyId") Long strategyId);
 
     // 누적손익률 조회
-    @Query("SELECT d.accumulatedProfitLossRate FROM Daily d WHERE d.strategy.id = :strategyId ORDER BY d.date DESC")
-    Double findLatestAccumulatedProfitLossRate(@Param("strategyId") Long strategyId);
-
+    @Query(value = """
+        SELECT accumulated_profit_loss_rate
+        FROM daily
+        WHERE strategy_id = :strategyId
+        ORDER BY date DESC
+        LIMIT 1;
+    """, nativeQuery = true)
+    Double findRecentAccumulatedProfitLossRate(@Param("strategyId") Long strategyId);
 
     // KP Ratio 계산에서 사용
     @Query("SELECT new com.be3c.sysmetic.domain.strategy.dto.KpRatioParametersDto(d.date, d.profitLossRate, d.accumulatedProfitLossRate) "

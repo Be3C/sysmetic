@@ -23,16 +23,20 @@ public class SchedulerConfiguration {
     private final StrategyIndicatorsCalculator strategyIndicatorsCalculator;
 
     // 매일 자정에 계산 - cron 초, 분, 시
-    @Scheduled(cron = "0 0 0 * * ?")
+    @Scheduled(cron = "0 * * * * ?")
     public void run() {
         // 미사용 상태가 아닌 전략 조회
         List<Strategy> strategies = strategyRepository.findAllUsingState();
+        log.info("strategy count: {}", strategies.size());
+
         for (Strategy strategy : strategies) {
             try {
                 strategyStatisticsService.runStrategyStatistics(strategy.getId());
 
                 // 전략에 있는 지표 업데이트
                 strategyIndicatorsCalculator.updateIndicators(strategy.getId());
+
+                log.info("strategy id: {}", strategy.getId());
             } catch (Exception e) {
                 log.error("Error processing strategy ID: " + strategy.getId(), e);
             }
