@@ -3,16 +3,10 @@ package com.be3c.sysmetic.domain.member.controller;
 import com.be3c.sysmetic.domain.member.dto.*;
 import com.be3c.sysmetic.domain.member.entity.Notice;
 import com.be3c.sysmetic.domain.member.service.NoticeService;
-import com.be3c.sysmetic.domain.strategy.exception.StrategyBadRequestException;
 import com.be3c.sysmetic.global.common.response.APIResponse;
 import com.be3c.sysmetic.global.common.response.ErrorCode;
 import com.be3c.sysmetic.global.common.response.PageResponse;
 import com.be3c.sysmetic.global.common.response.SuccessCode;
-import com.be3c.sysmetic.global.util.SecurityUtils;
-import com.be3c.sysmetic.global.util.file.dto.FileReferenceType;
-import com.be3c.sysmetic.global.util.file.dto.FileRequest;
-import com.be3c.sysmetic.global.util.file.dto.FileWithInfoResponse;
-import com.be3c.sysmetic.global.util.file.service.FileService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -33,8 +25,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/v1")
 public class NoticeContoller implements NoticeControllerDocs {
-
-    private final SecurityUtils securityUtils;
 
     private final NoticeService noticeService;
 
@@ -67,13 +57,9 @@ public class NoticeContoller implements NoticeControllerDocs {
         }
 
         try {
-            Long userId = securityUtils.getUserIdInSecurityContext();
 
             if (noticeService.registerNotice(
-                    userId,
-                    noticeSaveRequestDto.getNoticeTitle(),
-                    noticeSaveRequestDto.getNoticeContent(),
-                    noticeSaveRequestDto.getIsOpen(),
+                    noticeSaveRequestDto,
                     fileList,
                     imageList)) {
 
@@ -242,16 +228,10 @@ public class NoticeContoller implements NoticeControllerDocs {
 //        }
 
         try {
-            Long userId = securityUtils.getUserIdInSecurityContext();
 
             if (noticeService.modifyNotice(
                     noticeId,
-                    noticeModifyRequestDto.getNoticeTitle(),
-                    noticeModifyRequestDto.getNoticeContent(),
-                    userId,
-                    noticeModifyRequestDto.getIsOpen(),
-                    noticeModifyRequestDto.getDeleteFileIdList(),
-                    noticeModifyRequestDto.getDeleteImageIdList(),
+                    noticeModifyRequestDto,
                     newFileList,
                     newImageList)) {
                 return ResponseEntity.status(HttpStatus.OK)
@@ -318,10 +298,8 @@ public class NoticeContoller implements NoticeControllerDocs {
     public ResponseEntity<APIResponse<Map<Long, String>>> deleteAdminNoticeList(
             @RequestBody @Valid NoticeListDeleteRequestDto noticeListDeleteRequestDto) {
 
-        List<Long> noticeIdList = noticeListDeleteRequestDto.getNoticeIds();
-
         try {
-            Map<Long, String> deleteResult = noticeService.deleteAdminNoticeList(noticeIdList);
+            Map<Long, String> deleteResult = noticeService.deleteAdminNoticeList(noticeListDeleteRequestDto.getNoticeIds());
 
             if (deleteResult.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.OK)

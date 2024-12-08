@@ -20,7 +20,7 @@ public interface InquiryAnswerRepository extends JpaRepository<InquiryAnswer, Lo
     void deleteByinquiryId(@Param("inquiryId") Long inquiryId);
 
     @Modifying
-    @Query("DELETE FROM InquiryAnswer ia WHERE ia.inquiry.traderId  = :MemberId")
+    @Query("DELETE FROM InquiryAnswer ia WHERE ia.inquiry.trader.id = :MemberId")
     void deleteByMemberId(@Param("MemberId") Long MemberId);
 
     @Modifying
