@@ -40,10 +40,8 @@ public class StrategyStatisticsServiceImpl implements StrategyStatisticsService 
         final Daily recentDaily = dailyRepository.findTopByStrategyIdOrderByDateDesc(strategyId);
 
         // 최근 통계 조회
-        // 2. 전략 등록 시 StrategyStatistics 테이블에서 strategyId로 찾기를 시도했을 때, 당연히 존재하지 않음 ( 전략 등록 후 첫 날의 경우 )
-        // 3. 이 부분에서 Exception이 발생할 가능성이 존재함.
-        final StrategyStatistics savedStatistics = strategyStatisticsRepository.findByStrategyId(strategyId).orElseThrow(() ->
-                new StrategyBadRequestException(StrategyExceptionMessage.DATA_NOT_FOUND.getMessage(), ErrorCode.NOT_FOUND));
+        final Strategy existingStrategy = strategyRepository.findById(strategyId).orElseThrow(() -> new StrategyBadRequestException(StrategyExceptionMessage.DATA_NOT_FOUND.getMessage(), ErrorCode.NOT_FOUND));
+        final StrategyStatistics savedStatistics = getOrCreateStatistics(existingStrategy);
 
         if(recentDaily == null) {
             return;
@@ -65,7 +63,7 @@ public class StrategyStatisticsServiceImpl implements StrategyStatisticsService 
         final Long totalProfitDays = getTotalProfitDays(strategyId, recentDaily);
 
         final StrategyStatistics saveStatistics = StrategyStatistics.builder()
-                .id(savedStatistics != null ? savedStatistics.getId() : null)
+                .id(savedStatistics.getId())
                 .strategy(findStrategyById(strategyId))
                 .currentBalance(getBalance(recentDaily))
                 .principal(getPrincipal(recentDaily))
@@ -98,9 +96,17 @@ public class StrategyStatisticsServiceImpl implements StrategyStatisticsService 
                 .lastRegistrationDate(lastDaily.getDate())
                 .build();
 
-        // DB 저장
+        // 계산 후 DB 저장
         strategyStatisticsRepository.save(saveStatistics);
+    }
 
+    public StrategyStatistics getOrCreateStatistics(Strategy strategy) {
+        // 존재하면 반환, 존재하지 않으면 생성
+        return strategyStatisticsRepository.findByStrategyId(strategy.getId())
+                .orElseGet(() -> {
+                    StrategyStatistics newStatistics = new StrategyStatistics(strategy);
+                    return strategyStatisticsRepository.save(newStatistics);
+                });
     }
 
     // 전략통계 조회
