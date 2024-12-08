@@ -5,6 +5,7 @@ import com.be3c.sysmetic.domain.member.entity.Inquiry;
 import com.be3c.sysmetic.domain.member.entity.InquiryAnswer;
 import com.be3c.sysmetic.domain.member.entity.InquiryStatus;
 import com.be3c.sysmetic.domain.member.entity.Member;
+import com.be3c.sysmetic.domain.member.message.InquiryFailMessage;
 import com.be3c.sysmetic.domain.member.repository.InquiryAnswerRepository;
 import com.be3c.sysmetic.domain.member.repository.InquiryRepository;
 import com.be3c.sysmetic.domain.member.repository.MemberRepository;
@@ -18,10 +19,8 @@ import com.be3c.sysmetic.global.util.SecurityUtils;
 import com.be3c.sysmetic.global.util.file.dto.FileReferenceType;
 import com.be3c.sysmetic.global.util.file.dto.FileRequest;
 import com.be3c.sysmetic.global.util.file.service.FileService;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.apache.poi.sl.draw.geom.GuideIf;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -30,8 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static com.be3c.sysmetic.domain.member.message.NoticeDeleteFailMessage.NOT_FOUND_INQUIRY;
 
 @Service
 @Transactional(readOnly = true)
@@ -145,7 +142,7 @@ public class InquiryServiceImpl implements InquiryService {
                 inquiryAnswerRepository.deleteByinquiryId(inquiryId);
             }
             catch (EntityNotFoundException e) {
-                failDelete.put(inquiryId, NOT_FOUND_INQUIRY.getMessage());
+                failDelete.put(inquiryId, InquiryFailMessage.NOT_FOUND_INQUIRY.getMessage());
             }
         }
 
@@ -193,7 +190,7 @@ public class InquiryServiceImpl implements InquiryService {
             statusCode = null;
         }
 
-        Member trader = memberRepository.findById(inquiry.getTraderId()).orElse(null);
+        Member trader = memberRepository.findById(inquiry.getTrader().getId()).orElse(null);
         String traderNickname;
         if (trader == null) {
             traderNickname = null;
@@ -203,7 +200,7 @@ public class InquiryServiceImpl implements InquiryService {
 
         return InquiryAdminListOneShowResponseDto.builder()
                 .inquiryId(inquiry.getId())
-                .traderId(inquiry.getTraderId())
+                .traderId(inquiry.getTrader().getId())
                 .traderNickname(traderNickname)
                 .methodId(methodId)
                 .methodIconPath(methodIconPath)
@@ -299,14 +296,14 @@ public class InquiryServiceImpl implements InquiryService {
             statusCode = null;
         }
 
-        Member trader = memberRepository.findById(inquiry.getTraderId()).orElse(null);
+        Member trader = memberRepository.findById(inquiry.getTrader().getId()).orElse(null);
         String traderNickname;
         if (trader == null) {
             traderNickname = null;
         } else {
             traderNickname = trader.getNickname();
         }
-        String traderProfileImagePath = fileService.getFilePath(new FileRequest(FileReferenceType.MEMBER, inquiry.getTraderId()));
+        String traderProfileImagePath = fileService.getFilePath(new FileRequest(FileReferenceType.MEMBER, inquiry.getTrader().getId()));
 
         return InquiryAnswerAdminShowResponseDto.builder()
                 .closed(String.valueOf(closed))
@@ -331,7 +328,7 @@ public class InquiryServiceImpl implements InquiryService {
 
                 .inquiryContent(inquiry.getInquiryContent())
 
-                .traderId(inquiry.getTraderId())
+                .traderId(inquiry.getTrader().getId())
                 .traderNickname(traderNickname)
                 .traderProfileImagePath(traderProfileImagePath)
 
@@ -572,14 +569,14 @@ public class InquiryServiceImpl implements InquiryService {
             statusCode = null;
         }
 
-        Member trader = memberRepository.findById(inquiry.getTraderId()).orElse(null);
+        Member trader = memberRepository.findById(inquiry.getTrader().getId()).orElse(null);
         String traderNickname;
         if (trader == null) {
             traderNickname = null;
         } else {
             traderNickname = trader.getNickname();
         }
-        String traderProfileImagePath = fileService.getFilePath(new FileRequest(FileReferenceType.MEMBER, inquiry.getTraderId()));
+        String traderProfileImagePath = fileService.getFilePath(new FileRequest(FileReferenceType.MEMBER, inquiry.getTrader().getId()));
 
         return InquiryAnswerInquirerShowResponseDto.builder()
                 .closed(closed)
@@ -600,7 +597,7 @@ public class InquiryServiceImpl implements InquiryService {
                 .strategyName(strategyName)
                 .statusCode(statusCode)
 
-                .traderId(inquiry.getTraderId())
+                .traderId(inquiry.getTrader().getId())
                 .traderNickname(traderNickname)
                 .traderProfileImagePath(traderProfileImagePath)
 
@@ -730,14 +727,14 @@ public class InquiryServiceImpl implements InquiryService {
             statusCode = null;
         }
 
-        Member trader = memberRepository.findById(inquiry.getTraderId()).orElse(null);
+        Member trader = memberRepository.findById(inquiry.getTrader().getId()).orElse(null);
         String traderNickname;
         if (trader == null) {
             traderNickname = null;
         } else {
             traderNickname = trader.getNickname();
         }
-        String traderProfileImagePath = fileService.getFilePath(new FileRequest(FileReferenceType.MEMBER, inquiry.getTraderId()));
+        String traderProfileImagePath = fileService.getFilePath(new FileRequest(FileReferenceType.MEMBER, inquiry.getTrader().getId()));
 
         return InquiryAnswerTraderShowResponseDto.builder()
                 .closed(closed)
@@ -759,7 +756,7 @@ public class InquiryServiceImpl implements InquiryService {
                 .strategyName(strategyName)
                 .statusCode(statusCode)
 
-                .traderId(inquiry.getTraderId())
+                .traderId(inquiry.getTrader().getId())
                 .traderNickname(traderNickname)
                 .traderProfileImagePath(traderProfileImagePath)
 

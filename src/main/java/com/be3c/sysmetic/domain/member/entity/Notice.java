@@ -27,7 +27,7 @@ public class Notice extends BaseEntity {
     private String noticeContent;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
+    @JoinColumn(name = "writer_id", nullable = false)
     private Member writer;
 
     @Column(name = "writer_nickname", nullable = false)
@@ -37,8 +37,9 @@ public class Notice extends BaseEntity {
     private LocalDateTime writeDate;
 
     // 화면엔 안 보임
-    @Column(name = "corrector_id", nullable = false)
-    private Long correctorId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "corrector_id", nullable = false)
+    private Member corrector;
 
     @Column(name = "correct_date", nullable = false)
     private LocalDateTime correctDate;
@@ -68,7 +69,7 @@ public class Notice extends BaseEntity {
                 .writer(writer)
                 .writerNickname(writer.getNickname())
                 .writeDate(LocalDateTime.now())
-                .correctorId(writer.getId())
+                .corrector(writer)
                 .correctDate(LocalDateTime.now())
                 .hits(0L)
                 .fileExists(fileExists)

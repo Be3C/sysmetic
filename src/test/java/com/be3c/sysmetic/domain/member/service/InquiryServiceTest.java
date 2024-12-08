@@ -232,12 +232,12 @@ public class InquiryServiceTest {
     public void 관리자_문의_검색() throws Exception {
         //given
         InquiryAdminListShowRequestDto inquirySearch1 = new InquiryAdminListShowRequestDto();
-        inquirySearch1.setTab(InquiryStatus.unclosed);
+        inquirySearch1.setClosed(InquiryStatus.unclosed);
         inquirySearch1.setSearchType("strategy");
         inquirySearch1.setSearchText("삼성전");
 
         InquiryAdminListShowRequestDto inquirySearch2 = new InquiryAdminListShowRequestDto();
-        inquirySearch2.setTab(InquiryStatus.closed);
+        inquirySearch2.setClosed(InquiryStatus.closed);
         inquirySearch2.setSearchType("strategy");
         inquirySearch2.setSearchText("");
 

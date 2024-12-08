@@ -20,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static com.be3c.sysmetic.domain.member.message.NoticeDeleteFailMessage.NOT_FOUND_NOTICE;
+import static com.be3c.sysmetic.domain.member.message.NoticeFailMessage.NOT_FOUND_NOTICE;
 
 @Service
 @RequiredArgsConstructor
@@ -238,11 +238,13 @@ public class NoticeServiceImpl implements NoticeService {
             }
         }
 
+        Member corrector = memberRepository.findById(correctorId).orElseThrow(() -> new EntityNotFoundException("회원이 없습니다."));
+
         notice.setNoticeTitle(noticeTitle);
         notice.setNoticeContent(noticeContent);
         notice.setFileExists(fileExists);
         notice.setImageExists(imageExists);
-        notice.setCorrectorId(correctorId);
+        notice.setCorrector(corrector);
         notice.setCorrectDate(LocalDateTime.now());
         notice.setIsOpen(isOpen);
 

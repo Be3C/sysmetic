@@ -46,8 +46,9 @@ public class Inquiry extends BaseEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member inquirer;
 
-    @Column(name = "trader_id", nullable = false)
-    private Long traderId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "trader_id", nullable = false)
+    private Member trader;
 
     // enum (all, unclosed, closed)
     @Enumerated(EnumType.STRING)
@@ -68,7 +69,7 @@ public class Inquiry extends BaseEntity {
         Inquiry inquiry = new Inquiry();
         inquiry.setStrategy(strategy);
         inquiry.setInquirer(member);
-        inquiry.setTraderId(strategy.getTrader().getId());
+        inquiry.setTrader(strategy.getTrader());
 
         inquiry.setInquiryStatus(InquiryStatus.unclosed);
         inquiry.setInquiryTitle(inquiryTitle);

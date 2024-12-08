@@ -466,7 +466,7 @@ public class InquiryController implements InquiryControllerDocs {
         try {
             Inquiry inquiry = inquiryService.findOneInquiry(inquiryId);
 
-            if(!Objects.equals(securityUtils.getUserIdInSecurityContext(), inquiry.getTraderId())) {
+            if(!Objects.equals(securityUtils.getUserIdInSecurityContext(), inquiry.getTrader().getId())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(APIResponse.fail(ErrorCode.FORBIDDEN, "유효하지 않은 회원입니다."));
             }
