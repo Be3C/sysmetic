@@ -117,7 +117,7 @@ public class RegisterServiceImpl implements RegisterService {
         }
 
         // 인증코드 일치한 경우, 인증 내역 저장 (1시간 동안 유효)
-        redisUtils.saveEmailVerifyLogExpireTime("Verify : " + email, inputEmailCode, TimeUnit.HOURS.toMillis(1));
+        redisUtils.saveEmailVerifyLogExpireTime("Verify " + email, inputEmailCode, TimeUnit.HOURS.toMillis(1));
 
         return true;
     }
@@ -174,7 +174,7 @@ public class RegisterServiceImpl implements RegisterService {
         String savedAuthCode;
 
         try {
-            inputAuthCode = redisUtils.getEmailAuthCode("Verify : " + email);
+            inputAuthCode = redisUtils.getEmailAuthCode("Verify " + email);
             savedAuthCode = redisUtils.getEmailAuthCode(email);
 
         // 저장된 인증번호를 찾을 수 없는 경우 예외 발생
@@ -188,7 +188,7 @@ public class RegisterServiceImpl implements RegisterService {
         }
         // 인증된 이메일인 경우, 이메일 관련 인증내역 삭제
         redisUtils.deleteEmailAuthCode(email);
-        redisUtils.deleteEmailAuthCode("Verify : " + email);
+        redisUtils.deleteEmailAuthCode("Verify " + email);
     }
 
     // 5. 회원가입
