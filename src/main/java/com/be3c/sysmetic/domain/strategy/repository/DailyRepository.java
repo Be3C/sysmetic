@@ -265,7 +265,7 @@ public interface DailyRepository extends JpaRepository<Daily, Long> {
         ORDER BY date DESC
         LIMIT 1;
     """, nativeQuery = true)
-    Double findRecentAccumulatedProfitLossRate(@Param("strategyId") Long strategyId);
+    Optional<Double> findRecentAccumulatedProfitLossRate(@Param("strategyId") Long strategyId);
 
     // KP Ratio 계산에서 사용
     @Query("SELECT new com.be3c.sysmetic.domain.strategy.dto.KpRatioParametersDto(d.date, d.profitLossRate, d.accumulatedProfitLossRate) "

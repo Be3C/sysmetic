@@ -39,7 +39,7 @@ public class StrategyIndicatorsCalculator {
         Double smScore = calculateSmScore(strategyId);
         strategyRepository.updateSmScore(strategyId, smScore);
 
-        Double accumulatedProfitLossRate = doubleHandler.cutDouble(dailyRepository.findRecentAccumulatedProfitLossRate(strategyId));
+        Double accumulatedProfitLossRate = doubleHandler.cutDouble(dailyRepository.findRecentAccumulatedProfitLossRate(strategyId).orElse(0.0));
         strategyRepository.updateAccumulatedLProfitLossRate(strategyId, accumulatedProfitLossRate);
     }
 
