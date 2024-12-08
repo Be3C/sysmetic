@@ -23,7 +23,7 @@ public class SchedulerConfiguration {
     private final StrategyIndicatorsCalculator strategyIndicatorsCalculator;
 
     // 매일 자정에 계산 - cron 초, 분, 시
-    @Scheduled(cron = "0 * * * * ?")
+    @Scheduled(cron = "0 0 0 * * ?")
     public void run() {
         // 미사용 상태가 아닌 전략 조회
         List<Strategy> strategies = strategyRepository.findAllUsingState();
