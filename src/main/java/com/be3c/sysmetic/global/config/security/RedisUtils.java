@@ -12,7 +12,6 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class RedisUtils {
     /*
         [토큰]
@@ -25,9 +24,7 @@ public class RedisUtils {
         2. 인증코드 조회 메서드
         3. 인증코드 삭제 메서드 (인증 완료 시)
      */
-    @Qualifier("redisTemplate0")
     private RedisTemplate<String, String> redisTemplate0; // 토큰
-    @Qualifier("redisTemplate1")
     private RedisTemplate<String, String> redisTemplate1; // 이메일
 
     public RedisUtils(@Qualifier("redisTemplate0")RedisTemplate<String, String> redisTemplate0, @Qualifier("redisTemplate1")RedisTemplate<String, String> redisTemplate1) {
