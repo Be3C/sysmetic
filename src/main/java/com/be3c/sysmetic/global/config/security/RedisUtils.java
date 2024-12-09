@@ -26,25 +26,30 @@ public class RedisUtils {
         3. 인증코드 삭제 메서드 (인증 완료 시)
      */
     @Qualifier("redisTemplate0")
-    private final RedisTemplate<String, String> redisTemplate0; // 토큰
+    private RedisTemplate<String, String> redisTemplate0; // 토큰
     @Qualifier("redisTemplate1")
-    private final RedisTemplate<String, String> redisTemplate1; // 이메일
+    private RedisTemplate<String, String> redisTemplate1; // 이메일
+
+    public RedisUtils(@Qualifier("redisTemplate0")RedisTemplate<String, String> redisTemplate0, @Qualifier("redisTemplate1")RedisTemplate<String, String> redisTemplate1) {
+        this.redisTemplate0 = redisTemplate0;
+        this.redisTemplate1 = redisTemplate1;
+    }
 
     // [토큰]
 
     // 1. Redis에 토큰 저장 메서드
     public void saveToken(String accessToken, String refreshToken) {
-        redisTemplate0.opsForValue().set("refreshToken:" + accessToken, refreshToken);
+        redisTemplate0.opsForValue().set("accessToken:" + accessToken, refreshToken);
     }
 
     // 2. Redis에서 토큰 조회 메서드
     public String getRefreshToken(String accessToken) {
-        return redisTemplate0.opsForValue().get("refreshToken:" + accessToken);
+        return redisTemplate0.opsForValue().get("accessToken:" + accessToken);
     }
 
     // 3. Redis에 저장된 토큰 삭제 메서드
     public void deleteToken(String accessToken) {
-        redisTemplate0.delete("refreshToken:" + accessToken);
+        redisTemplate0.delete("accessToken:" + accessToken);
     }
 
 

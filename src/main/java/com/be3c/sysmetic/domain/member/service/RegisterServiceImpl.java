@@ -179,16 +179,13 @@ public class RegisterServiceImpl implements RegisterService {
 
         // 저장된 인증번호를 찾을 수 없는 경우 예외 발생
         } catch (MemberBadRequestException e) {
-            throw new MemberBadRequestException(MemberExceptionMessage.UNVERIFIED_EMAIL_ERROR.getMessage());
+            throw new MemberBadRequestException(MemberExceptionMessage.NOT_FOUND_EMAIL_CODE.getMessage());
         }
 
         // 인증번호가 불일치하는 경우 예외 발생
         if(!savedAuthCode.equals(inputAuthCode)) {
-            throw new MemberBadRequestException(MemberExceptionMessage.UNVERIFIED_EMAIL_ERROR.getMessage());
+            throw new MemberBadRequestException(MemberExceptionMessage.NOT_MATCH_EMAIL_CODE.getMessage());
         }
-        // 인증된 이메일인 경우, 이메일 관련 인증내역 삭제
-        redisUtils.deleteEmailAuthCode(email);
-        redisUtils.deleteEmailAuthCode("Verify " + email);
     }
 
     // 5. 회원가입
