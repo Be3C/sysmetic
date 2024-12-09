@@ -15,7 +15,7 @@ import java.util.List;
 
 @OpenAPIDefinition(
         servers = {
-                @Server(url = "https://3.39.211.122.nip.io", description = "개발 서버"),
+                @Server(url = "https://sysmetic.kr", description = "개발 서버"),
                 @Server(url = "http://localhost:8080", description = "로컬 서버")
         })
 @Configuration
