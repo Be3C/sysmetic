@@ -4,7 +4,8 @@ public enum MemberExceptionMessage {
     // 회원가입 관련
     ALREADY_USE_EMAIL("이미 사용 중인 이메일입니다. 다른 이메일을 입력해 주세요."),
     INVALID_EMAIL_CODE("인증코드가 일치하지 않습니다. 올바른 인증코드로 입력해 주세요."),
-    UNVERIFIED_EMAIL_ERROR("이메일 인증이 완료되지 않았습니다. 인증 후 다시 시도해 주세요."),
+    NOT_FOUND_EMAIL_CODE("이메일 인증코드를 찾을 수 없습니다."),
+    NOT_MATCH_EMAIL_CODE("인증코드가 일치하지 않습니다."),
     REGISTRATION_FAILED("회원가입에 실패했습니다. 관리자에게 문의해 주세요."),
     NICKNAME_ALREADY_IN_USE("이미 사용 중인 닉네임입니다. 다른 닉네임을 입력해 주세요."),
 
