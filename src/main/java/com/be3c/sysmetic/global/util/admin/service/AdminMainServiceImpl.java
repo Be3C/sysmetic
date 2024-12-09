@@ -86,14 +86,11 @@ public class AdminMainServiceImpl implements AdminMainService {
         String activeUsersRaw = row.getMetricValues(0).getValue(); // 활성 사용자 수
         String avgSessionDurationRaw = row.getMetricValues(1).getValue(); // 초 단위
 
-        double activeUsers = Double.parseDouble(activeUsersRaw);
         double avgSessionDuration = Double.parseDouble(avgSessionDurationRaw);
 
-        double avgParticipationTimePerUserInSeconds = avgSessionDuration / activeUsers;
-
         // 초 단위를 분과 초로 변환
-        int minutes = (int) avgParticipationTimePerUserInSeconds / 60;
-        int seconds = (int) avgParticipationTimePerUserInSeconds % 60;
+        int minutes = (int) avgSessionDuration / 60;
+        int seconds = (int) avgSessionDuration % 60;
 
         // 포맷된 값 생성 (예: "2분 30초")
         String formattedAvgParticipationTime = String.format("%d분 %d초", minutes, seconds);
