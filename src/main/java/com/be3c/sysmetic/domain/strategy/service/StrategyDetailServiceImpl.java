@@ -153,7 +153,9 @@ public class StrategyDetailServiceImpl implements StrategyDetailService {
                 .maximumCapitalReductionAmount(maximumCapitalReductionAmount)
                 .build();
 
-        strategyGraphAnalysisRepository.save(data);
+        log.info("winningRate = {} ", data.getWinningRate());
+
+        strategyGraphAnalysisRepository.saveAndFlush(data);
         strategyStatisticsRepository.updateIndicators(
                 data.getStrategy().getId(),
                 data.getCurrentCapitalReductionAmount(),
