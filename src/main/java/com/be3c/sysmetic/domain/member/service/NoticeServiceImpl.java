@@ -1,6 +1,5 @@
 package com.be3c.sysmetic.domain.member.service;
 
-import com.be3c.sysmetic.domain.member.controller.NoticeContoller;
 import com.be3c.sysmetic.domain.member.dto.*;
 import com.be3c.sysmetic.domain.member.entity.Member;
 import com.be3c.sysmetic.domain.member.entity.Notice;
@@ -231,32 +230,24 @@ public class NoticeServiceImpl implements NoticeService {
         } else {
             fileExists = false;
 
+            if (!(deleteFileIdList == null || deleteFileIdList.isEmpty())) {
+                if (fileReferenceType == FileReferenceType.NOTICE_BOARD_FILE) {
+                    throw new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_FILE.getMessage());
+                } else if (fileReferenceType == FileReferenceType.NOTICE_BOARD_IMAGE) {
+                    throw new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_IMAGE.getMessage());
+                }
+            }
+
             if (newFileList != null) {
-                if (!(deleteFileIdList == null || deleteFileIdList.isEmpty())) {
+                int newFileListSize = newFileList.size();
+                if (newFileListSize > 3) {
                     if (fileReferenceType == FileReferenceType.NOTICE_BOARD_FILE) {
-                        throw new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_FILE.getMessage());
+                        throw new EntityNotFoundException(NoticeFailMessage.FILE_NUMBER_EXCEEDED.getMessage());
                     } else if (fileReferenceType == FileReferenceType.NOTICE_BOARD_IMAGE) {
-                        throw new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_IMAGE.getMessage());
-                    }
-                } else {
-                    int newFileListSize = newFileList.size();
-                    if (newFileListSize > 3) {
-                        if (fileReferenceType == FileReferenceType.NOTICE_BOARD_FILE) {
-                            throw new EntityNotFoundException(NoticeFailMessage.FILE_NUMBER_EXCEEDED.getMessage());
-                        } else if (fileReferenceType == FileReferenceType.NOTICE_BOARD_IMAGE) {
-                            throw new EntityNotFoundException(NoticeFailMessage.IMAGE_NUMBER_EXCEEDED.getMessage());
-                        }
-                    }
-                    fileExists = true;
-                }
-            } else {
-                if (!(deleteFileIdList == null || deleteFileIdList.isEmpty())) {
-                    if (fileReferenceType == FileReferenceType.NOTICE_BOARD_FILE) {
-                        throw new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_FILE.getMessage());
-                    } else if (fileReferenceType == FileReferenceType.NOTICE_BOARD_IMAGE) {
-                        throw new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_IMAGE.getMessage());
+                        throw new EntityNotFoundException(NoticeFailMessage.IMAGE_NUMBER_EXCEEDED.getMessage());
                     }
                 }
+                fileExists = true;
             }
         }
 
