@@ -4,6 +4,10 @@ import com.google.analytics.data.v1beta.RunReportResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 @Getter
 @Setter
 @Builder
@@ -17,4 +21,8 @@ public class RunReportResponseDto {
 
     @Schema(description = "평균 세션 지속 시간")
     private String avgSessionDuration;
+
+    @Schema(description = "방문 url 순위")
+//    private HashMap<String, Integer> topVisitedUrls;
+    private Map<String, Integer> topVisitedUrls;
 }
