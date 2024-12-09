@@ -10,7 +10,6 @@ import com.be3c.sysmetic.global.common.response.SuccessCode;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +18,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @RestController
@@ -99,18 +97,7 @@ public class NoticeContoller implements NoticeControllerDocs {
                     .body(APIResponse.fail(ErrorCode.BAD_REQUEST, "쿼리 파라미터 searchType이 올바르지 않습니다."));
         }
 
-        Page<Notice> noticeList = noticeService.findNoticeAdmin(searchType, searchText, page);
-
-        List<NoticeAdminListOneShowResponseDto> noticeAdminDtoList = noticeList.stream()
-                .map(noticeService::noticeToNoticeAdminListOneShowResponseDto).collect(Collectors.toList());
-
-        PageResponse<NoticeAdminListOneShowResponseDto> adminNoticePage = PageResponse.<NoticeAdminListOneShowResponseDto>builder()
-                .currentPage(page)
-                .pageSize(pageSize)
-                .totalElement(noticeList.getTotalElements())
-                .totalPages(noticeList.getTotalPages())
-                .content(noticeAdminDtoList)
-                .build();
+        PageResponse<NoticeAdminListOneShowResponseDto> adminNoticePage = noticeService.findNoticeAdmin(searchType, searchText, page);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(APIResponse.success(adminNoticePage));
@@ -161,6 +148,11 @@ public class NoticeContoller implements NoticeControllerDocs {
             @RequestParam(value = "searchType", required = false, defaultValue = "title") String searchType,
             @RequestParam(value = "searchText", required = false) String searchText) {
 
+        if (!(searchType.equals("title") || searchType.equals("content") || searchType.equals("titlecontent") || searchType.equals("writer"))) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(APIResponse.fail(ErrorCode.BAD_REQUEST, "쿼리 파라미터 searchType이 올바르지 않습니다."));
+        }
+
         try {
 
             NoticeDetailAdminShowResponseDto noticeDetailAdminShowResponseDto = noticeService.noticeIdToNoticeDetailAdminShowResponseDto(noticeId, searchType, searchText);
@@ -180,7 +172,6 @@ public class NoticeContoller implements NoticeControllerDocs {
         1. 사용자 인증 정보가 없음 : FORBIDDEN
         2. 공지사항 수정 화면 조회에 성공했을 때 : OK
         3. 공지사항 수정 화면 조회에 실패했을 때 : NOT_FOUND
-        4. 파라미터 데이터의 형식이 올바르지 않음 : BAD_REQUEST
      */
     @Override
 //    @PreAuthorize("hasRole('ROLE_USER_MANAGER') or hasRole('ROLE_TRADER_MANAGER') or hasRole('ROLE_ADMIN')")
@@ -250,10 +241,6 @@ public class NoticeContoller implements NoticeControllerDocs {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(APIResponse.fail(ErrorCode.NOT_FOUND, e.getMessage()));
         }
-        catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(APIResponse.fail(ErrorCode.BAD_REQUEST, e.getMessage()));
-        }
     }
 
 
@@ -291,6 +278,7 @@ public class NoticeContoller implements NoticeControllerDocs {
         2. 공지사항 목록 삭제에 성공했을 때 : OK
         3. 해당 공지사항을 찾지 못했을 때 : NOT_FOUND
         4. 공지사항 중 삭제에 실패했을 때 : MULTI_STATUS
+        5. 데이터의 형식이 올바르지 않음 : BAD_REQUEST
      */
     @Override
 //    @PreAuthorize("hasRole('ROLE_USER_MANAGER') or hasRole('ROLE_TRADER_MANAGER') or hasRole('ROLE_ADMIN')")
@@ -335,31 +323,10 @@ public class NoticeContoller implements NoticeControllerDocs {
                     .body(APIResponse.fail(ErrorCode.BAD_REQUEST, "페이지가 0보다 작습니다"));
         }
 
-        Page<Notice> noticeList = noticeService.findNotice(searchText, page);
-
-        List<NoticeListOneShowResponseDto> noticeDtoList = noticeList.stream()
-                .map(NoticeContoller::noticeToNoticeListOneShowResponseDto).collect(Collectors.toList());
-
-        PageResponse<NoticeListOneShowResponseDto> adminNoticePage = PageResponse.<NoticeListOneShowResponseDto>builder()
-                .currentPage(page)
-                .pageSize(pageSize)
-                .totalElement(noticeList.getTotalElements())
-                .totalPages(noticeList.getTotalPages())
-                .content(noticeDtoList)
-                .build();
+        PageResponse<NoticeListOneShowResponseDto> adminNoticePage = noticeService.findNotice(searchText, page);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(APIResponse.success(adminNoticePage));
-    }
-
-    public static NoticeListOneShowResponseDto noticeToNoticeListOneShowResponseDto(Notice notice) {
-
-        return NoticeListOneShowResponseDto.builder()
-                .noticeId(notice.getId())
-                .noticeTitle(notice.getNoticeTitle())
-                .writeDate(notice.getWriteDate())
-                .fileExists(notice.getFileExists())
-                .build();
     }
 
 
@@ -368,7 +335,6 @@ public class NoticeContoller implements NoticeControllerDocs {
         1. 사용자 인증 정보가 없음 : FORBIDDEN
         2. 공지사항의 상세 데이터 조회에 성공했을 때 : OK
         3. 공지사항의 상세 데이터 조회에 실패했을 때 : NOT_FOUND
-        4. 파라미터 데이터의 형식이 올바르지 않음 : BAD_REQUEST
      */
     @Override
     @GetMapping("/notice/{noticeId}")

@@ -88,7 +88,7 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
 
         // 트레이더 별
         if (traderId != null) {
-            predicate.and(inquiry.trader.id.eq(traderId));
+            predicate.and(inquiry.strategy.trader.id.eq(traderId));
         }
 
         // 전체, 답변 대기, 답변 완료
@@ -132,8 +132,8 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
 
         // 트레이더 별
         if (traderId != null) {
-            predicate1.and(inquiry.trader.id.eq(traderId));
-            predicate2.and(inquiry.trader.id.eq(traderId));
+            predicate1.and(inquiry.strategy.trader.id.eq(traderId));
+            predicate2.and(inquiry.strategy.trader.id.eq(traderId));
         }
 
         // 전체, 답변 대기, 답변 완료
@@ -183,8 +183,8 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
 
         // 트레이더 별
         if (traderId != null) {
-            predicate1.and(inquiry.trader.id.eq(traderId));
-            predicate2.and(inquiry.trader.id.eq(traderId));
+            predicate1.and(inquiry.strategy.trader.id.eq(traderId));
+            predicate2.and(inquiry.strategy.trader.id.eq(traderId));
         }
 
         // 전체, 답변 대기, 답변 완료
@@ -624,7 +624,7 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
 
         // 트레이더 별
         if (traderId != null) {
-            predicate.and(inquiry.trader.id.eq(traderId));
+            predicate.and(inquiry.strategy.trader.id.eq(traderId));
         }
 
         // 전체, 답변 대기, 답변 완료
@@ -656,8 +656,8 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
 
         // 트레이더 별
         if (traderId != null) {
-            predicate1.and(inquiry.trader.id.eq(traderId));
-            predicate2.and(inquiry.trader.id.eq(traderId));
+            predicate1.and(inquiry.strategy.trader.id.eq(traderId));
+            predicate2.and(inquiry.strategy.trader.id.eq(traderId));
         }
 
         // 전체, 답변 대기, 답변 완료
@@ -716,7 +716,7 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
 
         // 트레이더 별
         if (traderId != null) {
-            predicate.and(inquiry.trader.id.eq(traderId));
+            predicate.and(inquiry.strategy.trader.id.eq(traderId));
         }
 
         // 전체, 답변 대기, 답변 완료
@@ -748,8 +748,8 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
 
         // 트레이더 별
         if (traderId != null) {
-            predicate1.and(inquiry.trader.id.eq(traderId));
-            predicate2.and(inquiry.trader.id.eq(traderId));
+            predicate1.and(inquiry.strategy.trader.id.eq(traderId));
+            predicate2.and(inquiry.strategy.trader.id.eq(traderId));
         }
 
         // 전체, 답변 대기, 답변 완료

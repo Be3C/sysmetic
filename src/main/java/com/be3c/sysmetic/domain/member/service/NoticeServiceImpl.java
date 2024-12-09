@@ -1,11 +1,14 @@
 package com.be3c.sysmetic.domain.member.service;
 
+import com.be3c.sysmetic.domain.member.controller.NoticeContoller;
 import com.be3c.sysmetic.domain.member.dto.*;
 import com.be3c.sysmetic.domain.member.entity.Member;
 import com.be3c.sysmetic.domain.member.entity.Notice;
+import com.be3c.sysmetic.domain.member.exception.MemberExceptionMessage;
 import com.be3c.sysmetic.domain.member.message.NoticeFailMessage;
 import com.be3c.sysmetic.domain.member.repository.MemberRepository;
 import com.be3c.sysmetic.domain.member.repository.NoticeRepository;
+import com.be3c.sysmetic.global.common.response.PageResponse;
 import com.be3c.sysmetic.global.util.SecurityUtils;
 import com.be3c.sysmetic.global.util.file.dto.FileReferenceType;
 import com.be3c.sysmetic.global.util.file.dto.FileRequest;
@@ -21,8 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.*;
-
-import static com.be3c.sysmetic.domain.member.message.NoticeFailMessage.NOT_FOUND_NOTICE;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +37,8 @@ public class NoticeServiceImpl implements NoticeService {
     private final NoticeRepository noticeRepository;
     private final FileService fileService;
 
+    private final Integer pageSize = 10; // 한 페이지 크기
+
     // 등록
     @Override
     @Transactional
@@ -43,7 +47,7 @@ public class NoticeServiceImpl implements NoticeService {
 
         Long writerId = securityUtils.getUserIdInSecurityContext();
 
-        Member writer = memberRepository.findById(writerId).orElseThrow(() -> new EntityNotFoundException("회원이 없습니다."));
+        Member writer = memberRepository.findById(writerId).orElseThrow(() -> new EntityNotFoundException(MemberExceptionMessage.DATA_NOT_FOUND.getMessage()));
 
         Boolean fileExists = (fileList != null);
         Boolean imageExists = (imageList != null);
@@ -75,9 +79,20 @@ public class NoticeServiceImpl implements NoticeService {
     // 관리자 검색 조회
     // 검색 (사용: title, content, titlecontent, writer) (설명: 제목, 내용, 제목+내용, 작성자)
     @Override
-    public Page<Notice> findNoticeAdmin(String searchType, String searchText, Integer page) {
+    public PageResponse<NoticeAdminListOneShowResponseDto> findNoticeAdmin(String searchType, String searchText, Integer page) {
 
-        return noticeRepository.adminNoticeSearchWithBooleanBuilder(searchType, searchText, PageRequest.of(page, 10));
+        Page<Notice> noticeList = noticeRepository.adminNoticeSearchWithBooleanBuilder(searchType, searchText, PageRequest.of(page, 10));
+
+        List<NoticeAdminListOneShowResponseDto> noticeAdminDtoList = noticeList.stream()
+                .map(this::noticeToNoticeAdminListOneShowResponseDto).collect(Collectors.toList());
+
+        return PageResponse.<NoticeAdminListOneShowResponseDto>builder()
+                .currentPage(page)
+                .pageSize(pageSize)
+                .totalElement(noticeList.getTotalElements())
+                .totalPages(noticeList.getTotalPages())
+                .content(noticeAdminDtoList)
+                .build();
     }
 
 
@@ -86,7 +101,7 @@ public class NoticeServiceImpl implements NoticeService {
     @Transactional
     public boolean modifyNoticeClosed(Long noticeId) {
 
-        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException("공지사항이 없습니다."));
+        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_NOTICE.getMessage()));
 
         if (!notice.getIsOpen()) {
             notice.setIsOpen(true);
@@ -103,7 +118,7 @@ public class NoticeServiceImpl implements NoticeService {
     @Transactional
     public void upHits(Long noticeId) {
 
-        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException("공지사항이 없습니다."));
+        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_NOTICE.getMessage()));
 
         notice.setHits(notice.getHits() + 1);
     }
@@ -116,13 +131,11 @@ public class NoticeServiceImpl implements NoticeService {
 
         Long correctorId = securityUtils.getUserIdInSecurityContext();
 
-        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException("공지사항이 없습니다."));
+        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_NOTICE.getMessage()));
 
-        Boolean fileExists = notice.getFileExists();
-        modifyNoticeNewDelete(FileReferenceType.NOTICE_BOARD_FILE, noticeId, newFileList, noticeModifyRequestDto.getDeleteFileIdList());
+        Boolean fileExists = modifyNoticeNewDelete(FileReferenceType.NOTICE_BOARD_FILE, noticeId, newFileList, noticeModifyRequestDto.getDeleteFileIdList());
 
-        Boolean imageExists = notice.getImageExists();
-        modifyNoticeNewDelete(FileReferenceType.NOTICE_BOARD_IMAGE, noticeId, newImageList, noticeModifyRequestDto.getDeleteImageIdList());
+        Boolean imageExists = modifyNoticeNewDelete(FileReferenceType.NOTICE_BOARD_IMAGE, noticeId, newImageList, noticeModifyRequestDto.getDeleteImageIdList());
 
         notice.setNoticeTitle(noticeModifyRequestDto.getNoticeTitle());
         notice.setNoticeContent(noticeModifyRequestDto.getNoticeContent());
@@ -256,7 +269,7 @@ public class NoticeServiceImpl implements NoticeService {
     @Transactional
     public boolean deleteAdminNotice(Long noticeId) {
 
-        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException("공지사항이 없습니다."));
+        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_NOTICE.getMessage()));
 
         if (notice.getImageExists()) {
             fileService.deleteFiles(new FileRequest(FileReferenceType.NOTICE_BOARD_IMAGE, noticeId));
@@ -284,7 +297,7 @@ public class NoticeServiceImpl implements NoticeService {
 
         for (Long noticeId : noticeIdList) {
             try {
-                Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException("문의가 없습니다."));
+                Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_NOTICE.getMessage()));
 
                 if (notice.getFileExists()) {
                     fileService.deleteFiles(new FileRequest(FileReferenceType.NOTICE_BOARD_FILE, noticeId));
@@ -294,7 +307,7 @@ public class NoticeServiceImpl implements NoticeService {
                 }
             }
             catch (EntityNotFoundException e) {
-                failDelete.put(noticeId, NOT_FOUND_NOTICE.getMessage());
+                failDelete.put(noticeId, e.getMessage());
             }
         }
 
@@ -307,9 +320,31 @@ public class NoticeServiceImpl implements NoticeService {
     // 일반 검색 조회
     // 검색 (조건: 제목+내용)
     @Override
-    public Page<Notice> findNotice(String searchText, Integer page) {
+    public PageResponse<NoticeListOneShowResponseDto> findNotice(String searchText, Integer page) {
 
-        return noticeRepository.noticeSearchWithBooleanBuilder(searchText, PageRequest.of(page, 10));
+        Page<Notice> noticeList = noticeRepository.noticeSearchWithBooleanBuilder(searchText, PageRequest.of(page, 10));
+
+        List<NoticeListOneShowResponseDto> noticeDtoList = noticeList.stream()
+                .map(this::noticeToNoticeListOneShowResponseDto).collect(Collectors.toList());
+
+        return PageResponse.<NoticeListOneShowResponseDto>builder()
+                .currentPage(page)
+                .pageSize(pageSize)
+                .totalElement(noticeList.getTotalElements())
+                .totalPages(noticeList.getTotalPages())
+                .content(noticeDtoList)
+                .build();
+    }
+
+    @Override
+    public NoticeListOneShowResponseDto noticeToNoticeListOneShowResponseDto(Notice notice) {
+
+        return NoticeListOneShowResponseDto.builder()
+                .noticeId(notice.getId())
+                .noticeTitle(notice.getNoticeTitle())
+                .writeDate(notice.getWriteDate())
+                .fileExists(notice.getFileExists())
+                .build();
     }
 
     @Override
@@ -329,7 +364,7 @@ public class NoticeServiceImpl implements NoticeService {
     @Override
     public NoticeDetailAdminShowResponseDto noticeIdToNoticeDetailAdminShowResponseDto(Long noticeId, String searchType, String searchText) {
 
-        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException("공지사항이 없습니다."));
+        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_NOTICE.getMessage()));
 
         Optional<Notice> previousNoticeOptional = noticeRepository.findPreviousNoticeAdmin(noticeId, searchType, searchText);
         Long previousNoticeId;
@@ -418,7 +453,7 @@ public class NoticeServiceImpl implements NoticeService {
     @Override
     public NoticeDetailShowResponseDto noticeIdToticeDetailShowResponseDto(Long noticeId, String searchText) {
 
-        Notice notice = noticeRepository.findByIdAndAndIsOpen(noticeId).orElseThrow(() -> new EntityNotFoundException("공지사항이 없습니다."));
+        Notice notice = noticeRepository.findByIdAndAndIsOpen(noticeId).orElseThrow(() -> new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_NOTICE.getMessage()));
 
         Optional<Notice> previousNoticeOptional = noticeRepository.findPreviousNotice(noticeId, searchText);
         Long previousNoticeId;
@@ -500,7 +535,7 @@ public class NoticeServiceImpl implements NoticeService {
     @Override
     public NoticeShowModifyPageResponseDto noticeIdTonoticeShowModifyPageResponseDto(Long noticeId) {
 
-        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException("공지사항이 없습니다."));
+        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_NOTICE.getMessage()));
 
         List<FileWithInfoResponse> fileList = fileService.getFileWithInfosNullable(new FileRequest(FileReferenceType.NOTICE_BOARD_FILE, notice.getId()));
         List<NoticeDetailFileShowResponseDto> fileDtoList;

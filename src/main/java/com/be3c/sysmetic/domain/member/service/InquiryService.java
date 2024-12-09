@@ -12,17 +12,14 @@ import java.util.Map;
 
 public interface InquiryService {
 
-    // 문의 단건 조회
-    Inquiry findOneInquiry(Long inquiryId);
-
     // 전략 문의 등록 화면 조회
-    Strategy findStrategyForInquiryPage(Long strategyId);
+    InquirySavePageShowResponseDto findStrategyForInquiryPage(Long strategyId);
 
     // 등록
-    boolean registerInquiry(Long strategyId, String inquiryTitle, String inquiryContent);
+    boolean registerInquiry(Long strategyId, InquirySaveRequestDto inquirySaveRequestDto);
 
     // 수정
-    boolean modifyInquiry(Long inquiryId, String inquiryTitle, String inquiryContent);
+    boolean modifyInquiry(Long inquiryId, InquiryModifyRequestDto inquiryModifyRequestDto);
 
     // 질문자 삭제
     boolean deleteInquiry(Long inquiryId);
@@ -36,7 +33,7 @@ public interface InquiryService {
     // 관리자 검색 조회
     // 전체, 답변 대기, 답변 완료
     // 검색 (전략명, 트레이더, 질문자)
-    Page<Inquiry> findInquiriesAdmin(InquiryAdminListShowRequestDto inquiryAdminListShowRequestDto, Integer page);
+    PageResponse<InquiryAdminListOneShowResponseDto> findInquiriesAdmin(InquiryAdminListShowRequestDto inquiryAdminListShowRequestDto, Integer page);
 
     InquiryAdminListOneShowResponseDto inquiryToInquiryAdminOneResponseDto(Inquiry inquiry);
 
@@ -45,8 +42,6 @@ public interface InquiryService {
     InquiryListOneShowResponseDto InquiryToInquiryInquirerOneResponseDto(Inquiry inquiry);
 
     InquiryListOneShowResponseDto inquiryToInquirytraderOneResponseDto(Inquiry inquiry);
-
-    InquirySavePageShowResponseDto strategyToInquirySavePageShowResponseDto(Strategy strategy);
 
     InquiryAnswerInquirerShowResponseDto inquiryIdToInquiryAnswerInquirerShowResponseDto(InquiryDetailTraderInquirerShowDto inquiryDetailTraderInquirerShowDto);
 
@@ -61,4 +56,6 @@ public interface InquiryService {
     // 정렬 순 셀렉트 박스 (최신순, 전략명)
     // 답변상태 셀렉트 박스 (전체, 답변 대기, 답변 완료)
     PageResponse<InquiryListOneShowResponseDto> showTraderInquiry(Integer page, String sort, InquiryStatus inquiryStatus);
+
+    InquiryModifyPageShowResponseDto showInquiryModifyPage(Long inquiryId);
 }

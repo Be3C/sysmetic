@@ -1,10 +1,9 @@
 package com.be3c.sysmetic.domain.member.service;
 
 import com.be3c.sysmetic.domain.member.dto.*;
-import com.be3c.sysmetic.domain.member.entity.Inquiry;
-import com.be3c.sysmetic.domain.member.entity.InquiryAnswer;
-import com.be3c.sysmetic.domain.member.entity.InquiryStatus;
-import com.be3c.sysmetic.domain.member.entity.Member;
+import com.be3c.sysmetic.domain.member.entity.*;
+import com.be3c.sysmetic.domain.member.exception.InquiryNotWriterException;
+import com.be3c.sysmetic.domain.member.exception.MemberExceptionMessage;
 import com.be3c.sysmetic.domain.member.message.InquiryFailMessage;
 import com.be3c.sysmetic.domain.member.repository.InquiryAnswerRepository;
 import com.be3c.sysmetic.domain.member.repository.InquiryRepository;
@@ -12,10 +11,9 @@ import com.be3c.sysmetic.domain.member.repository.MemberRepository;
 import com.be3c.sysmetic.domain.strategy.dto.StockListDto;
 import com.be3c.sysmetic.domain.strategy.dto.StrategyStatusCode;
 import com.be3c.sysmetic.domain.strategy.entity.Strategy;
+import com.be3c.sysmetic.domain.strategy.exception.StrategyExceptionMessage;
 import com.be3c.sysmetic.domain.strategy.repository.StrategyRepository;
 import com.be3c.sysmetic.domain.strategy.util.StockGetter;
-import com.be3c.sysmetic.global.common.response.APIResponse;
-import com.be3c.sysmetic.global.common.response.ErrorCode;
 import com.be3c.sysmetic.global.common.response.PageResponse;
 import com.be3c.sysmetic.global.util.SecurityUtils;
 import com.be3c.sysmetic.global.util.file.dto.FileReferenceType;
@@ -25,8 +23,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,29 +47,41 @@ public class InquiryServiceImpl implements InquiryService {
 
     private final Integer pageSize = 10; // 한 페이지 크기
 
-    // 문의 단건 조회
-    @Override
-    public Inquiry findOneInquiry(Long inquiryId) {
-        return inquiryRepository.findById(inquiryId).orElseThrow(() -> new EntityNotFoundException("문의가 없습니다."));
-    }
-
     // 전략 문의 등록 화면 조회
     @Override
-    public Strategy findStrategyForInquiryPage(Long strategyId) {
-        return strategyRepository.findById(strategyId).orElseThrow(() -> new EntityNotFoundException("전략이 없습니다."));
+    public InquirySavePageShowResponseDto findStrategyForInquiryPage(Long strategyId) {
+
+        Strategy strategy = strategyRepository.findById(strategyId).orElseThrow(() -> new EntityNotFoundException(StrategyExceptionMessage.DATA_NOT_FOUND.getMessage()));
+
+        String traderProfileImagePath = fileService.getFilePath(new FileRequest(FileReferenceType.MEMBER, strategy.getTrader().getId()));
+        String methodIconPath = fileService.getFilePathNullable(new FileRequest(FileReferenceType.METHOD, strategy.getMethod().getId()));
+        StockListDto stockList = stockGetter.getStocks(strategy.getId());
+
+        return InquirySavePageShowResponseDto.builder()
+                .methodId(strategy.getMethod().getId())
+                .methodIconPath(methodIconPath)
+                .cycle(strategy.getCycle())
+                .stockList(stockList)
+                .strategyId(strategy.getId())
+                .strategyName(strategy.getName())
+                .statusCode(strategy.getStatusCode())
+                .traderId(strategy.getTrader().getId())
+                .traderNickname(strategy.getTrader().getNickname())
+                .traderProfileImagePath(traderProfileImagePath)
+                .build();
     }
 
     // 등록
     @Override
     @Transactional
-    public boolean registerInquiry(Long strategyId, String inquiryTitle, String inquiryContent) {
+    public boolean registerInquiry(Long strategyId, InquirySaveRequestDto inquirySaveRequestDto) {
 
         Long memberId = securityUtils.getUserIdInSecurityContext();
 
-        Strategy strategy = strategyRepository.findById(strategyId).orElseThrow(() -> new EntityNotFoundException("전략이 없습니다."));
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("회원이 없습니다."));
+        Strategy strategy = strategyRepository.findById(strategyId).orElseThrow(() -> new EntityNotFoundException(StrategyExceptionMessage.DATA_NOT_FOUND.getMessage()));
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException(MemberExceptionMessage.DATA_NOT_FOUND.getMessage()));
 
-        Inquiry inquiry = Inquiry.createInquiry(strategy, member, inquiryTitle, inquiryContent);
+        Inquiry inquiry = Inquiry.createInquiry(strategy, member, inquirySaveRequestDto.getInquiryTitle(), inquirySaveRequestDto.getInquiryContent());
 
         inquiryRepository.save(inquiry);
 
@@ -83,14 +91,14 @@ public class InquiryServiceImpl implements InquiryService {
     // 수정
     @Override
     @Transactional
-    public boolean modifyInquiry(Long inquiryId, String inquiryTitle, String inquiryContent) {
+    public boolean modifyInquiry(Long inquiryId, InquiryModifyRequestDto inquiryModifyRequestDto) {
 
         Long userId = securityUtils.getUserIdInSecurityContext();
-        Inquiry inquiry = inquiryRepository.findByIdAndAndIsOpenInquirer(inquiryId, userId).orElseThrow(() -> new EntityNotFoundException("문의가 없습니다."));
+        Inquiry inquiry = inquiryRepository.findByIdAndAndIsOpenInquirer(inquiryId, userId).orElseThrow(() -> new EntityNotFoundException(InquiryFailMessage.NOT_FOUND_INQUIRY.getMessage()));
 
         if (inquiry.getInquiryStatus() == InquiryStatus.unclosed) {
-            inquiry.setInquiryTitle(inquiryTitle);
-            inquiry.setInquiryContent(inquiryContent);
+            inquiry.setInquiryTitle(inquiryModifyRequestDto.getInquiryTitle());
+            inquiry.setInquiryContent(inquiryModifyRequestDto.getInquiryContent());
             inquiryRepository.save(inquiry);
         } else {
             throw new IllegalStateException("답변이 등록된 문의는 수정할 수 없습니다.");
@@ -105,7 +113,7 @@ public class InquiryServiceImpl implements InquiryService {
     public boolean deleteInquiry(Long inquiryId) {
 
         Long userId = securityUtils.getUserIdInSecurityContext();
-        Inquiry inquiry = inquiryRepository.findByIdAndAndIsOpenInquirer(inquiryId, userId).orElseThrow(() -> new EntityNotFoundException("문의가 없습니다."));
+        Inquiry inquiry = inquiryRepository.findByIdAndAndIsOpenInquirer(inquiryId, userId).orElseThrow(() -> new EntityNotFoundException(InquiryFailMessage.NOT_FOUND_INQUIRY.getMessage()));
 
         if (inquiry.getInquiryStatus() == InquiryStatus.unclosed) {
             inquiryRepository.delete(inquiry);
@@ -122,7 +130,7 @@ public class InquiryServiceImpl implements InquiryService {
     public boolean deleteAdminInquiry(Long inquiryId) {
 
         inquiryAnswerRepository.deleteByinquiryId(inquiryId);
-        Inquiry inquiry = inquiryRepository.findById(inquiryId).orElseThrow(() -> new EntityNotFoundException("문의가 없습니다."));
+        Inquiry inquiry = inquiryRepository.findById(inquiryId).orElseThrow(() -> new EntityNotFoundException(InquiryFailMessage.NOT_FOUND_INQUIRY.getMessage()));
         inquiryRepository.delete(inquiry);
 
 
@@ -135,21 +143,12 @@ public class InquiryServiceImpl implements InquiryService {
     @Transactional
     public Map<Long, String> deleteAdminInquiryList(List<Long> inquiryIdList) {
 
-        if (inquiryIdList == null) {
-            throw new EntityNotFoundException("문의가 한 개도 선택되지 않았습니다.");
-        }
-
         Map<Long, String> failDelete = new HashMap<>();
 
         for (Long inquiryId : inquiryIdList) {
-            try {
 
-                inquiryRepository.findById(inquiryId).orElseThrow(() -> new EntityNotFoundException("문의가 없습니다."));
-                inquiryAnswerRepository.deleteByinquiryId(inquiryId);
-            }
-            catch (EntityNotFoundException e) {
-                failDelete.put(inquiryId, InquiryFailMessage.NOT_FOUND_INQUIRY.getMessage());
-            }
+            inquiryRepository.findById(inquiryId).orElseThrow(() -> new EntityNotFoundException(InquiryFailMessage.NOT_FOUND_INQUIRY.getMessage()));
+            inquiryAnswerRepository.deleteByinquiryId(inquiryId);
         }
 
         inquiryRepository.bulkDelete(inquiryIdList);
@@ -162,9 +161,20 @@ public class InquiryServiceImpl implements InquiryService {
     // 전체, 답변 대기, 답변 완료
     // 검색 (전략명, 트레이더, 질문자)
     @Override
-    public Page<Inquiry> findInquiriesAdmin(InquiryAdminListShowRequestDto inquiryAdminListShowRequestDto, Integer page) {
+    public PageResponse<InquiryAdminListOneShowResponseDto> findInquiriesAdmin(InquiryAdminListShowRequestDto inquiryAdminListShowRequestDto, Integer page) {
 
-        return inquiryRepository.adminInquirySearchWithBooleanBuilder(inquiryAdminListShowRequestDto, PageRequest.of(page, 10));
+        Page<Inquiry> inquiryList = inquiryRepository.adminInquirySearchWithBooleanBuilder(inquiryAdminListShowRequestDto, PageRequest.of(page, 10));
+
+        List<InquiryAdminListOneShowResponseDto> inquiryDtoList = inquiryList.stream()
+                .map(this::inquiryToInquiryAdminOneResponseDto).collect(Collectors.toList());
+
+        return PageResponse.<InquiryAdminListOneShowResponseDto>builder()
+                .currentPage(page)
+                .pageSize(pageSize)
+                .totalElement(inquiryList.getTotalElements())
+                .totalPages(inquiryList.getTotalPages())
+                .content(inquiryDtoList)
+                .build();
     }
 
     @Override
@@ -196,7 +206,7 @@ public class InquiryServiceImpl implements InquiryService {
             statusCode = null;
         }
 
-        Member trader = memberRepository.findById(inquiry.getTrader().getId()).orElse(null);
+        Member trader = memberRepository.findById(inquiry.getStrategy().getTrader().getId()).orElse(null);
         String traderNickname;
         if (trader == null) {
             traderNickname = null;
@@ -206,7 +216,7 @@ public class InquiryServiceImpl implements InquiryService {
 
         return InquiryAdminListOneShowResponseDto.builder()
                 .inquiryId(inquiry.getId())
-                .traderId(inquiry.getTrader().getId())
+                .traderId(inquiry.getStrategy().getTrader().getId())
                 .traderNickname(traderNickname)
                 .methodId(methodId)
                 .methodIconPath(methodIconPath)
@@ -229,7 +239,7 @@ public class InquiryServiceImpl implements InquiryService {
         String searchType = inquiryDetailAdminShowDto.getSearchType();
         String searchText = inquiryDetailAdminShowDto.getSearchText();
 
-        Inquiry inquiry = inquiryRepository.findById(inquiryId).orElseThrow(() -> new EntityNotFoundException("문의가 없습니다."));
+        Inquiry inquiry = inquiryRepository.findById(inquiryId).orElseThrow(() -> new EntityNotFoundException(InquiryFailMessage.NOT_FOUND_INQUIRY.getMessage()));
 
         Optional<Inquiry> previousInquiryOptional = inquiryRepository.adminFindPreviousInquiry(inquiryDetailAdminShowDto);
         Long previousInquiryId;
@@ -269,7 +279,7 @@ public class InquiryServiceImpl implements InquiryService {
             answerRegistrationDate = null;
             answerContent = null;
         } else {
-            InquiryAnswer inquiryAnswer = inquiryAnswerRepository.findByInquiryId(inquiryId).orElseThrow(() -> new EntityNotFoundException("문의 답변이 없습니다."));
+            InquiryAnswer inquiryAnswer = inquiryAnswerRepository.findByInquiryId(inquiryId).orElseThrow(() -> new EntityNotFoundException(InquiryFailMessage.NOT_FOUND_INQUIRY_ANSWER.getMessage()));
             inquiryAnswerId = inquiryAnswer.getId();
             answerTitle = inquiryAnswer.getAnswerTitle();
             answerRegistrationDate = inquiryAnswer.getAnswerRegistrationDate();
@@ -302,14 +312,14 @@ public class InquiryServiceImpl implements InquiryService {
             statusCode = null;
         }
 
-        Member trader = memberRepository.findById(inquiry.getTrader().getId()).orElse(null);
+        Member trader = memberRepository.findById(inquiry.getStrategy().getTrader().getId()).orElse(null);
         String traderNickname;
         if (trader == null) {
             traderNickname = null;
         } else {
             traderNickname = trader.getNickname();
         }
-        String traderProfileImagePath = fileService.getFilePath(new FileRequest(FileReferenceType.MEMBER, inquiry.getTrader().getId()));
+        String traderProfileImagePath = fileService.getFilePath(new FileRequest(FileReferenceType.MEMBER, inquiry.getStrategy().getTrader().getId()));
 
         return InquiryAnswerAdminShowResponseDto.builder()
                 .closed(String.valueOf(closed))
@@ -334,7 +344,7 @@ public class InquiryServiceImpl implements InquiryService {
 
                 .inquiryContent(inquiry.getInquiryContent())
 
-                .traderId(inquiry.getTrader().getId())
+                .traderId(inquiry.getStrategy().getTrader().getId())
                 .traderNickname(traderNickname)
                 .traderProfileImagePath(traderProfileImagePath)
 
@@ -348,27 +358,6 @@ public class InquiryServiceImpl implements InquiryService {
                 .nextId(nextInquiryId)
                 .nextTitle(nextInquiryTitle)
                 .nextWriteDate(nextInquiryWriteDate)
-                .build();
-    }
-
-    @Override
-    public InquirySavePageShowResponseDto strategyToInquirySavePageShowResponseDto(Strategy strategy) {
-
-        String traderProfileImagePath = fileService.getFilePath(new FileRequest(FileReferenceType.MEMBER, strategy.getTrader().getId()));
-        String methodIconPath = fileService.getFilePathNullable(new FileRequest(FileReferenceType.METHOD, strategy.getMethod().getId()));
-        StockListDto stockList = stockGetter.getStocks(strategy.getId());
-
-        return InquirySavePageShowResponseDto.builder()
-                .methodId(strategy.getMethod().getId())
-                .methodIconPath(methodIconPath)
-                .cycle(strategy.getCycle())
-                .stockList(stockList)
-                .strategyId(strategy.getId())
-                .strategyName(strategy.getName())
-                .statusCode(strategy.getStatusCode())
-                .traderId(strategy.getTrader().getId())
-                .traderNickname(strategy.getTrader().getNickname())
-                .traderProfileImagePath(traderProfileImagePath)
                 .build();
     }
 
@@ -473,7 +462,7 @@ public class InquiryServiceImpl implements InquiryService {
 
         Long userId = securityUtils.getUserIdInSecurityContext();
 
-        Inquiry inquiry = inquiryRepository.findByIdAndAndIsOpenInquirer(inquiryId, userId).orElseThrow(() -> new EntityNotFoundException("문의가 없습니다."));
+        Inquiry inquiry = inquiryRepository.findByIdAndAndIsOpenInquirer(inquiryId, userId).orElseThrow(() -> new EntityNotFoundException(InquiryFailMessage.NOT_FOUND_INQUIRY.getMessage()));
 
         inquiryDetailTraderInquirerShowDto.setInquirerId(userId);
 
@@ -542,7 +531,7 @@ public class InquiryServiceImpl implements InquiryService {
             answerRegistrationDate = null;
             answerContent = null;
         } else {
-            InquiryAnswer inquiryAnswer = inquiryAnswerRepository.findByInquiryId(inquiryId).orElseThrow(() -> new EntityNotFoundException("문의 답변이 없습니다."));
+            InquiryAnswer inquiryAnswer = inquiryAnswerRepository.findByInquiryId(inquiryId).orElseThrow(() -> new EntityNotFoundException(InquiryFailMessage.NOT_FOUND_INQUIRY_ANSWER.getMessage()));
             inquiryAnswerId = inquiryAnswer.getId();
             answerTitle = inquiryAnswer.getAnswerTitle();
             answerRegistrationDate = inquiryAnswer.getAnswerRegistrationDate();
@@ -575,14 +564,14 @@ public class InquiryServiceImpl implements InquiryService {
             statusCode = null;
         }
 
-        Member trader = memberRepository.findById(inquiry.getTrader().getId()).orElse(null);
+        Member trader = memberRepository.findById(inquiry.getStrategy().getTrader().getId()).orElse(null);
         String traderNickname;
         if (trader == null) {
             traderNickname = null;
         } else {
             traderNickname = trader.getNickname();
         }
-        String traderProfileImagePath = fileService.getFilePath(new FileRequest(FileReferenceType.MEMBER, inquiry.getTrader().getId()));
+        String traderProfileImagePath = fileService.getFilePath(new FileRequest(FileReferenceType.MEMBER, inquiry.getStrategy().getTrader().getId()));
 
         return InquiryAnswerInquirerShowResponseDto.builder()
                 .closed(closed)
@@ -603,7 +592,7 @@ public class InquiryServiceImpl implements InquiryService {
                 .strategyName(strategyName)
                 .statusCode(statusCode)
 
-                .traderId(inquiry.getTrader().getId())
+                .traderId(inquiry.getStrategy().getTrader().getId())
                 .traderNickname(traderNickname)
                 .traderProfileImagePath(traderProfileImagePath)
 
@@ -631,7 +620,7 @@ public class InquiryServiceImpl implements InquiryService {
 
         Long userId = securityUtils.getUserIdInSecurityContext();
 
-        Inquiry inquiry = inquiryRepository.findByIdAndAndIsOpenTrader(inquiryId, userId).orElseThrow(() -> new EntityNotFoundException("문의가 없습니다."));
+        Inquiry inquiry = inquiryRepository.findByIdAndAndIsOpenTrader(inquiryId, userId).orElseThrow(() -> new EntityNotFoundException(InquiryFailMessage.NOT_FOUND_INQUIRY.getMessage()));
 
         inquiryDetailTraderInquirerShowDto.setTraderId(userId);
 
@@ -700,7 +689,7 @@ public class InquiryServiceImpl implements InquiryService {
             answerRegistrationDate = null;
             answerContent = null;
         } else {
-            InquiryAnswer inquiryAnswer = inquiryAnswerRepository.findByInquiryId(inquiryId).orElseThrow(() -> new EntityNotFoundException("문의 답변이 없습니다."));
+            InquiryAnswer inquiryAnswer = inquiryAnswerRepository.findByInquiryId(inquiryId).orElseThrow(() -> new EntityNotFoundException(InquiryFailMessage.NOT_FOUND_INQUIRY_ANSWER.getMessage()));
             inquiryAnswerId = inquiryAnswer.getId();
             answerTitle = inquiryAnswer.getAnswerTitle();
             answerRegistrationDate = inquiryAnswer.getAnswerRegistrationDate();
@@ -733,14 +722,14 @@ public class InquiryServiceImpl implements InquiryService {
             statusCode = null;
         }
 
-        Member trader = memberRepository.findById(inquiry.getTrader().getId()).orElse(null);
+        Member trader = memberRepository.findById(inquiry.getStrategy().getTrader().getId()).orElse(null);
         String traderNickname;
         if (trader == null) {
             traderNickname = null;
         } else {
             traderNickname = trader.getNickname();
         }
-        String traderProfileImagePath = fileService.getFilePath(new FileRequest(FileReferenceType.MEMBER, inquiry.getTrader().getId()));
+        String traderProfileImagePath = fileService.getFilePath(new FileRequest(FileReferenceType.MEMBER, inquiry.getStrategy().getTrader().getId()));
 
         return InquiryAnswerTraderShowResponseDto.builder()
                 .closed(closed)
@@ -762,7 +751,7 @@ public class InquiryServiceImpl implements InquiryService {
                 .strategyName(strategyName)
                 .statusCode(statusCode)
 
-                .traderId(inquiry.getTrader().getId())
+                .traderId(inquiry.getStrategy().getTrader().getId())
                 .traderNickname(traderNickname)
                 .traderProfileImagePath(traderProfileImagePath)
 
@@ -937,5 +926,20 @@ public class InquiryServiceImpl implements InquiryService {
         }
 
         return inquiryPage;
+    }
+
+    @Override
+    public InquiryModifyPageShowResponseDto showInquiryModifyPage(Long inquiryId) {
+
+        Inquiry inquiry = inquiryRepository.findById(inquiryId).orElseThrow(() -> new EntityNotFoundException(InquiryFailMessage.NOT_FOUND_INQUIRY.getMessage()));
+
+        if(!Objects.equals(securityUtils.getUserIdInSecurityContext(), inquiry.getInquirer().getId())) {
+            throw new InquiryNotWriterException(InquiryFailMessage.NOT_INQUIRY_WRITER.getMessage());
+        }
+
+        return InquiryModifyPageShowResponseDto.builder()
+                .inquiryTitle(inquiry.getInquiryTitle())
+                .inquiryContent(inquiry.getInquiryContent())
+                .build();
     }
 }

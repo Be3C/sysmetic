@@ -295,11 +295,6 @@ public interface InquiryControllerDocs {
                     responseCode = "404",
                     description = "질문자 문의 수정 화면 조회에 실패 (NOT_FOUND)",
                     content = @Content(schema = @Schema(implementation = APIResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "파라미터 데이터의 형식이 올바르지 않음 (BAD_REQUEST)",
-                    content = @Content(schema = @Schema(implementation = APIResponse.class))
             )
     })
     ResponseEntity<APIResponse<InquiryModifyPageShowResponseDto>> showInquiryModifyPage (
