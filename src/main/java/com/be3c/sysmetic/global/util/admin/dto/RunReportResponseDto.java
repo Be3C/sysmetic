@@ -1,8 +1,9 @@
 package com.be3c.sysmetic.global.util.admin.dto;
 
-import com.google.analytics.data.v1beta.RunReportResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+
+import java.util.Map;
 
 @Getter
 @Setter
@@ -17,4 +18,7 @@ public class RunReportResponseDto {
 
     @Schema(description = "평균 세션 지속 시간")
     private String avgSessionDuration;
+
+    @Schema(description = "방문 url 순위")
+    private Map<String, Integer> topVisitedUrls;
 }
