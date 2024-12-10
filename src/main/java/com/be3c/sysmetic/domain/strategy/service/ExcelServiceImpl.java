@@ -6,7 +6,6 @@ import com.be3c.sysmetic.domain.strategy.entity.Monthly;
 import com.be3c.sysmetic.domain.strategy.entity.Strategy;
 import com.be3c.sysmetic.domain.strategy.repository.DailyRepository;
 import com.be3c.sysmetic.domain.strategy.repository.MonthlyRepository;
-import com.be3c.sysmetic.domain.strategy.repository.StrategyGraphAnalysisRepository;
 import com.be3c.sysmetic.domain.strategy.repository.StrategyRepository;
 import com.be3c.sysmetic.domain.strategy.util.DoubleHandler;
 import com.be3c.sysmetic.domain.strategy.util.StrategyCalculator;
@@ -205,7 +204,7 @@ public class ExcelServiceImpl implements ExcelService {
                     /* 계산하기 */
                     // 첫번째 요소
                     Daily firstCalculateTarget = calculateTargets.get(0);
-                    Optional<Daily> optionalBeforeDaily = dailyRepository.findTop1ByDateBeforeOrderByDateDesc(firstCalculateTarget.getDate());
+                    Optional<Daily> optionalBeforeDaily = dailyRepository.findTop1ByDateBeforeAndStrategyOrderByDateDesc(firstCalculateTarget.getDate(),strategy);
 
                     boolean isFirst = optionalBeforeDaily.isEmpty();
                     Daily firstCalculateStandard = isFirst? null : optionalBeforeDaily.get();
@@ -425,7 +424,7 @@ public class ExcelServiceImpl implements ExcelService {
                 strategyCalculator.getPrincipal(
                         isFirst,
                         deposit,
-                        profit,
+                        formerPrincipal,
                         formerBalance
                 ));
         calculateTarget.setCurrentBalance(
@@ -442,7 +441,7 @@ public class ExcelServiceImpl implements ExcelService {
                         deposit,
                         profit,
                         formerBalance,
-                        formerStandard));
+                        formerPrincipal));
         calculateTarget.setProfitLossRate(
                 strategyCalculator.getDailyProfitLossRate(
                         isFirst,
