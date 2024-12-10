@@ -12,11 +12,11 @@ public interface NoticeRepositoryCustom {
 
     Page<Notice> noticeSearchWithBooleanBuilder(String searchText, Pageable pageable);
 
-    Optional<Notice> findPreviousNoticeAdmin(Long noticeId, String SearchType, String SearchText);
+    Notice findPreviousNoticeAdmin(Long noticeId, String SearchType, String SearchText);
 
-    Optional<Notice> findNextNoticeAdmin(Long noticeId, String SearchType, String SearchText);
+    Notice findNextNoticeAdmin(Long noticeId, String SearchType, String SearchText);
 
-    Optional<Notice> findPreviousNotice(Long noticeId, String SearchText);
+    Notice findPreviousNotice(Long noticeId, String SearchText);
 
-    Optional<Notice> findNextNotice(Long noticeId, String SearchText);
+    Notice findNextNotice(Long noticeId, String SearchText);
 }

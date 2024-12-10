@@ -296,11 +296,11 @@ public class NoticeServiceImpl implements NoticeService {
 
         Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException(NoticeExceptionMessage.NOT_FOUND_NOTICE.getMessage()));
 
-        Optional<Notice> previousNoticeOptional = noticeRepository.findPreviousNoticeAdmin(noticeId, searchType, searchText);
-        NoticePreviousNextDto noticePreviousDto = getPreviousNextNoticeDto(previousNoticeOptional);
+        Notice previousNotice = noticeRepository.findPreviousNoticeAdmin(noticeId, searchType, searchText);
+        NoticePreviousNextDto noticePreviousDto = getPreviousNextNoticeDto(previousNotice);
 
-        Optional<Notice> nextNoticeOptional = noticeRepository.findNextNoticeAdmin(noticeId, searchType, searchText);
-        NoticePreviousNextDto noticeNextDto = getPreviousNextNoticeDto(nextNoticeOptional);
+        Notice nextNotice = noticeRepository.findNextNoticeAdmin(noticeId, searchType, searchText);
+        NoticePreviousNextDto noticeNextDto = getPreviousNextNoticeDto(nextNotice);
 
         List<NoticeDetailFileShowResponseDto> fileDtoList = getFileDtoList(notice);
         List<NoticeDetailImageShowResponseDto> imageDtoList = getImageDtoList(notice);
@@ -329,20 +329,20 @@ public class NoticeServiceImpl implements NoticeService {
                 .build();
     }
 
-    private NoticePreviousNextDto getPreviousNextNoticeDto(Optional<Notice> noticeOptional) {
+    private NoticePreviousNextDto getPreviousNextNoticeDto(Notice notice) {
 
         Long noticeId;
         String noticeTitle;
         LocalDateTime noticeWriteDate;
 
-        if (noticeOptional.isEmpty()) {
+        if (notice == null) {
             noticeId = null;
             noticeTitle = null;
             noticeWriteDate = null;
         } else {
-            noticeId = noticeOptional.orElse(null).getId();
-            noticeTitle = noticeOptional.orElse(null).getNoticeTitle();
-            noticeWriteDate = noticeOptional.orElse(null).getWriteDate();
+            noticeId = notice.getId();
+            noticeTitle = notice.getNoticeTitle();
+            noticeWriteDate = notice.getWriteDate();
         }
 
         return NoticePreviousNextDto.builder()
@@ -397,11 +397,11 @@ public class NoticeServiceImpl implements NoticeService {
 
         notice.increaseHits();
 
-        Optional<Notice> previousNoticeOptional = noticeRepository.findPreviousNotice(noticeId, searchText);
-        NoticePreviousNextDto noticePreviousDto = getPreviousNextNoticeDto(previousNoticeOptional);
+        Notice previousNotice = noticeRepository.findPreviousNotice(noticeId, searchText);
+        NoticePreviousNextDto noticePreviousDto = getPreviousNextNoticeDto(previousNotice);
 
-        Optional<Notice> nextNoticeOptional = noticeRepository.findNextNotice(noticeId, searchText);
-        NoticePreviousNextDto noticeNextDto = getPreviousNextNoticeDto(nextNoticeOptional);
+        Notice nextNotice = noticeRepository.findNextNotice(noticeId, searchText);
+        NoticePreviousNextDto noticeNextDto = getPreviousNextNoticeDto(nextNotice);
 
         List<NoticeDetailFileShowResponseDto> fileDtoList = getFileDtoList(notice);
         List<NoticeDetailImageShowResponseDto> imageDtoList = getImageDtoList(notice);

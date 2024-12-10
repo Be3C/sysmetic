@@ -312,13 +312,13 @@ public class InquiryController implements InquiryControllerDocs {
 
          try {
 
-             InquiryDetailTraderInquirerShowDto inquiryDetailTraderInquirerShowDto = InquiryDetailTraderInquirerShowDto.builder()
+             InquiryDetailInquirerShowDto inquiryDetailInquirerShowDto = InquiryDetailInquirerShowDto.builder()
                      .inquiryId(inquiryId)
                      .closed(inquiryStatus)
                      .sort(sort)
                      .build();
 
-             InquiryDetailInquirerShowResponseDto inquiryDetailInquirerShowResponseDto = inquiryService.getInquirerInquiryDetail(inquiryDetailTraderInquirerShowDto);
+             InquiryDetailInquirerShowResponseDto inquiryDetailInquirerShowResponseDto = inquiryService.getInquirerInquiryDetail(inquiryDetailInquirerShowDto);
 
              return ResponseEntity.status(HttpStatus.OK)
                      .body(APIResponse.success(inquiryDetailInquirerShowResponseDto));
@@ -399,6 +399,12 @@ public class InquiryController implements InquiryControllerDocs {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(APIResponse.fail(ErrorCode.NOT_FOUND, e.getMessage()));
         }
+        catch (InquiryBadRequestException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(APIResponse.fail(ErrorCode.FORBIDDEN, e.getMessage()));
+        }
+
+
     }
 
 
@@ -433,6 +439,10 @@ public class InquiryController implements InquiryControllerDocs {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(APIResponse.fail(ErrorCode.BAD_REQUEST, e.getMessage()));
         }
+        catch (InquiryBadRequestException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(APIResponse.fail(ErrorCode.FORBIDDEN, e.getMessage()));
+        }
     }
 
 
@@ -465,6 +475,10 @@ public class InquiryController implements InquiryControllerDocs {
         catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(APIResponse.fail(ErrorCode.NOT_FOUND, e.getMessage()));
+        }
+        catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(APIResponse.fail(ErrorCode.BAD_REQUEST, e.getMessage()));
         }
         catch (InquiryBadRequestException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -545,13 +559,13 @@ public class InquiryController implements InquiryControllerDocs {
 
         try {
 
-            InquiryDetailTraderInquirerShowDto inquiryDetailTraderInquirerShowDto = InquiryDetailTraderInquirerShowDto.builder()
+            InquiryDetailTraderShowDto inquiryDetailTraderShowDto = InquiryDetailTraderShowDto.builder()
                     .inquiryId(inquiryId)
                     .sort(sort)
                     .closed(inquiryStatus)
                     .build();
 
-            InquiryDetailTraderShowResponseDto inquiryDetailTraderShowResponseDto = inquiryService.getTraderInquiryDetail(inquiryDetailTraderInquirerShowDto);
+            InquiryDetailTraderShowResponseDto inquiryDetailTraderShowResponseDto = inquiryService.getTraderInquiryDetail(inquiryDetailTraderShowDto);
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(APIResponse.success(inquiryDetailTraderShowResponseDto));

@@ -33,9 +33,9 @@ public interface InquiryService {
 
     InquiryDetailAdminShowResponseDto getInquiryAdminDetail(InquiryDetailAdminShowDto inquiryDetailAdminShowDto);
 
-    InquiryDetailInquirerShowResponseDto getInquirerInquiryDetail(InquiryDetailTraderInquirerShowDto inquiryDetailTraderInquirerShowDto);
+    InquiryDetailInquirerShowResponseDto getInquirerInquiryDetail(InquiryDetailInquirerShowDto inquiryDetailInquirerShowDto);
 
-    InquiryDetailTraderShowResponseDto getTraderInquiryDetail(InquiryDetailTraderInquirerShowDto inquiryDetailTraderInquirerShowDto);
+    InquiryDetailTraderShowResponseDto getTraderInquiryDetail(InquiryDetailTraderShowDto inquiryDetailTraderShowDto);
 
     // 문의자 검색 조회
     // 정렬 순 셀렉트 박스 (최신순, 전략명)

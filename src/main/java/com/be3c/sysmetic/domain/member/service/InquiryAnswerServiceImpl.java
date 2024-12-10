@@ -40,6 +40,10 @@ public class InquiryAnswerServiceImpl implements InquiryAnswerService {
             throw new InquiryBadRequestException(InquiryExceptionMessage.NOT_STRATEGY_TRADER.getMessage());
         }
 
+        if(inquiry.getInquiryStatus() == InquiryStatus.closed) {
+            throw new IllegalStateException(InquiryExceptionMessage.INQUIRY_CLOSED.getMessage());
+        }
+
         Member trader = memberRepository.findById(traderId).orElseThrow(() -> new EntityNotFoundException(MemberExceptionMessage.DATA_NOT_FOUND.getMessage()));
 
         InquiryAnswer inquiryAnswer = InquiryAnswer.createInquiryAnswer(inquiry, trader, inquiryAnswerSaveRequestDto.getAnswerTitle(), inquiryAnswerSaveRequestDto.getAnswerContent());
