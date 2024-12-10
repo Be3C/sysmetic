@@ -81,7 +81,7 @@ public class NoticeRepositoryImpl implements NoticeRepositoryCustom {
     }
 
     @Override
-    public Optional<Notice> findPreviousNoticeAdmin(Long noticeId, String searchType, String searchText) {
+    public Notice findPreviousNoticeAdmin(Long noticeId, String searchType, String searchText) {
 
         BooleanBuilder predicate = new BooleanBuilder();
 
@@ -100,15 +100,15 @@ public class NoticeRepositoryImpl implements NoticeRepositoryCustom {
 
         predicate.and(notice.id.lt(noticeId));
 
-        return Optional.ofNullable(jpaQueryFactory
+        return jpaQueryFactory
                 .selectFrom(notice)
                 .where(predicate)
                 .orderBy(notice.id.desc()) // 따로 해서 최적화 가능
-                .fetchFirst());
+                .fetchFirst();
     }
 
     @Override
-    public Optional<Notice> findNextNoticeAdmin(Long noticeId, String searchType, String searchText) {
+    public Notice findNextNoticeAdmin(Long noticeId, String searchType, String searchText) {
 
         BooleanBuilder predicate = new BooleanBuilder();
 
@@ -127,15 +127,15 @@ public class NoticeRepositoryImpl implements NoticeRepositoryCustom {
 
         predicate.and(notice.id.gt(noticeId));
 
-        return Optional.ofNullable(jpaQueryFactory
+        return jpaQueryFactory
                 .selectFrom(notice)
                 .where(predicate)
                 .orderBy(notice.id.asc()) // 따로 해서 최적화 가능
-                .fetchFirst());
+                .fetchFirst();
     }
 
     @Override
-    public Optional<Notice> findPreviousNotice(Long noticeId, String searchText) {
+    public Notice findPreviousNotice(Long noticeId, String searchText) {
 
         BooleanBuilder predicate = new BooleanBuilder();
 
@@ -147,15 +147,15 @@ public class NoticeRepositoryImpl implements NoticeRepositoryCustom {
 
         predicate.and(notice.id.lt(noticeId));
 
-        return Optional.ofNullable(jpaQueryFactory
+        return jpaQueryFactory
                 .selectFrom(notice)
                 .where(predicate)
                 .orderBy(notice.id.desc()) // 따로 해서 최적화 가능
-                .fetchFirst());
+                .fetchFirst();
     }
 
     @Override
-    public Optional<Notice> findNextNotice(Long noticeId, String searchText) {
+    public Notice findNextNotice(Long noticeId, String searchText) {
 
         BooleanBuilder predicate = new BooleanBuilder();
 
@@ -167,11 +167,11 @@ public class NoticeRepositoryImpl implements NoticeRepositoryCustom {
 
         predicate.and(notice.id.gt(noticeId));
 
-        return Optional.ofNullable(jpaQueryFactory
+        return jpaQueryFactory
                 .selectFrom(notice)
                 .where(predicate)
                 .orderBy(notice.id.asc()) // 따로 해서 최적화 가능
-                .fetchFirst());
+                .fetchFirst();
     }
 
 }

@@ -10,14 +10,11 @@ import lombok.*;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "트레이더, 질문자 상세 조회 쿼리 파라미터 DTO")
-public class InquiryDetailTraderInquirerShowDto {
+@Schema(description = "트레이더 상세 조회 쿼리 파라미터 DTO")
+public class InquiryDetailTraderShowDto {
 
     @Schema(description = "지금 문의 ID", example = "123")
     private Long inquiryId;
-
-    @Schema(description = "문의자 ID", example = "1001")
-    private Long inquirerId;
 
     @Schema(description = "트레이더 ID", example = "9876")
     private Long traderId;
