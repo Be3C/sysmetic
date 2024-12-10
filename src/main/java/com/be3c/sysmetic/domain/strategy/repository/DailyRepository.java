@@ -250,7 +250,7 @@ public interface DailyRepository extends JpaRepository<Daily, Long> {
     /* 엑셀을 위한 메서드 */
     List<Daily> findAllByStrategyIdOrderByDateAsc(Long strategyId);         // 전략에서도 사용!
     List<Daily> findByDateGreaterThanEqualAndStrategyOrderByDateAsc(LocalDate date, Strategy strategy);
-    Optional<Daily> findTop1ByDateBeforeOrderByDateDesc(LocalDate date);
+    Optional<Daily> findTop1ByDateBeforeAndStrategyOrderByDateDesc(LocalDate date, Strategy strategy);
 
 
     // 전략 지표 값 업데이트
