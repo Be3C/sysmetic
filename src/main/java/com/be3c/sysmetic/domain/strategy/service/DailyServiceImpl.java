@@ -62,7 +62,17 @@ public class DailyServiceImpl implements DailyService {
         dailyRepository.saveAll(dailyList);
 
         // 누적금액 갱신
-        dailyList.forEach(daily -> recalculateAccumulatedData(strategyId, daily.getDate()));
+//        dailyList.forEach(daily -> {
+//            log.info("foreach : daily.getDate() : {}", daily.getDate());
+//            recalculateAccumulatedData(strategyId, daily.getDate());
+//        });
+
+        // 기존 반복 호출 제거
+        LocalDate earliestDate = dailyList.stream()
+                .map(Daily::getDate)
+                .min(Comparator.naturalOrder())
+                .orElseThrow(() -> new IllegalArgumentException("Daily list is empty"));
+        recalculateAccumulatedData(strategyId, earliestDate);
 
         // 월간분석 갱신
         List<LocalDate> updatedDateList = dailyList
@@ -306,32 +316,19 @@ public class DailyServiceImpl implements DailyService {
         return accumulativeProfitLossRate;
     }
 
-    // 누적 데이터 갱신
     public void recalculateAccumulatedData(Long strategyId, LocalDate startDate) {
         Double accumulativeProfitLossAmount = 0.0;
-        Double accumulativeProfitLossRate = 0.0;
 
         // 수정 또는 삭제 이후의 데이터 조회
         List<Daily> dailyList = dailyRepository.findAllByStrategyIdAndDateAfterOrderByDateAsc(strategyId, startDate);
 
-        // 수정 또는 삭제 이전 데이터의 누적손익금액, 누적손익률 조회
-        Daily beforeDaily = dailyRepository.findFirstByStrategyIdAndDateBeforeOrderByDateDesc(strategyId, startDate);
-        if (beforeDaily != null) {
-            accumulativeProfitLossAmount = beforeDaily.getAccumulatedProfitLossAmount();
-            accumulativeProfitLossRate = beforeDaily.getAccumulatedProfitLossRate();
-        }
-
-        // 누적손익금액, 누적손익률 다시 계산
         for (Daily daily : dailyList) {
-            accumulativeProfitLossAmount += daily.getProfitLossAmount();
-            accumulativeProfitLossRate += daily.getProfitLossRate();
-
-            // 누적손익금액 및 누적손익률 업데이트
+            if (!daily.getDate().isBefore(startDate)) {
+                accumulativeProfitLossAmount += daily.getProfitLossAmount();
+            }
             daily.setAccumulatedProfitLossAmount(accumulativeProfitLossAmount);
-            daily.setAccumulatedProfitLossRate(accumulativeProfitLossRate);
         }
 
-        // DB 업데이트
         dailyRepository.saveAll(dailyList);
     }
 }
