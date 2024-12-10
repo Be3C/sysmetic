@@ -57,7 +57,7 @@ public class StrategyIndicatorsCalculator {
 
 
     // KP Ratio 계산
-    private Double calculateKpRatio(Long strategyId) {
+    public Double calculateKpRatio(Long strategyId) {
         List<KpRatioParametersDto> days = dailyRepository.findKpRatioParameters(strategyId);
         if (days == null || days.isEmpty() || days.size() == 1) return 0.0;
 
@@ -88,15 +88,10 @@ public class StrategyIndicatorsCalculator {
     }
 
     // Sm Score 계산
-    private Double calculateSmScore(Long strategyId) {
+     public Double calculateSmScore(Long strategyId) {
         String statusCode = "PUBLIC";
         List<KpRatios> kpRatios = strategyRepository.findKpRatios(statusCode);
         if (kpRatios == null || kpRatios.isEmpty()) return 0.0;
-
-        // TODO 람다식과 for문 시간 비교
-        // Double kpRatioAverage = 0.0;
-        // for (KpRatios k : kpRatios)
-        //     kpRatioAverage += k.getKpRatio();
 
         Double kpRatioAverage = kpRatios.stream()
                 .mapToDouble(KpRatios::getKpRatio)
@@ -110,7 +105,7 @@ public class StrategyIndicatorsCalculator {
                         .mapToDouble(k -> Math.pow(k.getKpRatio() - kpRatioAverage, 2))
                         .sum() / kpRatios.size()
         );
-        if (kpRatioStandardDeviation <= 0.0) return 0.0;
+        if (kpRatioStandardDeviation == 0) return 0.0;
 
 
         // 표준화척도 Z

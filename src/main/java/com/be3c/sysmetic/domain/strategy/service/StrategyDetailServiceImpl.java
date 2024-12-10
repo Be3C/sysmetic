@@ -153,8 +153,6 @@ public class StrategyDetailServiceImpl implements StrategyDetailService {
                 .maximumCapitalReductionAmount(maximumCapitalReductionAmount)
                 .build();
 
-        log.info("winningRate = {} ", data.getWinningRate());
-
         strategyGraphAnalysisRepository.saveAndFlush(data);
         strategyStatisticsRepository.updateIndicators(
                 data.getStrategy().getId(),
@@ -167,6 +165,12 @@ public class StrategyDetailServiceImpl implements StrategyDetailService {
                 data.getRoa(),
                 data.getMaximumCapitalReductionAmount()
         );
+
+        Double kpRatio = strategyIndicatorsCalculator.calculateKpRatio(strategyId);
+        Double smScore = strategyIndicatorsCalculator.calculateSmScore(strategyId);
+        strategyRepository.updateKpRatio(strategyId, kpRatio);
+        strategyRepository.updateSmScore(strategyId, smScore);
+
         return APIResponse.success("분석 지표 그래프 데이터 생성 성공");
     }
 
@@ -220,6 +224,12 @@ public class StrategyDetailServiceImpl implements StrategyDetailService {
                 data.getRoa(),
                 data.getMaximumCapitalReductionAmount()
         );
+
+        Double kpRatio = strategyIndicatorsCalculator.calculateKpRatio(strategyId);
+        Double smScore = strategyIndicatorsCalculator.calculateSmScore(strategyId);
+        strategyRepository.updateKpRatio(strategyId, kpRatio);
+        strategyRepository.updateSmScore(strategyId, smScore);
+
         return APIResponse.success("분석 지표 그래프 데이터 생성 성공");
     }
 
@@ -252,6 +262,10 @@ public class StrategyDetailServiceImpl implements StrategyDetailService {
         });
 
         strategyGraphAnalysisRepository.saveAll(toBeModified);
+        Double kpRatio = strategyIndicatorsCalculator.calculateKpRatio(strategyId);
+        Double smScore = strategyIndicatorsCalculator.calculateSmScore(strategyId);
+        strategyRepository.updateKpRatio(strategyId, kpRatio);
+        strategyRepository.updateSmScore(strategyId, smScore);
 
         return APIResponse.success("그래프 데이터 삭제 성공");
     }
