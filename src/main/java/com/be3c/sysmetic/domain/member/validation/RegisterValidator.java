@@ -23,7 +23,7 @@ public class RegisterValidator implements Validator {
 
     private static final Pattern IMAGE_PATTERN = Pattern.compile("^.+\\.(jpg|jpeg|png|gif)$", Pattern.CASE_INSENSITIVE);
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$");
-    private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{6,20}$");
+    private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{6,20}$");
     private static final Pattern NAME_PATTERN = Pattern.compile("^[가-힣]{1,10}$");
     private static final Pattern NICKNAME_PATTERN = Pattern.compile("^[가-힣0-9]{3,10}$");
     private static final Pattern PHONE_PATTERN = Pattern.compile("^010\\d{8}$");
@@ -49,7 +49,7 @@ public class RegisterValidator implements Validator {
             1. 프로필 이미지 - jpg, jpeg, png, gif
             2. 회원 등급 코드
             3. 이메일 - ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$
-            4. 비밀번호 - 영문자(대,소문자), 숫자, 특수문자 포함 / 6~20자
+            4. 비밀번호 - 영문자(소문자), 숫자, 특수문자 포함 / 6~20자
             5. 비밀번호 재입력 - 영문자(대,소문자), 숫자, 특수문자 포함 / 6~20자
             6. 이름 - 한글 / 10자 이내
             7. 닉네임 - 한글 또는 숫자 포함 / 3~10자
