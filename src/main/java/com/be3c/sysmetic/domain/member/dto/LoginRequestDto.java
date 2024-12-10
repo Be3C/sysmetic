@@ -14,14 +14,14 @@ import lombok.*;
 @AllArgsConstructor
 public class LoginRequestDto {
 
-    @NotBlank(message = "{NotEmpty.email}")
-    @Email(message = "{Invalid.email}")
+    @NotBlank(message = "이메일 입력은 필수입니다.")
+    @Email(message = "유효한 이메일 형식이 아닙니다.")
     @JsonProperty("email")
     private String email; // 이메일
 
-    @NotBlank(message = "{NotEmpty.password}")
-    @Pattern(regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{6,20}$"
-            , message = "{Invalid.password}")
+    @NotBlank(message = "비밀번호 입력은 필수입니다.")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{6,20}$"
+            , message = "비밀번호는 영문자, 숫자, 특수문자를 포함하여 6~20자로 입력해야 합니다.")
     @JsonProperty("password")
     private String password; // 비밀번호
 
