@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum InquiryFailMessage {
+public enum InquiryExceptionMessage {
 
     NOT_FOUND_INQUIRY("해당 문의를 찾을 수 없습니다."),
     NOT_FOUND_INQUIRY_ANSWER("해당 문의 답변을 찾을 수 없습니다."),

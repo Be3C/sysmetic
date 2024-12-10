@@ -2,7 +2,6 @@ package com.be3c.sysmetic.domain.member.service;
 
 import com.be3c.sysmetic.domain.member.dto.*;
 import com.be3c.sysmetic.domain.member.entity.Inquiry;
-import com.be3c.sysmetic.domain.member.entity.InquiryAnswer;
 import com.be3c.sysmetic.domain.member.entity.InquiryStatus;
 import com.be3c.sysmetic.domain.member.entity.Member;
 import com.be3c.sysmetic.domain.member.repository.InquiryAnswerRepository;
@@ -19,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -258,7 +256,10 @@ public class InquiryServiceTest {
 //        idList.add(inquiry2.getId());
 //        idList.add(inquiry3.getId());
 //        idList.add(inquiry4.getId());
-//        inquiryService.deleteAdminInquiryList(idList);
+//        InquiryAdminListDeleteRequestDto requestDto = InquiryAdminListDeleteRequestDto.builder()
+//                .inquiryIdList(idList)
+//                .build();
+//        inquiryService.deleteAdminInquiryList(requestDto);
 //
 //        //then
 //        assertTrue(inquiryRepository.findById(inquiry1.getId()).isEmpty());
@@ -320,12 +321,12 @@ public class InquiryServiceTest {
 //
 //        //when
 //        int page = 0;
-//        Page<Inquiry> inquiryList1 = inquiryService.findInquiriesAdmin(inquirySearch1, page);
-//        Page<Inquiry> inquiryList2 = inquiryService.findInquiriesAdmin(inquirySearch2, page);
+//        PageResponse<InquiryAdminListOneShowResponseDto> inquiryList1 = inquiryService.findInquiriesAdmin(inquirySearch1, page);
+//        PageResponse<InquiryAdminListOneShowResponseDto> inquiryList2 = inquiryService.findInquiriesAdmin(inquirySearch2, page);
 //
 //        //then
-//        assertEquals(3, inquiryList1.getNumberOfElements());
-//        assertEquals(inquiryRepository.findByInquiryStatus(InquiryStatus.closed, PageRequest.of(0, 100)).getTotalElements(), inquiryList2.getTotalElements());
+//        assertEquals(3, inquiryList1.getContent().size());
+//        assertEquals(inquiryRepository.findByInquiryStatus(InquiryStatus.closed, PageRequest.of(0, 100)).getTotalElements(), inquiryList2.getContent().size());
 //    }
 //
 //    @Test

@@ -1,7 +1,7 @@
 package com.be3c.sysmetic.domain.member.controller;
 
 import com.be3c.sysmetic.domain.member.dto.*;
-import com.be3c.sysmetic.domain.member.entity.Notice;
+import com.be3c.sysmetic.domain.member.message.NoticeExceptionMessage;
 import com.be3c.sysmetic.domain.member.service.NoticeService;
 import com.be3c.sysmetic.global.common.response.APIResponse;
 import com.be3c.sysmetic.global.common.response.ErrorCode;
@@ -26,8 +26,6 @@ public class NoticeContoller implements NoticeControllerDocs {
 
     private final NoticeService noticeService;
 
-    private final Integer pageSize = 10; // 한 페이지 크기
-
     /*
         관리자 공지사항 등록 API
         1. 사용자 인증 정보가 없음 : FORBIDDEN
@@ -46,12 +44,12 @@ public class NoticeContoller implements NoticeControllerDocs {
 
         if(fileList != null && fileList.size() > 3) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(APIResponse.fail(ErrorCode.BAD_REQUEST, "등록하려는 파일이 3개 초과입니다."));
+                    .body(APIResponse.fail(ErrorCode.BAD_REQUEST, NoticeExceptionMessage.FILE_NUMBER_EXCEEDED.getMessage()));
         }
 
         if(imageList != null && imageList.size() > 5) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(APIResponse.fail(ErrorCode.BAD_REQUEST, "등록하려는 이미지가 5개 초과입니다."));
+                    .body(APIResponse.fail(ErrorCode.BAD_REQUEST, NoticeExceptionMessage.FILE_NUMBER_EXCEEDED.getMessage()));
         }
 
         try {
@@ -155,7 +153,7 @@ public class NoticeContoller implements NoticeControllerDocs {
 
         try {
 
-            NoticeDetailAdminShowResponseDto noticeDetailAdminShowResponseDto = noticeService.noticeIdToNoticeDetailAdminShowResponseDto(noticeId, searchType, searchText);
+            NoticeDetailAdminShowResponseDto noticeDetailAdminShowResponseDto = noticeService.getAdminNoticeDetail(noticeId, searchType, searchText);
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(APIResponse.success(noticeDetailAdminShowResponseDto));
@@ -181,7 +179,7 @@ public class NoticeContoller implements NoticeControllerDocs {
 
         try {
 
-            NoticeShowModifyPageResponseDto noticeShowModifyPageResponseDto = noticeService.noticeIdTonoticeShowModifyPageResponseDto(noticeId);
+            NoticeShowModifyPageResponseDto noticeShowModifyPageResponseDto = noticeService.getAdminNoticeModifyPage(noticeId);
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(APIResponse.success(noticeShowModifyPageResponseDto));
@@ -287,7 +285,7 @@ public class NoticeContoller implements NoticeControllerDocs {
             @RequestBody @Valid NoticeListDeleteRequestDto noticeListDeleteRequestDto) {
 
         try {
-            Map<Long, String> deleteResult = noticeService.deleteAdminNoticeList(noticeListDeleteRequestDto.getNoticeIds());
+            Map<Long, String> deleteResult = noticeService.deleteAdminNoticeList(noticeListDeleteRequestDto);
 
             if (deleteResult.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.OK)
@@ -343,9 +341,8 @@ public class NoticeContoller implements NoticeControllerDocs {
             @RequestParam(value = "searchText", required = false) String searchText) {
 
         try {
-            noticeService.upHits(noticeId);
 
-            NoticeDetailShowResponseDto noticeDetailShowResponseDto = noticeService.noticeIdToticeDetailShowResponseDto(noticeId, searchText);
+            NoticeDetailShowResponseDto noticeDetailShowResponseDto = noticeService.getNoticeDetail(noticeId, searchText);
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(APIResponse.success(noticeDetailShowResponseDto));

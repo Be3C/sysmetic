@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "관리자 문의 답변 조회 응답 DTO")
-public class InquiryAnswerTraderShowResponseDto {
+public class InquiryDetailInquirerShowResponseDto {
 
     @Schema(description = "답변 상태 탭 (all, closed, unclosed) (전체, 답변완료, 답변대기)", example = "ALL")
     private InquiryStatus closed; // ALL, CLOSED, UNCLOSED
@@ -33,9 +33,6 @@ public class InquiryAnswerTraderShowResponseDto {
 
     @Schema(description = "문의 등록 일시", example = "2024-11-22T15:30:00")
     private LocalDateTime inquiryRegistrationDate;
-
-    @Schema(description = "질문자 닉네임", example = "InquirerNick")
-    private String inquirerNickname;
 
     @Schema(description = "문의 상태", example = "closed")
     private InquiryStatus inquiryStatus;

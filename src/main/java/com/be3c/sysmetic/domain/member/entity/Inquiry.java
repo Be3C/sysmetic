@@ -34,7 +34,7 @@ public class Inquiry extends BaseEntity {
     private Strategy strategy;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
+    @JoinColumn(name = "inquirer_id", nullable = false)
     private Member inquirer;
 
     // enum (all, unclosed, closed)

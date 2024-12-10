@@ -273,7 +273,7 @@ public interface NoticeControllerDocs {
 
     // 공지사항 조회 / 검색 API
     @Operation(
-            summary = "공지사항 조회 및 검색",
+            summary = "공지사항 조회/검색",
             description = "공지사항을 조회하거나 검색하는 API"
     )
     @ApiResponses({

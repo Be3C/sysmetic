@@ -1,16 +1,14 @@
 package com.be3c.sysmetic.domain.member.service;
 
-import com.be3c.sysmetic.domain.member.dto.InquiryDetailSaveRequestDto;
+import com.be3c.sysmetic.domain.member.dto.InquiryAnswerSaveRequestDto;
 import com.be3c.sysmetic.domain.member.entity.Inquiry;
 import com.be3c.sysmetic.domain.member.entity.InquiryAnswer;
 import com.be3c.sysmetic.domain.member.entity.Member;
 import com.be3c.sysmetic.domain.member.repository.InquiryAnswerRepository;
-import com.be3c.sysmetic.domain.member.repository.InquiryRepository;
 import com.be3c.sysmetic.domain.strategy.entity.Method;
 import com.be3c.sysmetic.domain.strategy.entity.Strategy;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -41,29 +39,38 @@ public class InquiryAnswerServiceTest {
 //        Inquiry inquiry1 = createInquiry("문의제목1", "문의내용1");
 //        Inquiry inquiry2 = createInquiry("문의제목2", "문의내용2");
 //
-//        inquiryAnswerService.registerInquiryAnswer(inquiry1.getId(), "답변제목1", "답변내용1");
-//        inquiryAnswerService.registerInquiryAnswer(inquiry2.getId(), "답변제목2", "답변내용2");
+//        InquiryAnswerSaveRequestDto requestDto1 = InquiryAnswerSaveRequestDto.builder()
+//                .answerTitle("답변제목1")
+//                .answerContent("답변내용1")
+//                .build();
+//        InquiryAnswerSaveRequestDto requestDto2 = InquiryAnswerSaveRequestDto.builder()
+//                .answerTitle("답변제목2")
+//                .answerContent("답변내용2")
+//                .build();
+//
+//        inquiryAnswerService.registerInquiryAnswer(inquiry1.getId(), requestDto1);
+//        inquiryAnswerService.registerInquiryAnswer(inquiry2.getId(), requestDto2);
 //
 //        //when
-//        List<InquiryAnswer> inquiryAnswerList = inquiryAnswerService.findAllInquiryAnswers();
+//        List<InquiryAnswer> inquiryAnswerList = inquiryAnswerRepository.findAll();
 //
 //        //then
 //        assertEquals(2, inquiryAnswerList.size());
 //
 //    }
-
+//
 //    @Test
 //    public void 문의별_조회() throws Exception {
 //        //given
 //        Inquiry inquiry1 = createInquiry("문의제목1", "문의내용1");
 //        Inquiry inquiry2 = createInquiry("문의제목2", "문의내용2");
 //
-//        InquiryDetailSaveRequestDto inquiryDetailSaveRequestDto1 = InquiryDetailSaveRequestDto.builder()
+//        InquiryAnswerSaveRequestDto inquiryDetailSaveRequestDto1 = InquiryAnswerSaveRequestDto.builder()
 //                .answerTitle("답변제목1")
 //                .answerContent("답변내용1")
 //                .build();
 //
-//        InquiryDetailSaveRequestDto inquiryDetailSaveRequestDto2 = InquiryDetailSaveRequestDto.builder()
+//        InquiryAnswerSaveRequestDto inquiryDetailSaveRequestDto2 = InquiryAnswerSaveRequestDto.builder()
 //                .answerTitle("답변제목2")
 //                .answerContent("답변내용2")
 //                .build();
@@ -72,8 +79,8 @@ public class InquiryAnswerServiceTest {
 //        inquiryAnswerService.registerInquiryAnswer(inquiry2.getId(), inquiryDetailSaveRequestDto2);
 //
 //        //when
-//        InquiryAnswer inquiryAnswerList1 = inquiryAnswerService.findThatInquiryAnswer(inquiry1.getId());
-//        InquiryAnswer inquiryAnswerList2 = inquiryAnswerService.findThatInquiryAnswer(inquiry2.getId());
+//        InquiryAnswer inquiryAnswerList1 = inquiryAnswerRepository.findByInquiryId(inquiry1.getId()).get();
+//        InquiryAnswer inquiryAnswerList2 = inquiryAnswerRepository.findByInquiryId(inquiry2.getId()).get();
 //
 //        //then
 //        assertEquals("답변내용1", inquiryAnswerList1.getAnswerContent());
@@ -85,7 +92,7 @@ public class InquiryAnswerServiceTest {
 //    public void 답변_등록() throws Exception {
 //        //given
 //        Inquiry inquiry = createInquiry("문의제목1", "문의내용1");
-//        InquiryDetailSaveRequestDto inquiryDetailSaveRequestDto = InquiryDetailSaveRequestDto.builder()
+//        InquiryAnswerSaveRequestDto inquiryDetailSaveRequestDto = InquiryAnswerSaveRequestDto.builder()
 //                .answerTitle("답변제목1")
 //                .answerContent("답변내용1")
 //                .build();

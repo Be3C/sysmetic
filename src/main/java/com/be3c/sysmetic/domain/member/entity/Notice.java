@@ -76,4 +76,8 @@ public class Notice extends BaseEntity {
                 .isOpen(isOpen)
                 .build();
     }
+
+    public void increaseHits() {
+        hits++;
+    }
 }

@@ -2,14 +2,13 @@ package com.be3c.sysmetic.domain.member.controller;
 
 import com.be3c.sysmetic.domain.member.dto.*;
 import com.be3c.sysmetic.domain.member.entity.InquiryStatus;
-import com.be3c.sysmetic.domain.member.exception.InquiryNotWriterException;
+import com.be3c.sysmetic.domain.member.exception.InquiryBadRequestException;
 import com.be3c.sysmetic.domain.member.service.InquiryAnswerService;
 import com.be3c.sysmetic.domain.member.service.InquiryService;
 import com.be3c.sysmetic.global.common.response.APIResponse;
 import com.be3c.sysmetic.global.common.response.ErrorCode;
 import com.be3c.sysmetic.global.common.response.PageResponse;
 import com.be3c.sysmetic.global.common.response.SuccessCode;
-import com.be3c.sysmetic.global.util.SecurityUtils;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -25,12 +23,8 @@ import java.util.Map;
 @RequestMapping("/v1")
 public class InquiryController implements InquiryControllerDocs {
 
-    private final SecurityUtils securityUtils;
-
     private final InquiryService inquiryService;
     private final InquiryAnswerService inquiryAnswerService;
-
-    private final Integer pageSize = 10; // 한 페이지 크기
 
     /*
         관리자 문의 조회 / 검색 API
@@ -86,7 +80,7 @@ public class InquiryController implements InquiryControllerDocs {
     @Override
 //    @PreAuthorize("hasRole('ROLE_USER_MANAGER') or hasRole('ROLE_TRADER_MANAGER') or hasRole('ROLE_ADMIN')")
     @GetMapping("/admin/qna/{qnaId}")
-    public ResponseEntity<APIResponse<InquiryAnswerAdminShowResponseDto>> showAdminInquiryDetail (
+    public ResponseEntity<APIResponse<InquiryDetailAdminShowResponseDto>> showAdminInquiryDetail (
             @PathVariable(value = "qnaId") Long inquiryId,
             @RequestParam(value = "closed", required = false, defaultValue = "all") String closed,
             @RequestParam(value = "searchType", required = false, defaultValue = "strategy") String searchType,
@@ -112,10 +106,10 @@ public class InquiryController implements InquiryControllerDocs {
                     .searchText(searchText)
                     .build();
 
-            InquiryAnswerAdminShowResponseDto inquiryAnswerAdminShowResponseDto = inquiryService.inquiryIdToInquiryAnswerAdminShowResponseDto(inquiryDetailAdminShowDto);
+            InquiryDetailAdminShowResponseDto inquiryDetailAdminShowResponseDto = inquiryService.getInquiryAdminDetail(inquiryDetailAdminShowDto);
 
             return ResponseEntity.status(HttpStatus.OK)
-                    .body(APIResponse.success(inquiryAnswerAdminShowResponseDto));
+                    .body(APIResponse.success(inquiryDetailAdminShowResponseDto));
         }
         catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -164,18 +158,11 @@ public class InquiryController implements InquiryControllerDocs {
 //    @PreAuthorize("hasRole('ROLE_USER_MANAGER') or hasRole('ROLE_TRADER_MANAGER') or hasRole('ROLE_ADMIN')")
     @DeleteMapping("/admin/qna")
     public ResponseEntity<APIResponse<Map<Long, String>>> deleteAdminInquiryList(
-            @RequestBody @Valid InquiryAdminListDeleteRequestDto noticeListDeleteRequestDto) {
+            @RequestBody @Valid InquiryAdminListDeleteRequestDto inquiryAdminListDeleteRequestDto) {
 
         try {
 
-            List<Long> deleteInquiryIdList = noticeListDeleteRequestDto.getInquiryIdList();
-
-            if (deleteInquiryIdList == null || deleteInquiryIdList.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(APIResponse.fail(ErrorCode.BAD_REQUEST, "문의가 한 개도 선택되지 않았습니다."));
-            }
-
-            Map<Long, String> deleteResult = inquiryService.deleteAdminInquiryList(deleteInquiryIdList);
+            Map<Long, String> deleteResult = inquiryService.deleteAdminInquiryList(inquiryAdminListDeleteRequestDto);
 
             if (deleteResult.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.OK)
@@ -187,6 +174,10 @@ public class InquiryController implements InquiryControllerDocs {
         catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(APIResponse.fail(ErrorCode.NOT_FOUND, e.getMessage()));
+        }
+        catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(APIResponse.fail(ErrorCode.BAD_REQUEST, e.getMessage()));
         }
     }
 
@@ -205,7 +196,7 @@ public class InquiryController implements InquiryControllerDocs {
 
         try {
 
-            InquirySavePageShowResponseDto inquirySavePageShowResponseDto =  inquiryService.findStrategyForInquiryPage(strategyId);
+            InquirySavePageShowResponseDto inquirySavePageShowResponseDto =  inquiryService.getStrategyInquiryPage(strategyId);
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(APIResponse.success(inquirySavePageShowResponseDto));
@@ -303,7 +294,7 @@ public class InquiryController implements InquiryControllerDocs {
      @Override
 //     @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_USER_MANAGER")
      @GetMapping("/member/qna/{qnaId}")
-    public ResponseEntity<APIResponse<InquiryAnswerInquirerShowResponseDto>> showInquirerInquiryDetail (
+    public ResponseEntity<APIResponse<InquiryDetailInquirerShowResponseDto>> showInquirerInquiryDetail (
             @PathVariable(value = "qnaId") Long inquiryId,
             @RequestParam(value = "sort", defaultValue = "registrationDate") String sort,
             @RequestParam(value = "closed", defaultValue = "all") String closed) {
@@ -327,10 +318,10 @@ public class InquiryController implements InquiryControllerDocs {
                      .sort(sort)
                      .build();
 
-             InquiryAnswerInquirerShowResponseDto inquiryAnswerInquirerShowResponseDto = inquiryService.inquiryIdToInquiryAnswerInquirerShowResponseDto(inquiryDetailTraderInquirerShowDto);
+             InquiryDetailInquirerShowResponseDto inquiryDetailInquirerShowResponseDto = inquiryService.getInquirerInquiryDetail(inquiryDetailTraderInquirerShowDto);
 
              return ResponseEntity.status(HttpStatus.OK)
-                     .body(APIResponse.success(inquiryAnswerInquirerShowResponseDto));
+                     .body(APIResponse.success(inquiryDetailInquirerShowResponseDto));
          }
          catch (EntityNotFoundException e) {
              return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -366,7 +357,7 @@ public class InquiryController implements InquiryControllerDocs {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(APIResponse.fail(ErrorCode.NOT_FOUND, e.getMessage()));
         }
-        catch (InquiryNotWriterException e) {
+        catch (InquiryBadRequestException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(APIResponse.fail(ErrorCode.FORBIDDEN, e.getMessage()));
         }
@@ -458,13 +449,13 @@ public class InquiryController implements InquiryControllerDocs {
     @PostMapping("/trader/qna/{qnaId}")
     public ResponseEntity<APIResponse<Long>> saveTraderInquiryAnswer (
             @PathVariable(value = "qnaId") Long inquiryId,
-            @RequestBody @Valid InquiryDetailSaveRequestDto inquiryDetailSaveRequestDto) {
+            @RequestBody @Valid InquiryAnswerSaveRequestDto inquiryAnswerSaveRequestDto) {
 
         try {
 
             if (inquiryAnswerService.registerInquiryAnswer(
                     inquiryId,
-                    inquiryDetailSaveRequestDto)) {
+                    inquiryAnswerSaveRequestDto)) {
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(APIResponse.success());
             }
@@ -475,7 +466,7 @@ public class InquiryController implements InquiryControllerDocs {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(APIResponse.fail(ErrorCode.NOT_FOUND, e.getMessage()));
         }
-        catch (InquiryNotWriterException e) {
+        catch (InquiryBadRequestException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(APIResponse.fail(ErrorCode.FORBIDDEN, e.getMessage()));
         }
@@ -536,7 +527,7 @@ public class InquiryController implements InquiryControllerDocs {
     @Override
 //    @PreAuthorize("hasRole('ROLE_TRADER') or hasRole('ROLE_TRADER_MANAGER')")
     @GetMapping("/trader/qna/{qnaId}")
-    public ResponseEntity<APIResponse<InquiryAnswerTraderShowResponseDto>> showTraderInquiryDetail (
+    public ResponseEntity<APIResponse<InquiryDetailTraderShowResponseDto>> showTraderInquiryDetail (
             @PathVariable(value = "qnaId") Long inquiryId,
             @RequestParam(value = "sort", defaultValue = "registrationDate") String sort,
             @RequestParam(value = "closed", defaultValue = "all") String closed) {
@@ -560,10 +551,10 @@ public class InquiryController implements InquiryControllerDocs {
                     .closed(inquiryStatus)
                     .build();
 
-            InquiryAnswerTraderShowResponseDto inquiryAnswerTraderShowResponseDto = inquiryService.inquiryIdToInquiryAnswerTraderShowResponseDto(inquiryDetailTraderInquirerShowDto);
+            InquiryDetailTraderShowResponseDto inquiryDetailTraderShowResponseDto = inquiryService.getTraderInquiryDetail(inquiryDetailTraderInquirerShowDto);
 
             return ResponseEntity.status(HttpStatus.OK)
-                    .body(APIResponse.success(inquiryAnswerTraderShowResponseDto));
+                    .body(APIResponse.success(inquiryDetailTraderShowResponseDto));
         }
         catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)

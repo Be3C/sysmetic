@@ -4,7 +4,8 @@ import com.be3c.sysmetic.domain.member.dto.*;
 import com.be3c.sysmetic.domain.member.entity.Member;
 import com.be3c.sysmetic.domain.member.entity.Notice;
 import com.be3c.sysmetic.domain.member.exception.MemberExceptionMessage;
-import com.be3c.sysmetic.domain.member.message.NoticeFailMessage;
+import com.be3c.sysmetic.domain.member.exception.NoticeBadRequestException;
+import com.be3c.sysmetic.domain.member.message.NoticeExceptionMessage;
 import com.be3c.sysmetic.domain.member.repository.MemberRepository;
 import com.be3c.sysmetic.domain.member.repository.NoticeRepository;
 import com.be3c.sysmetic.global.common.response.PageResponse;
@@ -36,7 +37,7 @@ public class NoticeServiceImpl implements NoticeService {
     private final NoticeRepository noticeRepository;
     private final FileService fileService;
 
-    private final Integer pageSize = 10; // 한 페이지 크기
+    private final Integer PAGE_SIZE = 10; // 한 페이지 크기
 
     // 등록
     @Override
@@ -80,14 +81,23 @@ public class NoticeServiceImpl implements NoticeService {
     @Override
     public PageResponse<NoticeAdminListOneShowResponseDto> findNoticeAdmin(String searchType, String searchText, Integer page) {
 
-        Page<Notice> noticeList = noticeRepository.adminNoticeSearchWithBooleanBuilder(searchType, searchText, PageRequest.of(page, 10));
+        Page<Notice> noticeList = noticeRepository.adminNoticeSearchWithBooleanBuilder(searchType, searchText, PageRequest.of(page, PAGE_SIZE));
 
         List<NoticeAdminListOneShowResponseDto> noticeAdminDtoList = noticeList.stream()
-                .map(this::noticeToNoticeAdminListOneShowResponseDto).collect(Collectors.toList());
+                .map(notice -> NoticeAdminListOneShowResponseDto.builder()
+                        .noticeId(notice.getId())
+                        .noticeTitle(notice.getNoticeTitle())
+                        .writerNickname(notice.getWriterNickname())
+                        .writeDate(notice.getWriteDate())
+                        .hits(notice.getHits())
+                        .fileExist(notice.getFileExists())
+                        .isOpen(notice.getIsOpen())
+                        .build())
+                .collect(Collectors.toList());
 
         return PageResponse.<NoticeAdminListOneShowResponseDto>builder()
-                .currentPage(page)
-                .pageSize(pageSize)
+                .currentPage(noticeList.getNumber())
+                .pageSize(PAGE_SIZE)
                 .totalElement(noticeList.getTotalElements())
                 .totalPages(noticeList.getTotalPages())
                 .content(noticeAdminDtoList)
@@ -100,27 +110,13 @@ public class NoticeServiceImpl implements NoticeService {
     @Transactional
     public boolean modifyNoticeClosed(Long noticeId) {
 
-        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_NOTICE.getMessage()));
+        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException(NoticeExceptionMessage.NOT_FOUND_NOTICE.getMessage()));
 
-        if (!notice.getIsOpen()) {
-            notice.setIsOpen(true);
-        } else {
-            notice.setIsOpen(false);
-        }
+        notice.setIsOpen(!notice.getIsOpen());
 
         return true;
     }
 
-
-    // 공지사항 조회 후 조회수 상승
-    @Override
-    @Transactional
-    public void upHits(Long noticeId) {
-
-        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_NOTICE.getMessage()));
-
-        notice.setHits(notice.getHits() + 1);
-    }
 
     // 관리자 공지사항 수정
     @Override
@@ -130,10 +126,9 @@ public class NoticeServiceImpl implements NoticeService {
 
         Long correctorId = securityUtils.getUserIdInSecurityContext();
 
-        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_NOTICE.getMessage()));
+        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException(NoticeExceptionMessage.NOT_FOUND_NOTICE.getMessage()));
 
         Boolean fileExists = modifyNoticeNewDelete(FileReferenceType.NOTICE_BOARD_FILE, noticeId, newFileList, noticeModifyRequestDto.getDeleteFileIdList());
-
         Boolean imageExists = modifyNoticeNewDelete(FileReferenceType.NOTICE_BOARD_IMAGE, noticeId, newImageList, noticeModifyRequestDto.getDeleteImageIdList());
 
         notice.setNoticeTitle(noticeModifyRequestDto.getNoticeTitle());
@@ -144,30 +139,22 @@ public class NoticeServiceImpl implements NoticeService {
         notice.setCorrectDate(LocalDateTime.now());
         notice.setIsOpen(noticeModifyRequestDto.getIsOpen());
 
-        if(newFileList != null) {
-            for (MultipartFile file : newFileList) {
-                fileService.uploadAnyFile(file, new FileRequest(FileReferenceType.NOTICE_BOARD_FILE, notice.getId()));
-            }
-        }
-
-        if(newImageList != null) {
-            for (MultipartFile image : newImageList) {
-                fileService.uploadImage(image, new FileRequest(FileReferenceType.NOTICE_BOARD_IMAGE, notice.getId()));
-            }
-        }
-
         return true;
     }
 
-    @Override
-    @Transactional
-    public boolean modifyNoticeNewDelete(FileReferenceType fileReferenceType, Long noticeId, List<MultipartFile> newFileList, List<Long> deleteFileIdList) {
+    private boolean modifyNoticeNewDelete(FileReferenceType fileReferenceType, Long noticeId, List<MultipartFile> newFileList, List<Long> deleteFileIdList) {
+
+        int exceedNumber;
+        if (fileReferenceType.equals(FileReferenceType.NOTICE_BOARD_FILE)) {
+            exceedNumber = 3;
+        } else {
+            exceedNumber = 5;
+        }
 
         boolean fileExists;
         List<FileWithInfoResponse> nowFileDtoList = fileService.getFileWithInfosNullable(new FileRequest(fileReferenceType, noticeId));
 
         if (nowFileDtoList != null) {
-            fileExists = true;
 
             List<Long> nowFileIdList = new ArrayList<>();
             for (FileWithInfoResponse file : nowFileDtoList) {
@@ -175,79 +162,44 @@ public class NoticeServiceImpl implements NoticeService {
             }
             int nowCountFile = nowFileDtoList.size();
 
-            if (newFileList != null) {
-                if (!(deleteFileIdList == null || deleteFileIdList.isEmpty())) {
-                    for (Long fileId : deleteFileIdList) {
-                        if (nowFileIdList.contains(fileId)) {
-                            fileService.deleteFileById(fileId);
-                            nowCountFile--;
-                        } else {
-                            if (fileReferenceType == FileReferenceType.NOTICE_BOARD_FILE) {
-                                throw new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_FILE.getMessage());
-                            } else if (fileReferenceType == FileReferenceType.NOTICE_BOARD_IMAGE) {
-                                throw new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_IMAGE.getMessage());
-                            }
-                        }
+            if(!(deleteFileIdList == null || deleteFileIdList.isEmpty())) {
+                for (Long fileId : deleteFileIdList) {
+                    if (nowFileIdList.contains(fileId)) {
+                        fileService.deleteFileById(fileId);
+                        nowCountFile--;
+                    } else {
+                        throw new EntityNotFoundException(NoticeExceptionMessage.NOT_FOUND_FILE.getMessage());
                     }
-                    int newFileListSize = newFileList.size();
-                    nowCountFile = nowCountFile + newFileListSize;
-                    if (nowCountFile > 3) {
-                        if (fileReferenceType == FileReferenceType.NOTICE_BOARD_FILE) {
-                            throw new EntityNotFoundException(NoticeFailMessage.FILE_NUMBER_EXCEEDED.getMessage());
-                        } else if (fileReferenceType == FileReferenceType.NOTICE_BOARD_IMAGE) {
-                            throw new EntityNotFoundException(NoticeFailMessage.IMAGE_NUMBER_EXCEEDED.getMessage());
-                        }
-                    }
-                }
-                else {
-                    int newFileListSize = newFileList.size();
-                    nowCountFile = nowCountFile + newFileListSize;
-                    if (nowCountFile > 3) {
-                        if (fileReferenceType == FileReferenceType.NOTICE_BOARD_FILE) {
-                            throw new EntityNotFoundException(NoticeFailMessage.FILE_NUMBER_EXCEEDED.getMessage());
-                        } else if (fileReferenceType == FileReferenceType.NOTICE_BOARD_IMAGE) {
-                            throw new EntityNotFoundException(NoticeFailMessage.IMAGE_NUMBER_EXCEEDED.getMessage());
-                        }
-                    }
-                }
-            } else {
-                if (!(deleteFileIdList == null || deleteFileIdList.isEmpty())) {
-                    for (Long fileId : deleteFileIdList) {
-                        if (nowFileIdList.contains(fileId)) {
-                            fileService.deleteFileById(fileId);
-                            nowCountFile--;
-                        } else {
-                            if (fileReferenceType == FileReferenceType.NOTICE_BOARD_FILE) {
-                                throw new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_FILE.getMessage());
-                            } else if (fileReferenceType == FileReferenceType.NOTICE_BOARD_IMAGE) {
-                                throw new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_IMAGE.getMessage());
-                            }
-                        }
-                    }
-                    fileExists = nowCountFile > 0;
                 }
             }
+            if (newFileList != null) {
+                nowCountFile = nowCountFile + newFileList.size();
+                if (nowCountFile > exceedNumber) {
+                    throw new NoticeBadRequestException(NoticeExceptionMessage.FILE_NUMBER_EXCEEDED.getMessage());
+                }
+            }
+
+            fileExists = nowCountFile > 0;
+
         } else {
             fileExists = false;
 
             if (!(deleteFileIdList == null || deleteFileIdList.isEmpty())) {
-                if (fileReferenceType == FileReferenceType.NOTICE_BOARD_FILE) {
-                    throw new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_FILE.getMessage());
-                } else if (fileReferenceType == FileReferenceType.NOTICE_BOARD_IMAGE) {
-                    throw new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_IMAGE.getMessage());
-                }
+                throw new EntityNotFoundException(NoticeExceptionMessage.NOT_FOUND_FILE.getMessage());
             }
 
             if (newFileList != null) {
                 int newFileListSize = newFileList.size();
-                if (newFileListSize > 3) {
-                    if (fileReferenceType == FileReferenceType.NOTICE_BOARD_FILE) {
-                        throw new EntityNotFoundException(NoticeFailMessage.FILE_NUMBER_EXCEEDED.getMessage());
-                    } else if (fileReferenceType == FileReferenceType.NOTICE_BOARD_IMAGE) {
-                        throw new EntityNotFoundException(NoticeFailMessage.IMAGE_NUMBER_EXCEEDED.getMessage());
-                    }
+                if (newFileListSize > exceedNumber) {
+                    throw new NoticeBadRequestException(NoticeExceptionMessage.FILE_NUMBER_EXCEEDED.getMessage());
                 }
                 fileExists = true;
+            }
+        }
+
+        if(newFileList != null) {
+            for (MultipartFile file : newFileList) {
+                fileService.uploadAnyFile(file, new FileRequest(fileReferenceType, noticeId));
             }
         }
 
@@ -260,7 +212,7 @@ public class NoticeServiceImpl implements NoticeService {
     @Transactional
     public boolean deleteAdminNotice(Long noticeId) {
 
-        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_NOTICE.getMessage()));
+        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException(NoticeExceptionMessage.NOT_FOUND_NOTICE.getMessage()));
 
         if (notice.getImageExists()) {
             fileService.deleteFiles(new FileRequest(FileReferenceType.NOTICE_BOARD_IMAGE, noticeId));
@@ -278,17 +230,20 @@ public class NoticeServiceImpl implements NoticeService {
     // 관리자 공지사항 목록 삭제
     @Override
     @Transactional
-    public Map<Long, String> deleteAdminNoticeList(List<Long> noticeIdList) {
+    public Map<Long, String> deleteAdminNoticeList(NoticeListDeleteRequestDto noticeListDeleteRequestDto) {
+
+        List<Long> noticeIdList = noticeListDeleteRequestDto.getNoticeIds();
 
         if (noticeIdList == null || noticeIdList.isEmpty()) {
             throw new IllegalArgumentException("공지가 한 개도 선택되지 않았습니다.");
         }
 
         Map<Long, String> failDelete = new HashMap<>();
+        List<Long> successDelete = new ArrayList<>();
 
         for (Long noticeId : noticeIdList) {
             try {
-                Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_NOTICE.getMessage()));
+                Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException(NoticeExceptionMessage.NOT_FOUND_NOTICE.getMessage()));
 
                 if (notice.getFileExists()) {
                     fileService.deleteFiles(new FileRequest(FileReferenceType.NOTICE_BOARD_FILE, noticeId));
@@ -296,13 +251,15 @@ public class NoticeServiceImpl implements NoticeService {
                 if (notice.getImageExists()) {
                     fileService.deleteFiles(new FileRequest(FileReferenceType.NOTICE_BOARD_IMAGE, noticeId));
                 }
+
+                successDelete.add(noticeId);
             }
             catch (EntityNotFoundException e) {
                 failDelete.put(noticeId, e.getMessage());
             }
         }
 
-        noticeRepository.bulkDelete(noticeIdList);
+        noticeRepository.bulkDelete(successDelete);
 
         return failDelete;
     }
@@ -313,14 +270,21 @@ public class NoticeServiceImpl implements NoticeService {
     @Override
     public PageResponse<NoticeListOneShowResponseDto> findNotice(String searchText, Integer page) {
 
-        Page<Notice> noticeList = noticeRepository.noticeSearchWithBooleanBuilder(searchText, PageRequest.of(page, 10));
+        Page<Notice> noticeList = noticeRepository.noticeSearchWithBooleanBuilder(searchText, PageRequest.of(page, PAGE_SIZE));
 
         List<NoticeListOneShowResponseDto> noticeDtoList = noticeList.stream()
-                .map(this::noticeToNoticeListOneShowResponseDto).collect(Collectors.toList());
+                .map(notice -> NoticeListOneShowResponseDto.builder()
+                        .noticeId(notice.getId())
+                        .noticeTitle(notice.getNoticeTitle())
+                        .writeDate(notice.getWriteDate())
+                        .fileExists(notice.getFileExists())
+                        .build())
+                .collect(Collectors.toList());
+
 
         return PageResponse.<NoticeListOneShowResponseDto>builder()
-                .currentPage(page)
-                .pageSize(pageSize)
+                .currentPage(noticeList.getNumber())
+                .pageSize(PAGE_SIZE)
                 .totalElement(noticeList.getTotalElements())
                 .totalPages(noticeList.getTotalPages())
                 .content(noticeDtoList)
@@ -328,94 +292,18 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     @Override
-    public NoticeListOneShowResponseDto noticeToNoticeListOneShowResponseDto(Notice notice) {
+    public NoticeDetailAdminShowResponseDto getAdminNoticeDetail(Long noticeId, String searchType, String searchText) {
 
-        return NoticeListOneShowResponseDto.builder()
-                .noticeId(notice.getId())
-                .noticeTitle(notice.getNoticeTitle())
-                .writeDate(notice.getWriteDate())
-                .fileExists(notice.getFileExists())
-                .build();
-    }
-
-    @Override
-    public NoticeAdminListOneShowResponseDto noticeToNoticeAdminListOneShowResponseDto(Notice notice) {
-
-        return NoticeAdminListOneShowResponseDto.builder()
-                .noticeId(notice.getId())
-                .noticeTitle(notice.getNoticeTitle())
-                .writerNickname(notice.getWriterNickname())
-                .writeDate(notice.getWriteDate())
-                .hits(notice.getHits())
-                .fileExist(notice.getFileExists())
-                .isOpen(notice.getIsOpen())
-                .build();
-    }
-
-    @Override
-    public NoticeDetailAdminShowResponseDto noticeIdToNoticeDetailAdminShowResponseDto(Long noticeId, String searchType, String searchText) {
-
-        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_NOTICE.getMessage()));
+        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException(NoticeExceptionMessage.NOT_FOUND_NOTICE.getMessage()));
 
         Optional<Notice> previousNoticeOptional = noticeRepository.findPreviousNoticeAdmin(noticeId, searchType, searchText);
-        Long previousNoticeId;
-        String previousNoticeTitle;
-        LocalDateTime previousNoticeWriteDate;
-        if (previousNoticeOptional.isEmpty()) {
-            previousNoticeId = null;
-            previousNoticeTitle = null;
-            previousNoticeWriteDate = null;
-        } else {
-            previousNoticeId = previousNoticeOptional.orElse(null).getId();
-            previousNoticeTitle = previousNoticeOptional.orElse(null).getNoticeTitle();
-            previousNoticeWriteDate = previousNoticeOptional.orElse(null).getWriteDate();
-        }
+        NoticePreviousNextDto noticePreviousDto = getPreviousNextNoticeDto(previousNoticeOptional);
 
         Optional<Notice> nextNoticeOptional = noticeRepository.findNextNoticeAdmin(noticeId, searchType, searchText);
-        Long nextNoticeId;
-        String nextNoticeTitle;
-        LocalDateTime nextNoticeWriteDate;
-        if (nextNoticeOptional.isEmpty()) {
-            nextNoticeId = null;
-            nextNoticeTitle = null;
-            nextNoticeWriteDate = null;
-        } else {
-            nextNoticeId = nextNoticeOptional.orElse(null).getId();
-            nextNoticeTitle = nextNoticeOptional.orElse(null).getNoticeTitle();
-            nextNoticeWriteDate = nextNoticeOptional.orElse(null).getWriteDate();
-        }
+        NoticePreviousNextDto noticeNextDto = getPreviousNextNoticeDto(nextNoticeOptional);
 
-        List<FileWithInfoResponse> fileList = fileService.getFileWithInfosNullable(new FileRequest(FileReferenceType.NOTICE_BOARD_FILE, notice.getId()));
-        List<NoticeDetailFileShowResponseDto> fileDtoList;
-        if (fileList == null) {
-            fileDtoList = null;
-        } else {
-            fileDtoList = new ArrayList<>();
-            for (FileWithInfoResponse f : fileList) {
-                NoticeDetailFileShowResponseDto noticeDetailFileShowResponseDto = NoticeDetailFileShowResponseDto.builder()
-                        .fileId(f.id())
-                        .fileSize(f.fileSize())
-                        .originalName(f.originalName())
-                        .path(f.url())
-                        .build();
-                fileDtoList.add(noticeDetailFileShowResponseDto);
-            }
-        }
-
-        List<FileWithInfoResponse> imageList = fileService.getFileWithInfosNullable(new FileRequest(FileReferenceType.NOTICE_BOARD_IMAGE, notice.getId()));
-        List<NoticeDetailImageShowResponseDto> imageDtoList;
-        if (imageList == null) {
-            imageDtoList = null;
-        } else {
-            imageDtoList = new ArrayList<>();
-            for (FileWithInfoResponse f : imageList) {
-                NoticeDetailImageShowResponseDto noticeDetailImageShowResponseDto = NoticeDetailImageShowResponseDto.builder()
-                        .fileId(f.id())
-                        .path(f.url())
-                        .build();
-                imageDtoList.add(noticeDetailImageShowResponseDto);
-            }
-        }
+        List<NoticeDetailFileShowResponseDto> fileDtoList = getFileDtoList(notice);
+        List<NoticeDetailImageShowResponseDto> imageDtoList = getImageDtoList(notice);
 
         return NoticeDetailAdminShowResponseDto.builder()
                 .searchType(searchType)
@@ -432,53 +320,43 @@ public class NoticeServiceImpl implements NoticeService {
                 .isOpen(notice.getIsOpen())
                 .fileDtoList(fileDtoList)
                 .imageDtoList(imageDtoList)
-                .previousId(previousNoticeId)
-                .previousTitle(previousNoticeTitle)
-                .previousWriteDate(previousNoticeWriteDate)
-                .nextId(nextNoticeId)
-                .nextTitle(nextNoticeTitle)
-                .nextWriteDate(nextNoticeWriteDate)
+                .previousId(noticePreviousDto.getNoticeId())
+                .previousTitle(noticePreviousDto.getNoticeTitle())
+                .previousWriteDate(noticePreviousDto.getNoticeWriteDate())
+                .nextId(noticeNextDto.getNoticeId())
+                .nextTitle(noticeNextDto.getNoticeTitle())
+                .nextWriteDate(noticeNextDto.getNoticeWriteDate())
                 .build();
     }
 
-    @Override
-    public NoticeDetailShowResponseDto noticeIdToticeDetailShowResponseDto(Long noticeId, String searchText) {
+    private NoticePreviousNextDto getPreviousNextNoticeDto(Optional<Notice> noticeOptional) {
 
-        Notice notice = noticeRepository.findByIdAndAndIsOpen(noticeId).orElseThrow(() -> new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_NOTICE.getMessage()));
+        Long noticeId;
+        String noticeTitle;
+        LocalDateTime noticeWriteDate;
 
-        Optional<Notice> previousNoticeOptional = noticeRepository.findPreviousNotice(noticeId, searchText);
-        Long previousNoticeId;
-        String previousNoticeTitle;
-        LocalDateTime previousNoticeWriteDate;
-        if (previousNoticeOptional.isEmpty()) {
-            previousNoticeId = null;
-            previousNoticeTitle = null;
-            previousNoticeWriteDate = null;
+        if (noticeOptional.isEmpty()) {
+            noticeId = null;
+            noticeTitle = null;
+            noticeWriteDate = null;
         } else {
-            previousNoticeId = previousNoticeOptional.orElse(null).getId();
-            previousNoticeTitle = previousNoticeOptional.orElse(null).getNoticeTitle();
-            previousNoticeWriteDate = previousNoticeOptional.orElse(null).getWriteDate();
+            noticeId = noticeOptional.orElse(null).getId();
+            noticeTitle = noticeOptional.orElse(null).getNoticeTitle();
+            noticeWriteDate = noticeOptional.orElse(null).getWriteDate();
         }
 
-        Optional<Notice> nextNoticeOptional = noticeRepository.findNextNotice(noticeId, searchText);
-        Long nextNoticeId;
-        String nextNoticeTitle;
-        LocalDateTime nextNoticeWriteDate;
-        if (nextNoticeOptional.isEmpty()) {
-            nextNoticeId = null;
-            nextNoticeTitle = null;
-            nextNoticeWriteDate = null;
-        } else {
-            nextNoticeId = nextNoticeOptional.orElse(null).getId();
-            nextNoticeTitle = nextNoticeOptional.orElse(null).getNoticeTitle();
-            nextNoticeWriteDate = nextNoticeOptional.orElse(null).getWriteDate();
-        }
+        return NoticePreviousNextDto.builder()
+                .noticeId(noticeId)
+                .noticeTitle(noticeTitle)
+                .noticeWriteDate(noticeWriteDate)
+                .build();
+    }
 
-        List<FileWithInfoResponse> fileList = fileService.getFileWithInfosNullable(new FileRequest(FileReferenceType.NOTICE_BOARD_FILE, notice.getId()));
-        List<NoticeDetailFileShowResponseDto> fileDtoList;
-        if (fileList == null) {
-            fileDtoList = null;
-        } else {
+    private List<NoticeDetailFileShowResponseDto> getFileDtoList(Notice notice) {
+
+        List<NoticeDetailFileShowResponseDto> fileDtoList = null;
+        if (notice.getFileExists()) {
+            List<FileWithInfoResponse> fileList = fileService.getFileWithInfosNullable(new FileRequest(FileReferenceType.NOTICE_BOARD_FILE, notice.getId()));
             fileDtoList = new ArrayList<>();
             for (FileWithInfoResponse f : fileList) {
                 NoticeDetailFileShowResponseDto noticeDetailFileShowResponseDto = NoticeDetailFileShowResponseDto.builder()
@@ -491,11 +369,14 @@ public class NoticeServiceImpl implements NoticeService {
             }
         }
 
-        List<FileWithInfoResponse> imageList = fileService.getFileWithInfosNullable(new FileRequest(FileReferenceType.NOTICE_BOARD_IMAGE, notice.getId()));
-        List<NoticeDetailImageShowResponseDto> imageDtoList;
-        if (imageList == null) {
-            imageDtoList = null;
-        } else {
+        return fileDtoList;
+    }
+
+    private List<NoticeDetailImageShowResponseDto> getImageDtoList(Notice notice) {
+
+        List<NoticeDetailImageShowResponseDto> imageDtoList = null;
+        if (notice.getImageExists()) {
+            List<FileWithInfoResponse> imageList = fileService.getFileWithInfosNullable(new FileRequest(FileReferenceType.NOTICE_BOARD_IMAGE, notice.getId()));
             imageDtoList = new ArrayList<>();
             for (FileWithInfoResponse f : imageList) {
                 NoticeDetailImageShowResponseDto noticeDetailImageShowResponseDto = NoticeDetailImageShowResponseDto.builder()
@@ -505,6 +386,25 @@ public class NoticeServiceImpl implements NoticeService {
                 imageDtoList.add(noticeDetailImageShowResponseDto);
             }
         }
+
+        return imageDtoList;
+    }
+
+    @Override
+    public NoticeDetailShowResponseDto getNoticeDetail(Long noticeId, String searchText) {
+
+        Notice notice = noticeRepository.findByIdAndAndIsOpen(noticeId).orElseThrow(() -> new EntityNotFoundException(NoticeExceptionMessage.NOT_FOUND_NOTICE.getMessage()));
+
+        notice.increaseHits();
+
+        Optional<Notice> previousNoticeOptional = noticeRepository.findPreviousNotice(noticeId, searchText);
+        NoticePreviousNextDto noticePreviousDto = getPreviousNextNoticeDto(previousNoticeOptional);
+
+        Optional<Notice> nextNoticeOptional = noticeRepository.findNextNotice(noticeId, searchText);
+        NoticePreviousNextDto noticeNextDto = getPreviousNextNoticeDto(nextNoticeOptional);
+
+        List<NoticeDetailFileShowResponseDto> fileDtoList = getFileDtoList(notice);
+        List<NoticeDetailImageShowResponseDto> imageDtoList = getImageDtoList(notice);
 
         return NoticeDetailShowResponseDto.builder()
                 .searchText(searchText)
@@ -514,51 +414,22 @@ public class NoticeServiceImpl implements NoticeService {
                 .writeDate(notice.getWriteDate())
                 .fileDtoList(fileDtoList)
                 .imageDtoList(imageDtoList)
-                .previousId(previousNoticeId)
-                .previousTitle(previousNoticeTitle)
-                .previousWriteDate(previousNoticeWriteDate)
-                .nextId(nextNoticeId)
-                .nextTitle(nextNoticeTitle)
-                .nextWriteDate(nextNoticeWriteDate)
+                .previousId(noticePreviousDto.getNoticeId())
+                .previousTitle(noticePreviousDto.getNoticeTitle())
+                .previousWriteDate(noticePreviousDto.getNoticeWriteDate())
+                .nextId(noticeNextDto.getNoticeId())
+                .nextTitle(noticeNextDto.getNoticeTitle())
+                .nextWriteDate(noticeNextDto.getNoticeWriteDate())
                 .build();
     }
 
     @Override
-    public NoticeShowModifyPageResponseDto noticeIdTonoticeShowModifyPageResponseDto(Long noticeId) {
+    public NoticeShowModifyPageResponseDto getAdminNoticeModifyPage(Long noticeId) {
 
-        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException(NoticeFailMessage.NOT_FOUND_NOTICE.getMessage()));
+        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException(NoticeExceptionMessage.NOT_FOUND_NOTICE.getMessage()));
 
-        List<FileWithInfoResponse> fileList = fileService.getFileWithInfosNullable(new FileRequest(FileReferenceType.NOTICE_BOARD_FILE, notice.getId()));
-        List<NoticeDetailFileShowResponseDto> fileDtoList;
-        if (fileList == null) {
-            fileDtoList = null;
-        } else {
-            fileDtoList = new ArrayList<>();
-            for (FileWithInfoResponse f : fileList) {
-                NoticeDetailFileShowResponseDto noticeDetailFileShowResponseDto = NoticeDetailFileShowResponseDto.builder()
-                        .fileId(f.id())
-                        .fileSize(f.fileSize())
-                        .originalName(f.originalName())
-                        .path(f.url())
-                        .build();
-                fileDtoList.add(noticeDetailFileShowResponseDto);
-            }
-        }
-
-        List<FileWithInfoResponse> imageList = fileService.getFileWithInfosNullable(new FileRequest(FileReferenceType.NOTICE_BOARD_IMAGE, notice.getId()));
-        List<NoticeDetailImageShowResponseDto> imageDtoList;
-        if (imageList == null) {
-            imageDtoList = null;
-        } else {
-            imageDtoList = new ArrayList<>();
-            for (FileWithInfoResponse f : imageList) {
-                NoticeDetailImageShowResponseDto noticeDetailImageShowResponseDto = NoticeDetailImageShowResponseDto.builder()
-                        .fileId(f.id())
-                        .path(f.url())
-                        .build();
-                imageDtoList.add(noticeDetailImageShowResponseDto);
-            }
-        }
+        List<NoticeDetailFileShowResponseDto> fileDtoList = getFileDtoList(notice);
+        List<NoticeDetailImageShowResponseDto> imageDtoList = getImageDtoList(notice);
 
         return NoticeShowModifyPageResponseDto.builder()
                 .noticeId(notice.getId())
