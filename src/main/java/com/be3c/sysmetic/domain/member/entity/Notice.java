@@ -27,7 +27,7 @@ public class Notice extends BaseEntity {
     private String noticeContent;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
+    @JoinColumn(name = "writer_id", nullable = false)
     private Member writer;
 
     @Column(name = "writer_nickname", nullable = false)
@@ -75,5 +75,9 @@ public class Notice extends BaseEntity {
                 .imageExists(imageExists)
                 .isOpen(isOpen)
                 .build();
+    }
+
+    public void increaseHits() {
+        hits++;
     }
 }

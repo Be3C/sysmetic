@@ -33,21 +33,9 @@ public class Inquiry extends BaseEntity {
     @JoinColumn(name = "strategy_id", nullable = false)
     private Strategy strategy;
 
-    // 이렇게 수정 필요함
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "inquirer_id", nullable = false)
-//    private Member inquirer;
-//
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "trader_id", nullable = false)
-//    private Member trader;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
+    @JoinColumn(name = "inquirer_id", nullable = false)
     private Member inquirer;
-
-    @Column(name = "trader_id", nullable = false)
-    private Long traderId;
 
     // enum (all, unclosed, closed)
     @Enumerated(EnumType.STRING)
@@ -68,7 +56,6 @@ public class Inquiry extends BaseEntity {
         Inquiry inquiry = new Inquiry();
         inquiry.setStrategy(strategy);
         inquiry.setInquirer(member);
-        inquiry.setTraderId(strategy.getTrader().getId());
 
         inquiry.setInquiryStatus(InquiryStatus.unclosed);
         inquiry.setInquiryTitle(inquiryTitle);

@@ -169,11 +169,6 @@ public interface NoticeControllerDocs {
                     responseCode = "404",
                     description = "공지사항 수정 화면 데이터 조회 실패 (NOT_FOUND)",
                     content = @Content(schema = @Schema(implementation = APIResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "파라미터 데이터의 형식이 올바르지 않음 (BAD_REQUEST)",
-                    content = @Content(schema = @Schema(implementation = APIResponse.class))
             )
     })
     ResponseEntity<APIResponse<NoticeShowModifyPageResponseDto>> showModifyAdminNotice(
@@ -265,6 +260,11 @@ public interface NoticeControllerDocs {
                     responseCode = "207",
                     description = "공지사항 중 삭제에 실패 (MULTI_STATUS)",
                     content = @Content(schema = @Schema(implementation = APIResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "데이터의 형식이 올바르지 않음 (BAD_REQUEST)",
+                    content = @Content(schema = @Schema(implementation = APIResponse.class))
             )
     })
     ResponseEntity<APIResponse<Map<Long, String>>> deleteAdminNoticeList(
@@ -273,7 +273,7 @@ public interface NoticeControllerDocs {
 
     // 공지사항 조회 / 검색 API
     @Operation(
-            summary = "공지사항 조회 및 검색",
+            summary = "공지사항 조회/검색",
             description = "공지사항을 조회하거나 검색하는 API"
     )
     @ApiResponses({
@@ -312,11 +312,6 @@ public interface NoticeControllerDocs {
             @ApiResponse(
                     responseCode = "404",
                     description = "공지사항 상세 조회 실패 (NOT_FOUND)",
-                    content = @Content(schema = @Schema(implementation = APIResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "파라미터 데이터의 형식이 올바르지 않음 (BAD_REQUEST)",
                     content = @Content(schema = @Schema(implementation = APIResponse.class))
             )
     })

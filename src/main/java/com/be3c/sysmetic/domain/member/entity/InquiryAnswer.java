@@ -24,6 +24,10 @@ public class InquiryAnswer extends BaseEntity {
     @JoinColumn(name = "inquiry_id", unique = true)
     private Inquiry inquiry;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "trader_id", nullable = false)
+    private Member trader;
+
     @Column(name = "answer_title", length = 100, nullable = false)
     private String answerTitle;
 
@@ -34,9 +38,10 @@ public class InquiryAnswer extends BaseEntity {
     private LocalDateTime answerRegistrationDate;
 
     //==생성 메서드==//
-    public static InquiryAnswer createInquiryAnswer(Inquiry inquiry, String answerTitle, String answerContent) {
+    public static InquiryAnswer createInquiryAnswer(Inquiry inquiry, Member trader, String answerTitle, String answerContent) {
         InquiryAnswer inquiryAnswer = new InquiryAnswer();
         inquiryAnswer.setInquiry(inquiry);
+        inquiryAnswer.setTrader(trader);
         inquiryAnswer.setAnswerTitle(answerTitle);
         inquiryAnswer.setAnswerContent(answerContent);
         inquiryAnswer.setAnswerRegistrationDate(LocalDateTime.now());

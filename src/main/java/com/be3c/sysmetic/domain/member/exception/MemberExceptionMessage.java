@@ -26,6 +26,9 @@ public enum MemberExceptionMessage {
     // 이메일 관련 오류
     ERROR_EMAIL("이메일 관련 오류 발생"),
 
+    // 멤버 조회할 때 존재하지 않을 때
+    DATA_NOT_FOUND("존재하지 않는 회원입니다.")
+
     ;
 
     private final String message;
