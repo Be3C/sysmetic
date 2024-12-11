@@ -3,14 +3,13 @@ package com.be3c.sysmetic.domain.member.service;
 import com.be3c.sysmetic.domain.member.dto.InquiryAnswerSaveRequestDto;
 import com.be3c.sysmetic.domain.member.entity.Inquiry;
 import com.be3c.sysmetic.domain.member.entity.InquiryAnswer;
-import com.be3c.sysmetic.domain.member.entity.InquiryStatus;
 import com.be3c.sysmetic.domain.member.entity.Member;
-import com.be3c.sysmetic.domain.member.exception.InquiryBadRequestException;
 import com.be3c.sysmetic.domain.member.exception.MemberExceptionMessage;
 import com.be3c.sysmetic.domain.member.message.InquiryExceptionMessage;
 import com.be3c.sysmetic.domain.member.repository.InquiryAnswerRepository;
 import com.be3c.sysmetic.domain.member.repository.InquiryRepository;
 import com.be3c.sysmetic.domain.member.repository.MemberRepository;
+import com.be3c.sysmetic.global.common.Code;
 import com.be3c.sysmetic.global.util.SecurityUtils;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -33,11 +32,12 @@ public class InquiryAnswerServiceImpl implements InquiryAnswerService {
     @Transactional
     public boolean registerInquiryAnswer(Long inquiryId, InquiryAnswerSaveRequestDto inquiryAnswerSaveRequestDto) {
 
-        Inquiry inquiry = inquiryRepository.findById(inquiryId).orElseThrow(() -> new EntityNotFoundException(InquiryExceptionMessage.NOT_FOUND_INQUIRY.getMessage()));
-
         Long traderId = securityUtils.getUserIdInSecurityContext();
-        if(!traderId.equals(inquiry.getStrategy().getTrader().getId())) {
-            throw new InquiryBadRequestException(InquiryExceptionMessage.NOT_STRATEGY_TRADER.getMessage());
+
+        Inquiry inquiry = inquiryRepository.findByIdAndTraderAndStatusCode(inquiryId, traderId).orElseThrow(() -> new EntityNotFoundException(InquiryExceptionMessage.NOT_FOUND_INQUIRY.getMessage()));
+
+        if(inquiry.getStatusCode().equals(Code.CLOSED_INQUIRY.getCode())) {
+            throw new IllegalStateException(InquiryExceptionMessage.INQUIRY_CLOSED.getMessage());
         }
 
         Member trader = memberRepository.findById(traderId).orElseThrow(() -> new EntityNotFoundException(MemberExceptionMessage.DATA_NOT_FOUND.getMessage()));
@@ -45,7 +45,7 @@ public class InquiryAnswerServiceImpl implements InquiryAnswerService {
         InquiryAnswer inquiryAnswer = InquiryAnswer.createInquiryAnswer(inquiry, trader, inquiryAnswerSaveRequestDto.getAnswerTitle(), inquiryAnswerSaveRequestDto.getAnswerContent());
         inquiryAnswerRepository.save(inquiryAnswer);
 
-        inquiry.setInquiryStatus(InquiryStatus.closed);
+        inquiry.setStatusCode(Code.CLOSED_INQUIRY.getCode());
         inquiryRepository.save(inquiry);
 
         return true;

@@ -3,6 +3,7 @@ package com.be3c.sysmetic.domain.member.service;
 import com.be3c.sysmetic.domain.member.dto.*;
 import com.be3c.sysmetic.domain.member.entity.Member;
 import com.be3c.sysmetic.domain.member.entity.Notice;
+import com.be3c.sysmetic.domain.member.entity.NoticeSearchType;
 import com.be3c.sysmetic.domain.member.exception.MemberExceptionMessage;
 import com.be3c.sysmetic.domain.member.exception.NoticeBadRequestException;
 import com.be3c.sysmetic.domain.member.message.NoticeExceptionMessage;
@@ -45,6 +46,14 @@ public class NoticeServiceImpl implements NoticeService {
     public boolean registerNotice(NoticeSaveRequestDto noticeSaveRequestDto,
                                   List<MultipartFile> fileList, List<MultipartFile> imageList) {
 
+        if(fileList != null && fileList.size() > 3) {
+            throw new NoticeBadRequestException(NoticeExceptionMessage.FILE_NUMBER_EXCEEDED.getMessage());
+        }
+
+        if(imageList != null && imageList.size() > 5) {
+            throw new NoticeBadRequestException(NoticeExceptionMessage.FILE_NUMBER_EXCEEDED.getMessage());
+        }
+
         Long writerId = securityUtils.getUserIdInSecurityContext();
 
         Member writer = memberRepository.findById(writerId).orElseThrow(() -> new EntityNotFoundException(MemberExceptionMessage.DATA_NOT_FOUND.getMessage()));
@@ -79,7 +88,7 @@ public class NoticeServiceImpl implements NoticeService {
     // 관리자 검색 조회
     // 검색 (사용: title, content, titlecontent, writer) (설명: 제목, 내용, 제목+내용, 작성자)
     @Override
-    public PageResponse<NoticeAdminListOneShowResponseDto> findNoticeAdmin(String searchType, String searchText, Integer page) {
+    public PageResponse<NoticeAdminListOneShowResponseDto> findNoticeAdmin(NoticeSearchType searchType, String searchText, Integer page) {
 
         Page<Notice> noticeList = noticeRepository.adminNoticeSearchWithBooleanBuilder(searchType, searchText, PageRequest.of(page, PAGE_SIZE));
 
@@ -292,21 +301,21 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     @Override
-    public NoticeDetailAdminShowResponseDto getAdminNoticeDetail(Long noticeId, String searchType, String searchText) {
+    public NoticeDetailAdminShowResponseDto getAdminNoticeDetail(Long noticeId, NoticeSearchType searchType, String searchText) {
 
         Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException(NoticeExceptionMessage.NOT_FOUND_NOTICE.getMessage()));
 
-        Optional<Notice> previousNoticeOptional = noticeRepository.findPreviousNoticeAdmin(noticeId, searchType, searchText);
-        NoticePreviousNextDto noticePreviousDto = getPreviousNextNoticeDto(previousNoticeOptional);
+        Notice previousNotice = noticeRepository.findPreviousNoticeAdmin(noticeId, searchType, searchText);
+        NoticePreviousNextDto noticePreviousDto = getPreviousNextNoticeDto(previousNotice);
 
-        Optional<Notice> nextNoticeOptional = noticeRepository.findNextNoticeAdmin(noticeId, searchType, searchText);
-        NoticePreviousNextDto noticeNextDto = getPreviousNextNoticeDto(nextNoticeOptional);
+        Notice nextNotice = noticeRepository.findNextNoticeAdmin(noticeId, searchType, searchText);
+        NoticePreviousNextDto noticeNextDto = getPreviousNextNoticeDto(nextNotice);
 
         List<NoticeDetailFileShowResponseDto> fileDtoList = getFileDtoList(notice);
         List<NoticeDetailImageShowResponseDto> imageDtoList = getImageDtoList(notice);
 
         return NoticeDetailAdminShowResponseDto.builder()
-                .searchType(searchType)
+                .searchType(searchType.getParameter())
                 .searchText(searchText)
                 .noticeId(notice.getId())
                 .noticeTitle(notice.getNoticeTitle())
@@ -329,20 +338,20 @@ public class NoticeServiceImpl implements NoticeService {
                 .build();
     }
 
-    private NoticePreviousNextDto getPreviousNextNoticeDto(Optional<Notice> noticeOptional) {
+    private NoticePreviousNextDto getPreviousNextNoticeDto(Notice notice) {
 
         Long noticeId;
         String noticeTitle;
         LocalDateTime noticeWriteDate;
 
-        if (noticeOptional.isEmpty()) {
+        if (notice == null) {
             noticeId = null;
             noticeTitle = null;
             noticeWriteDate = null;
         } else {
-            noticeId = noticeOptional.orElse(null).getId();
-            noticeTitle = noticeOptional.orElse(null).getNoticeTitle();
-            noticeWriteDate = noticeOptional.orElse(null).getWriteDate();
+            noticeId = notice.getId();
+            noticeTitle = notice.getNoticeTitle();
+            noticeWriteDate = notice.getWriteDate();
         }
 
         return NoticePreviousNextDto.builder()
@@ -397,11 +406,11 @@ public class NoticeServiceImpl implements NoticeService {
 
         notice.increaseHits();
 
-        Optional<Notice> previousNoticeOptional = noticeRepository.findPreviousNotice(noticeId, searchText);
-        NoticePreviousNextDto noticePreviousDto = getPreviousNextNoticeDto(previousNoticeOptional);
+        Notice previousNotice = noticeRepository.findPreviousNotice(noticeId, searchText);
+        NoticePreviousNextDto noticePreviousDto = getPreviousNextNoticeDto(previousNotice);
 
-        Optional<Notice> nextNoticeOptional = noticeRepository.findNextNotice(noticeId, searchText);
-        NoticePreviousNextDto noticeNextDto = getPreviousNextNoticeDto(nextNoticeOptional);
+        Notice nextNotice = noticeRepository.findNextNotice(noticeId, searchText);
+        NoticePreviousNextDto noticeNextDto = getPreviousNextNoticeDto(nextNotice);
 
         List<NoticeDetailFileShowResponseDto> fileDtoList = getFileDtoList(notice);
         List<NoticeDetailImageShowResponseDto> imageDtoList = getImageDtoList(notice);

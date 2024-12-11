@@ -1,7 +1,8 @@
 package com.be3c.sysmetic.domain.member.service;
 
 import com.be3c.sysmetic.domain.member.dto.*;
-import com.be3c.sysmetic.domain.member.entity.InquiryStatus;
+import com.be3c.sysmetic.domain.member.entity.InquiryClosed;
+import com.be3c.sysmetic.domain.member.entity.InquirySort;
 import com.be3c.sysmetic.global.common.response.PageResponse;
 
 import java.util.Map;
@@ -33,19 +34,19 @@ public interface InquiryService {
 
     InquiryDetailAdminShowResponseDto getInquiryAdminDetail(InquiryDetailAdminShowDto inquiryDetailAdminShowDto);
 
-    InquiryDetailInquirerShowResponseDto getInquirerInquiryDetail(InquiryDetailTraderInquirerShowDto inquiryDetailTraderInquirerShowDto);
+    InquiryDetailInquirerShowResponseDto getInquirerInquiryDetail(InquiryDetailInquirerShowDto inquiryDetailInquirerShowDto);
 
-    InquiryDetailTraderShowResponseDto getTraderInquiryDetail(InquiryDetailTraderInquirerShowDto inquiryDetailTraderInquirerShowDto);
+    InquiryDetailTraderShowResponseDto getTraderInquiryDetail(InquiryDetailTraderShowDto inquiryDetailTraderShowDto);
 
     // 문의자 검색 조회
     // 정렬 순 셀렉트 박스 (최신순, 전략명)
     // 답변상태 셀렉트 박스 (전체, 답변 대기, 답변 완료)
-    PageResponse<InquiryListOneShowResponseDto> showInquirerInquiry(Integer page, String sort, InquiryStatus inquiryStatus);
+    PageResponse<InquiryListOneShowResponseDto> showInquirerInquiry(Integer page, InquirySort sort, InquiryClosed closed);
 
     // 트레이더 검색 조회
     // 정렬 순 셀렉트 박스 (최신순, 전략명)
     // 답변상태 셀렉트 박스 (전체, 답변 대기, 답변 완료)
-    PageResponse<InquiryListOneShowResponseDto> showTraderInquiry(Integer page, String sort, InquiryStatus inquiryStatus);
+    PageResponse<InquiryListOneShowResponseDto> showTraderInquiry(Integer page, InquirySort sort, InquiryClosed closed);
 
     InquiryModifyPageShowResponseDto showInquiryModifyPage(Long inquiryId);
 }

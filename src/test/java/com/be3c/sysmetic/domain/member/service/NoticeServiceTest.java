@@ -1,11 +1,13 @@
 package com.be3c.sysmetic.domain.member.service;
 
+import com.be3c.sysmetic.domain.member.dto.NoticeListOneShowResponseDto;
 import com.be3c.sysmetic.domain.member.dto.NoticeModifyRequestDto;
 import com.be3c.sysmetic.domain.member.dto.NoticeSaveRequestDto;
 import com.be3c.sysmetic.domain.member.entity.*;
 import com.be3c.sysmetic.domain.member.repository.NoticeRepository;
 import com.be3c.sysmetic.domain.strategy.entity.Method;
 import com.be3c.sysmetic.domain.strategy.entity.Strategy;
+import com.be3c.sysmetic.global.common.response.PageResponse;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.checkerframework.checker.units.qual.N;
@@ -195,12 +197,12 @@ class NoticeServiceTest {
 //
 //        //when
 //        int page = 0;
-//        Page<Notice> noticeList1 = noticeService.findNotice("dolore", page);
-//        Page<Notice> noticeList2 = noticeService.findNotice("consectetur", page);
+//        PageResponse<NoticeListOneShowResponseDto> noticeList1 = noticeService.findNotice("dolore", page);
+//        PageResponse<NoticeListOneShowResponseDto> noticeList2 = noticeService.findNotice("consectetur", page);
 //
 //        //then
-//        assertEquals(2, noticeList1.getTotalElements());
-//        assertEquals(1, noticeList2.getTotalElements());
+//        assertEquals(2, noticeList1.getTotalElement());
+//        assertEquals(1, noticeList2.getTotalElement());
 //    }
 
 

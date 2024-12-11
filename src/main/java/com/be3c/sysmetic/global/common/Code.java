@@ -40,7 +40,11 @@ public enum Code {
     ROLE_USER("UR001"),
     ROLE_TRADER("UR002"),
     ROLE_MANAGER("UR003"),
-    ROLE_ADMIN("UR004");
+    ROLE_ADMIN("UR004"),
+
+    // 문의 답변상태 코드
+    UNCLOSED_INQUIRY("IC001"),
+    CLOSED_INQUIRY("IC002");
 
     private String code;
 }

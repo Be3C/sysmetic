@@ -2,7 +2,6 @@ package com.be3c.sysmetic.domain.member.service;
 
 import com.be3c.sysmetic.domain.member.dto.*;
 import com.be3c.sysmetic.domain.member.entity.*;
-import com.be3c.sysmetic.domain.member.exception.InquiryBadRequestException;
 import com.be3c.sysmetic.domain.member.exception.MemberExceptionMessage;
 import com.be3c.sysmetic.domain.member.message.InquiryExceptionMessage;
 import com.be3c.sysmetic.domain.member.repository.InquiryAnswerRepository;
@@ -14,6 +13,7 @@ import com.be3c.sysmetic.domain.strategy.entity.Strategy;
 import com.be3c.sysmetic.domain.strategy.exception.StrategyExceptionMessage;
 import com.be3c.sysmetic.domain.strategy.repository.StrategyRepository;
 import com.be3c.sysmetic.domain.strategy.util.StockGetter;
+import com.be3c.sysmetic.global.common.Code;
 import com.be3c.sysmetic.global.common.response.PageResponse;
 import com.be3c.sysmetic.global.util.SecurityUtils;
 import com.be3c.sysmetic.global.util.file.dto.FileReferenceType;
@@ -102,19 +102,15 @@ public class InquiryServiceImpl implements InquiryService {
     @Transactional
     public boolean modifyInquiry(Long inquiryId, InquiryModifyRequestDto inquiryModifyRequestDto) {
 
-        Long userId = securityUtils.getUserIdInSecurityContext();
-        Inquiry inquiry = inquiryRepository.findByIdAndAndIsOpenInquirer(inquiryId, userId).orElseThrow(() -> new EntityNotFoundException(InquiryExceptionMessage.NOT_FOUND_INQUIRY.getMessage()));
+        Long inquirerId = securityUtils.getUserIdInSecurityContext();
+        Inquiry inquiry = inquiryRepository.findByIdAndInquirerAndStatusCode(inquiryId, inquirerId).orElseThrow(() -> new EntityNotFoundException(InquiryExceptionMessage.NOT_FOUND_INQUIRY.getMessage()));
 
-        if(!userId.equals(inquiry.getInquirer().getId())) {
-            throw new InquiryBadRequestException(InquiryExceptionMessage.NOT_INQUIRY_WRITER.getMessage());
-        }
-
-        if (inquiry.getInquiryStatus() == InquiryStatus.unclosed) {
+        if (inquiry.getStatusCode().equals(Code.UNCLOSED_INQUIRY.getCode())) {
             inquiry.setInquiryTitle(inquiryModifyRequestDto.getInquiryTitle());
             inquiry.setInquiryContent(inquiryModifyRequestDto.getInquiryContent());
             inquiryRepository.save(inquiry);
         } else {
-            throw new IllegalStateException("답변이 등록된 문의는 수정할 수 없습니다.");
+            throw new IllegalStateException(InquiryExceptionMessage.INQUIRY_CLOSED_NOT_MODIFY.getMessage());
         }
 
         return true;
@@ -125,17 +121,13 @@ public class InquiryServiceImpl implements InquiryService {
     @Transactional
     public boolean deleteInquiry(Long inquiryId) {
 
-        Long userId = securityUtils.getUserIdInSecurityContext();
-        Inquiry inquiry = inquiryRepository.findByIdAndAndIsOpenInquirer(inquiryId, userId).orElseThrow(() -> new EntityNotFoundException(InquiryExceptionMessage.NOT_FOUND_INQUIRY.getMessage()));
+        Long inquirerId = securityUtils.getUserIdInSecurityContext();
+        Inquiry inquiry = inquiryRepository.findByIdAndInquirerAndStatusCode(inquiryId, inquirerId).orElseThrow(() -> new EntityNotFoundException(InquiryExceptionMessage.NOT_FOUND_INQUIRY.getMessage()));
 
-        if(!userId.equals(inquiry.getInquirer().getId())) {
-            throw new InquiryBadRequestException(InquiryExceptionMessage.NOT_INQUIRY_WRITER.getMessage());
-        }
-
-        if (inquiry.getInquiryStatus() == InquiryStatus.unclosed) {
+        if (inquiry.getStatusCode().equals(Code.UNCLOSED_INQUIRY.getCode())) {
             inquiryRepository.delete(inquiry);
         } else {
-            throw new IllegalStateException("답변이 등록된 문의는 삭제할 수 없습니다.");
+            throw new IllegalStateException(InquiryExceptionMessage.INQUIRY_CLOSED_NOT_DELETE.getMessage());
         }
 
         return true;
@@ -163,7 +155,7 @@ public class InquiryServiceImpl implements InquiryService {
         List<Long> inquiryIdList = inquiryAdminListDeleteRequestDto.getInquiryIdList();
 
         if (inquiryIdList == null || inquiryIdList.isEmpty()) {
-            throw new IllegalArgumentException("문의가 한 개도 선택되지 않았습니다.");
+            throw new IllegalArgumentException(InquiryExceptionMessage.NO_INQUIRY_SELECTED.getMessage());
         }
 
         Map<Long, String> failDelete = new HashMap<>();
@@ -234,24 +226,24 @@ public class InquiryServiceImpl implements InquiryService {
                 .statusCode(inquiryStrategyDataDto.getStatusCode())
                 .inquiryRegistrationDate(inquiry.getInquiryRegistrationDate())
                 .inquirerNickname(inquiry.getInquirer().getNickname())
-                .inquiryStatus(inquiry.getInquiryStatus())
+                .inquiryStatus(inquiry.getStatusCode())
                 .build();
     }
 
-    private InquiryPreviousNextDto getInquiryPreviousNextDto(Optional<Inquiry> inquiryOptional) {
+    private InquiryPreviousNextDto getInquiryPreviousNextDto(Inquiry inquiry) {
 
         Long inquiryId;
         String inquiryTitle;
         LocalDateTime inquiryWriteDate;
 
-        if (inquiryOptional.isEmpty()) {
+        if (inquiry == null) {
             inquiryId = null;
             inquiryTitle = null;
             inquiryWriteDate = null;
         } else {
-            inquiryId = inquiryOptional.orElse(null).getId();
-            inquiryTitle = inquiryOptional.orElse(null).getInquiryTitle();
-            inquiryWriteDate = inquiryOptional.orElse(null).getInquiryRegistrationDate();
+            inquiryId = inquiry.getId();
+            inquiryTitle = inquiry.getInquiryTitle();
+            inquiryWriteDate = inquiry.getInquiryRegistrationDate();
         }
 
         return InquiryPreviousNextDto.builder()
@@ -263,31 +255,13 @@ public class InquiryServiceImpl implements InquiryService {
 
     private InquiryStrategyDataDto adminTraderGetInquiryStrategyDataDto(Inquiry inquiry) {
 
-        Long methodId;
-        String methodIconPath;
-        Character cycle;
-        StockListDto stockList;
-        Long strategyId;
-        String strategyName;
-        String statusCode;
-
-        if (!inquiry.getStrategy().getStatusCode().equals(StrategyStatusCode.NOT_USING_STATE.getCode())) {
-            methodId = inquiry.getStrategy().getMethod().getId();
-            methodIconPath = fileService.getFilePathNullable(new FileRequest(FileReferenceType.METHOD, methodId));
-            cycle = inquiry.getStrategy().getCycle();
-            stockList = stockGetter.getStocks(inquiry.getStrategy().getId());
-            strategyId = inquiry.getStrategy().getId();
-            strategyName = inquiry.getStrategy().getName();
-            statusCode = inquiry.getStrategy().getStatusCode();
-        } else {
-            methodId = null;
-            methodIconPath = null;
-            cycle = null;
-            stockList = null;
-            strategyId = null;
-            strategyName = null;
-            statusCode = null;
-        }
+        Long methodId = inquiry.getStrategy().getMethod().getId();
+        String methodIconPath = fileService.getFilePathNullable(new FileRequest(FileReferenceType.METHOD, methodId));
+        Character cycle = inquiry.getStrategy().getCycle();
+        StockListDto stockList = stockGetter.getStocks(inquiry.getStrategy().getId());
+        Long strategyId = inquiry.getStrategy().getId();
+        String strategyName = inquiry.getStrategy().getName();
+        String statusCode = inquiry.getStrategy().getStatusCode();
 
         return InquiryStrategyDataDto.builder()
                 .methodId(methodId)
@@ -346,7 +320,7 @@ public class InquiryServiceImpl implements InquiryService {
         LocalDateTime answerRegistrationDate;
         String answerContent;
 
-        if (inquiry.getInquiryStatus() == InquiryStatus.unclosed) {
+        if (inquiry.getStatusCode().equals(Code.UNCLOSED_INQUIRY.getCode())) {
             inquiryAnswerId = null;
             answerTitle = null;
             answerRegistrationDate = null;
@@ -372,17 +346,14 @@ public class InquiryServiceImpl implements InquiryService {
     public InquiryDetailAdminShowResponseDto getInquiryAdminDetail(InquiryDetailAdminShowDto inquiryDetailAdminShowDto) {
 
         Long inquiryId = inquiryDetailAdminShowDto.getInquiryId();
-        InquiryStatus closed = inquiryDetailAdminShowDto.getClosed();
-        String searchType = inquiryDetailAdminShowDto.getSearchType();
-        String searchText = inquiryDetailAdminShowDto.getSearchText();
 
-        Inquiry inquiry = inquiryRepository.findById(inquiryId).orElseThrow(() -> new EntityNotFoundException(InquiryExceptionMessage.NOT_FOUND_INQUIRY.getMessage()));
+        Inquiry inquiry = inquiryRepository.findByIdAndStatusCode(inquiryId).orElseThrow(() -> new EntityNotFoundException(InquiryExceptionMessage.NOT_FOUND_INQUIRY.getMessage()));
 
-        Optional<Inquiry> previousInquiryOptional = inquiryRepository.adminFindPreviousInquiry(inquiryDetailAdminShowDto);
-        InquiryPreviousNextDto inquiryPreviousDto = getInquiryPreviousNextDto(previousInquiryOptional);
+        Inquiry previousInquiry = inquiryRepository.adminFindPreviousInquiry(inquiryDetailAdminShowDto);
+        InquiryPreviousNextDto inquiryPreviousDto = getInquiryPreviousNextDto(previousInquiry);
 
-        Optional<Inquiry> nextInquiryOptional = inquiryRepository.adminFindNextInquiry(inquiryDetailAdminShowDto);
-        InquiryPreviousNextDto inquiryNextDto = getInquiryPreviousNextDto(nextInquiryOptional);
+        Inquiry nextInquiry = inquiryRepository.adminFindNextInquiry(inquiryDetailAdminShowDto);
+        InquiryPreviousNextDto inquiryNextDto = getInquiryPreviousNextDto(nextInquiry);
 
         InquiryAnswerDataDto inquiryAnswerDataDto = getInquiryAnswerDataDto(inquiry, inquiryId);
 
@@ -398,9 +369,9 @@ public class InquiryServiceImpl implements InquiryService {
         String traderProfileImagePath = fileService.getFilePath(new FileRequest(FileReferenceType.MEMBER, inquiry.getStrategy().getTrader().getId()));
 
         return InquiryDetailAdminShowResponseDto.builder()
-                .closed(String.valueOf(closed))
-                .searchType(searchType)
-                .searchText(searchText)
+                .closed(inquiryDetailAdminShowDto.getClosed().getParameter())
+                .searchType(inquiryDetailAdminShowDto.getSearchType().getParameter())
+                .searchText(inquiryDetailAdminShowDto.getSearchText())
 
                 .inquiryId(inquiryId)
                 .inquiryAnswerId(inquiryAnswerDataDto.getInquiryAnswerId())
@@ -408,7 +379,7 @@ public class InquiryServiceImpl implements InquiryService {
                 .inquiryTitle(inquiry.getInquiryTitle())
                 .inquiryRegistrationDate(inquiry.getInquiryRegistrationDate())
                 .inquirerNickname(inquiry.getInquirer().getNickname())
-                .inquiryStatus(inquiry.getInquiryStatus())
+                .inquiryStatus(inquiry.getStatusCode())
 
                 .methodId(inquiryStrategyDataDto.getMethodId())
                 .methodIconPath(inquiryStrategyDataDto.getMethodIconPath())
@@ -454,7 +425,7 @@ public class InquiryServiceImpl implements InquiryService {
                 .statusCode(inquiryStrategyDataDto.getStatusCode())
 
                 .inquiryRegistrationDate(inquiry.getInquiryRegistrationDate())
-                .inquiryStatus(inquiry.getInquiryStatus())
+                .inquiryStatus(inquiry.getStatusCode())
                 .build();
     }
 
@@ -475,39 +446,38 @@ public class InquiryServiceImpl implements InquiryService {
                 .statusCode(inquiryStrategyDataDto.getStatusCode())
 
                 .inquiryRegistrationDate(inquiry.getInquiryRegistrationDate())
-                .inquiryStatus(inquiry.getInquiryStatus())
+                .inquiryStatus(inquiry.getStatusCode())
                 .build();
     }
 
     @Override
-    public InquiryDetailInquirerShowResponseDto getInquirerInquiryDetail(InquiryDetailTraderInquirerShowDto inquiryDetailTraderInquirerShowDto) {
+    public InquiryDetailInquirerShowResponseDto getInquirerInquiryDetail(InquiryDetailInquirerShowDto inquiryDetailInquirerShowDto) {
 
-        Long inquiryId = inquiryDetailTraderInquirerShowDto.getInquiryId();
-        InquiryStatus closed = inquiryDetailTraderInquirerShowDto.getClosed();
-        String sort = inquiryDetailTraderInquirerShowDto.getSort();
+        Long inquiryId = inquiryDetailInquirerShowDto.getInquiryId();
+        InquirySort sort = inquiryDetailInquirerShowDto.getSort();
 
-        Long userId = securityUtils.getUserIdInSecurityContext();
+        Long inquirerId = securityUtils.getUserIdInSecurityContext();
 
-        Inquiry inquiry = inquiryRepository.findByIdAndAndIsOpenInquirer(inquiryId, userId).orElseThrow(() -> new EntityNotFoundException(InquiryExceptionMessage.NOT_FOUND_INQUIRY.getMessage()));
+        Inquiry inquiry = inquiryRepository.findByIdAndInquirerAndStatusCode(inquiryId, inquirerId).orElseThrow(() -> new EntityNotFoundException(InquiryExceptionMessage.NOT_FOUND_INQUIRY.getMessage()));
 
-        inquiryDetailTraderInquirerShowDto.setInquirerId(userId);
+        inquiryDetailInquirerShowDto.setInquirerId(inquirerId);
 
         InquiryPreviousNextDto inquiryPreviousDto;
         InquiryPreviousNextDto inquiryNextDto;
 
-        if (sort.equals("registrationDate")) {
-            Optional<Inquiry> previousInquiryOptional = inquiryRepository.inquirerFindPreviousInquiryRegistrationDate(inquiryDetailTraderInquirerShowDto);
-            inquiryPreviousDto = getInquiryPreviousNextDto(previousInquiryOptional);
+        if (sort.equals(InquirySort.REGISTRATION_DATE)) {
+            Inquiry previousInquiry = inquiryRepository.inquirerFindPreviousInquiryRegistrationDate(inquiryDetailInquirerShowDto);
+            inquiryPreviousDto = getInquiryPreviousNextDto(previousInquiry);
 
-            Optional<Inquiry> nextInquiryOptional = inquiryRepository.inquirerFindNextInquiryRegistrationDate(inquiryDetailTraderInquirerShowDto);
-            inquiryNextDto = getInquiryPreviousNextDto(nextInquiryOptional);
+            Inquiry nextInquiry = inquiryRepository.inquirerFindNextInquiryRegistrationDate(inquiryDetailInquirerShowDto);
+            inquiryNextDto = getInquiryPreviousNextDto(nextInquiry);
 
         } else { // strategyName
-            Optional<Inquiry> previousInquiryOptional = inquiryRepository.inquirerFindPreviousInquiryStrategyName(inquiryDetailTraderInquirerShowDto);
-            inquiryPreviousDto = getInquiryPreviousNextDto(previousInquiryOptional);
+            Inquiry previousInquiry = inquiryRepository.inquirerFindPreviousInquiryStrategyName(inquiryDetailInquirerShowDto);
+            inquiryPreviousDto = getInquiryPreviousNextDto(previousInquiry);
 
-            Optional<Inquiry> nextInquiryOptional = inquiryRepository.inquirerFindNextInquiryStrategyName(inquiryDetailTraderInquirerShowDto);
-            inquiryNextDto = getInquiryPreviousNextDto(nextInquiryOptional);
+            Inquiry nextInquiry = inquiryRepository.inquirerFindNextInquiryStrategyName(inquiryDetailInquirerShowDto);
+            inquiryNextDto = getInquiryPreviousNextDto(nextInquiry);
 
         }
 
@@ -525,15 +495,15 @@ public class InquiryServiceImpl implements InquiryService {
         String traderProfileImagePath = fileService.getFilePath(new FileRequest(FileReferenceType.MEMBER, inquiry.getStrategy().getTrader().getId()));
 
         return InquiryDetailInquirerShowResponseDto.builder()
-                .closed(closed)
-                .sort(sort)
+                .closed(inquiryDetailInquirerShowDto.getClosed().getParameter())
+                .sort(sort.getParameter())
 
                 .inquiryId(inquiryId)
                 .inquiryAnswerId(inquiryAnswerDataDto.getInquiryAnswerId())
 
                 .inquiryTitle(inquiry.getInquiryTitle())
                 .inquiryRegistrationDate(inquiry.getInquiryRegistrationDate())
-                .inquiryStatus(inquiry.getInquiryStatus())
+                .inquiryStatus(inquiry.getStatusCode())
 
                 .methodId(inquiryStrategyDataDto.getMethodId())
                 .methodIconPath(inquiryStrategyDataDto.getMethodIconPath())
@@ -563,34 +533,33 @@ public class InquiryServiceImpl implements InquiryService {
     }
 
     @Override
-    public InquiryDetailTraderShowResponseDto getTraderInquiryDetail(InquiryDetailTraderInquirerShowDto inquiryDetailTraderInquirerShowDto) {
+    public InquiryDetailTraderShowResponseDto getTraderInquiryDetail(InquiryDetailTraderShowDto inquiryDetailTraderShowDto) {
 
-        Long inquiryId = inquiryDetailTraderInquirerShowDto.getInquiryId();
-        InquiryStatus closed = inquiryDetailTraderInquirerShowDto.getClosed();
-        String sort = inquiryDetailTraderInquirerShowDto.getSort();
+        Long inquiryId = inquiryDetailTraderShowDto.getInquiryId();
+        InquirySort sort = inquiryDetailTraderShowDto.getSort();
 
-        Long userId = securityUtils.getUserIdInSecurityContext();
+        Long traderId = securityUtils.getUserIdInSecurityContext();
 
-        Inquiry inquiry = inquiryRepository.findByIdAndAndIsOpenTrader(inquiryId, userId).orElseThrow(() -> new EntityNotFoundException(InquiryExceptionMessage.NOT_FOUND_INQUIRY.getMessage()));
+        Inquiry inquiry = inquiryRepository.findByIdAndTraderAndStatusCode(inquiryId, traderId).orElseThrow(() -> new EntityNotFoundException(InquiryExceptionMessage.NOT_FOUND_INQUIRY.getMessage()));
 
-        inquiryDetailTraderInquirerShowDto.setTraderId(userId);
+        inquiryDetailTraderShowDto.setTraderId(traderId);
 
         InquiryPreviousNextDto inquiryPreviousDto;
         InquiryPreviousNextDto inquiryNextDto;
 
-        if (sort.equals("registrationDate")) {
-            Optional<Inquiry> previousInquiryOptional = inquiryRepository.traderFindPreviousInquiryRegistrationDate(inquiryDetailTraderInquirerShowDto);
-            inquiryPreviousDto = getInquiryPreviousNextDto(previousInquiryOptional);
+        if (sort.equals(InquirySort.REGISTRATION_DATE)) {
+            Inquiry previousInquiry = inquiryRepository.traderFindPreviousInquiryRegistrationDate(inquiryDetailTraderShowDto);
+            inquiryPreviousDto = getInquiryPreviousNextDto(previousInquiry);
 
-            Optional<Inquiry> nextInquiryOptional = inquiryRepository.traderFindNextInquiryRegistrationDate(inquiryDetailTraderInquirerShowDto);
-            inquiryNextDto = getInquiryPreviousNextDto(nextInquiryOptional);
+            Inquiry nextInquiry = inquiryRepository.traderFindNextInquiryRegistrationDate(inquiryDetailTraderShowDto);
+            inquiryNextDto = getInquiryPreviousNextDto(nextInquiry);
 
         } else { // strategyName
-            Optional<Inquiry> previousInquiryOptional = inquiryRepository.inquirerFindPreviousInquiryStrategyName(inquiryDetailTraderInquirerShowDto);
-            inquiryPreviousDto = getInquiryPreviousNextDto(previousInquiryOptional);
+            Inquiry previousInquiry = inquiryRepository.traderFindPreviousInquiryStrategyName(inquiryDetailTraderShowDto);
+            inquiryPreviousDto = getInquiryPreviousNextDto(previousInquiry);
 
-            Optional<Inquiry> nextInquiryOptional = inquiryRepository.inquirerFindNextInquiryStrategyName(inquiryDetailTraderInquirerShowDto);
-            inquiryNextDto = getInquiryPreviousNextDto(nextInquiryOptional);
+            Inquiry nextInquiry = inquiryRepository.traderFindNextInquiryStrategyName(inquiryDetailTraderShowDto);
+            inquiryNextDto = getInquiryPreviousNextDto(nextInquiry);
 
         }
 
@@ -608,8 +577,8 @@ public class InquiryServiceImpl implements InquiryService {
         String traderProfileImagePath = fileService.getFilePath(new FileRequest(FileReferenceType.MEMBER, inquiry.getStrategy().getTrader().getId()));
 
         return InquiryDetailTraderShowResponseDto.builder()
-                .closed(closed)
-                .sort(sort)
+                .closed(inquiryDetailTraderShowDto.getClosed().getParameter())
+                .sort(sort.getParameter())
 
                 .inquiryId(inquiryId)
                 .inquiryAnswerId(inquiryAnswerDataDto.getInquiryAnswerId())
@@ -617,7 +586,7 @@ public class InquiryServiceImpl implements InquiryService {
                 .inquiryTitle(inquiry.getInquiryTitle())
                 .inquiryRegistrationDate(inquiry.getInquiryRegistrationDate())
                 .inquirerNickname(inquiry.getInquirer().getNickname())
-                .inquiryStatus(inquiry.getInquiryStatus())
+                .inquiryStatus(inquiry.getStatusCode())
 
                 .methodId(inquiryStrategyDataDto.getMethodId())
                 .methodIconPath(inquiryStrategyDataDto.getMethodIconPath())
@@ -651,20 +620,21 @@ public class InquiryServiceImpl implements InquiryService {
     // 정렬 순 셀렉트 박스 (최신순, 전략명)
     // 답변상태 셀렉트 박스 (전체, 답변 대기, 답변 완료)
     @Override
-    public PageResponse<InquiryListOneShowResponseDto> showInquirerInquiry(Integer page, String sort, InquiryStatus inquiryStatus) {
+    public PageResponse<InquiryListOneShowResponseDto> showInquirerInquiry(Integer page, InquirySort sort, InquiryClosed closed) {
 
-        Long userId = securityUtils.getUserIdInSecurityContext();
+        Long inquirerId = securityUtils.getUserIdInSecurityContext();
 
-        InquiryListShowRequestDto inquiryListShowRequestDto = new InquiryListShowRequestDto();
-        inquiryListShowRequestDto.setInquirerId(userId);
-        inquiryListShowRequestDto.setClosed(inquiryStatus);
+        InquiryInquirerListShowRequestDto inquiryInquirerListShowRequestDto = InquiryInquirerListShowRequestDto.builder()
+                .inquirerId(inquirerId)
+                .closed(closed)
+                .build();
 
         List<InquiryListOneShowResponseDto> inquiryDtoList;
         PageResponse<InquiryListOneShowResponseDto> inquiryPage;
 
-        if (sort.equals("registrationDate")) {
+        if (sort.equals(InquirySort.REGISTRATION_DATE)) {
 
-            Page<Inquiry> inquiryList = inquiryRepository.pageInquirySearchWithBooleanBuilder(inquiryListShowRequestDto, PageRequest.of(page, PAGE_SIZE));
+            Page<Inquiry> inquiryList = inquiryRepository.registrationDateInquirerInquirySearchWithBooleanBuilder(inquiryInquirerListShowRequestDto, PageRequest.of(page, PAGE_SIZE));
 
             inquiryDtoList = inquiryList.stream()
                     .map(this::getInquirerInquiryListOneResponseDto).collect(Collectors.toList());
@@ -679,7 +649,7 @@ public class InquiryServiceImpl implements InquiryService {
 
         } else { // strategyName
 
-            List<Inquiry> inquiryList = inquiryRepository.listInquirerInquirySearchWithBooleanBuilder(inquiryListShowRequestDto);
+            List<Inquiry> inquiryList = inquiryRepository.strategyNameInquirerInquirySearchWithBooleanBuilder(inquiryInquirerListShowRequestDto);
             int totalCountInquiry = inquiryList.size(); // 전체 데이터 수
 
             int totalPageCount; // 전체 페이지 수
@@ -728,20 +698,21 @@ public class InquiryServiceImpl implements InquiryService {
     // 정렬 순 셀렉트 박스 (최신순, 전략명)
     // 답변상태 셀렉트 박스 (전체, 답변 대기, 답변 완료)
     @Override
-    public PageResponse<InquiryListOneShowResponseDto> showTraderInquiry(Integer page, String sort, InquiryStatus inquiryStatus) {
+    public PageResponse<InquiryListOneShowResponseDto> showTraderInquiry(Integer page, InquirySort sort, InquiryClosed closed) {
 
-        Long userId = securityUtils.getUserIdInSecurityContext();
+        Long traderId = securityUtils.getUserIdInSecurityContext();
 
-        InquiryListShowRequestDto inquiryListShowRequestDto = new InquiryListShowRequestDto();
-        inquiryListShowRequestDto.setTraderId(userId);
-        inquiryListShowRequestDto.setClosed(inquiryStatus);
+        InquiryTraderListShowRequestDto inquiryTraderListShowRequestDto = InquiryTraderListShowRequestDto.builder()
+                .traderId(traderId)
+                .closed(closed)
+                .build();
 
         List<InquiryListOneShowResponseDto> inquiryDtoList;
         PageResponse<InquiryListOneShowResponseDto> inquiryPage;
 
-        if (sort.equals("registrationDate")) {
+        if (sort.equals(InquirySort.REGISTRATION_DATE)) {
 
-            Page<Inquiry> inquiryList = inquiryRepository.pageInquirySearchWithBooleanBuilder(inquiryListShowRequestDto, PageRequest.of(page, PAGE_SIZE));
+            Page<Inquiry> inquiryList = inquiryRepository.registrationDateTraderInquirySearchWithBooleanBuilder(inquiryTraderListShowRequestDto, PageRequest.of(page, PAGE_SIZE));
 
             inquiryDtoList = inquiryList.stream()
                     .map(this::getTraderInquiryListOneResponseDto).collect(Collectors.toList());
@@ -756,44 +727,16 @@ public class InquiryServiceImpl implements InquiryService {
 
         } else { // strategyName
 
-            List<Inquiry> inquiryList = inquiryRepository.listTraderInquirySearchWithBooleanBuilder(inquiryListShowRequestDto);
-            int totalCountInquiry = inquiryList.size(); // 전체 데이터 수
+            Page<Inquiry> inquiryList = inquiryRepository.strategyNameTraderInquirySearchWithBooleanBuilder(inquiryTraderListShowRequestDto, PageRequest.of(page, PAGE_SIZE));
 
-            int totalPageCount; // 전체 페이지 수
-            int pageStart = page * PAGE_SIZE; // 페이지 시작 위치
-            int pageEnd;
-
-            if (totalCountInquiry == 0) {
-                totalPageCount = 0;
-                inquiryDtoList = null;
-            } else {
-                if (totalCountInquiry % PAGE_SIZE == 0) {
-                    totalPageCount = (int) (totalCountInquiry / (double) PAGE_SIZE);
-                } else {
-                    totalPageCount = (int) (totalCountInquiry / (double) PAGE_SIZE) + 1;
-                }
-
-                if (page + 1 != totalPageCount) {
-                    pageEnd = (page + 1) * PAGE_SIZE - 1;
-                } else {
-                    pageEnd = totalCountInquiry - 1;
-                }
-
-                List<Inquiry> inquiryListCut = new ArrayList<>();
-                for (int i = pageStart; i <= pageEnd; i++) {
-                    System.out.println("i: " + i);
-                    inquiryListCut.add(inquiryList.get(i));
-                }
-
-                inquiryDtoList = inquiryListCut.stream()
-                        .map(this::getTraderInquiryListOneResponseDto).collect(Collectors.toList());
-            }
+            inquiryDtoList = inquiryList.stream()
+                    .map(this::getTraderInquiryListOneResponseDto).collect(Collectors.toList());
 
             inquiryPage = PageResponse.<InquiryListOneShowResponseDto>builder()
-                    .currentPage(page) // 현재 페이지
-                    .pageSize(PAGE_SIZE) // 한 페이지 크기
-                    .totalElement(totalCountInquiry) // 전체 데이터 수
-                    .totalPages(totalPageCount) // 전체 페이지 수
+                    .currentPage(inquiryList.getNumber())
+                    .pageSize(PAGE_SIZE)
+                    .totalElement(inquiryList.getTotalElements())
+                    .totalPages(inquiryList.getTotalPages())
                     .content(inquiryDtoList)
                     .build();
         }
@@ -804,11 +747,9 @@ public class InquiryServiceImpl implements InquiryService {
     @Override
     public InquiryModifyPageShowResponseDto showInquiryModifyPage(Long inquiryId) {
 
-        Inquiry inquiry = inquiryRepository.findById(inquiryId).orElseThrow(() -> new EntityNotFoundException(InquiryExceptionMessage.NOT_FOUND_INQUIRY.getMessage()));
+        Long inquirerId = securityUtils.getUserIdInSecurityContext();
 
-        if(!securityUtils.getUserIdInSecurityContext().equals(inquiry.getInquirer().getId())) {
-            throw new InquiryBadRequestException(InquiryExceptionMessage.NOT_INQUIRY_WRITER.getMessage());
-        }
+        Inquiry inquiry = inquiryRepository.findByIdAndInquirerAndStatusCode(inquiryId, inquirerId).orElseThrow(() -> new EntityNotFoundException(InquiryExceptionMessage.NOT_FOUND_INQUIRY.getMessage()));
 
         return InquiryModifyPageShowResponseDto.builder()
                 .inquiryTitle(inquiry.getInquiryTitle())

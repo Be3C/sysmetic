@@ -1,6 +1,5 @@
 package com.be3c.sysmetic.domain.member.dto;
 
-import com.be3c.sysmetic.domain.member.entity.InquiryStatus;
 import com.be3c.sysmetic.domain.strategy.dto.StockListDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -17,7 +16,7 @@ import java.time.LocalDateTime;
 public class InquiryDetailInquirerShowResponseDto {
 
     @Schema(description = "답변 상태 탭 (all, closed, unclosed) (전체, 답변완료, 답변대기)", example = "ALL")
-    private InquiryStatus closed; // ALL, CLOSED, UNCLOSED
+    private String closed; // ALL, CLOSED, UNCLOSED
 
     @Schema(description = "정렬 순서 (registrationDate, strategyName) ('최신순', '전략명')", example = "최신순")
     private String sort;
@@ -35,7 +34,7 @@ public class InquiryDetailInquirerShowResponseDto {
     private LocalDateTime inquiryRegistrationDate;
 
     @Schema(description = "문의 상태", example = "closed")
-    private InquiryStatus inquiryStatus;
+    private String inquiryStatus;
 
     @Schema(description = "매매방식 ID", example = "12345")
     private Long methodId;
