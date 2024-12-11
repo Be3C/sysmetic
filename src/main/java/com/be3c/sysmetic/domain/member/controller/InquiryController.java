@@ -469,8 +469,6 @@ public class InquiryController implements InquiryControllerDocs {
                     .body(APIResponse.fail(ErrorCode.BAD_REQUEST, "페이지가 0보다 작습니다"));
         }
 
-
-
         try {
 
             InquiryClosed inquiryClosed = InquiryClosed.ofParameter(closed);
