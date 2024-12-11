@@ -3,6 +3,7 @@ package com.be3c.sysmetic.domain.member.service;
 import com.be3c.sysmetic.domain.member.dto.*;
 import com.be3c.sysmetic.domain.member.entity.Member;
 import com.be3c.sysmetic.domain.member.entity.Notice;
+import com.be3c.sysmetic.domain.member.entity.NoticeSearchType;
 import com.be3c.sysmetic.domain.member.exception.MemberExceptionMessage;
 import com.be3c.sysmetic.domain.member.exception.NoticeBadRequestException;
 import com.be3c.sysmetic.domain.member.message.NoticeExceptionMessage;
@@ -45,6 +46,14 @@ public class NoticeServiceImpl implements NoticeService {
     public boolean registerNotice(NoticeSaveRequestDto noticeSaveRequestDto,
                                   List<MultipartFile> fileList, List<MultipartFile> imageList) {
 
+        if(fileList != null && fileList.size() > 3) {
+            throw new NoticeBadRequestException(NoticeExceptionMessage.FILE_NUMBER_EXCEEDED.getMessage());
+        }
+
+        if(imageList != null && imageList.size() > 5) {
+            throw new NoticeBadRequestException(NoticeExceptionMessage.FILE_NUMBER_EXCEEDED.getMessage());
+        }
+
         Long writerId = securityUtils.getUserIdInSecurityContext();
 
         Member writer = memberRepository.findById(writerId).orElseThrow(() -> new EntityNotFoundException(MemberExceptionMessage.DATA_NOT_FOUND.getMessage()));
@@ -79,7 +88,7 @@ public class NoticeServiceImpl implements NoticeService {
     // 관리자 검색 조회
     // 검색 (사용: title, content, titlecontent, writer) (설명: 제목, 내용, 제목+내용, 작성자)
     @Override
-    public PageResponse<NoticeAdminListOneShowResponseDto> findNoticeAdmin(String searchType, String searchText, Integer page) {
+    public PageResponse<NoticeAdminListOneShowResponseDto> findNoticeAdmin(NoticeSearchType searchType, String searchText, Integer page) {
 
         Page<Notice> noticeList = noticeRepository.adminNoticeSearchWithBooleanBuilder(searchType, searchText, PageRequest.of(page, PAGE_SIZE));
 
@@ -292,7 +301,7 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     @Override
-    public NoticeDetailAdminShowResponseDto getAdminNoticeDetail(Long noticeId, String searchType, String searchText) {
+    public NoticeDetailAdminShowResponseDto getAdminNoticeDetail(Long noticeId, NoticeSearchType searchType, String searchText) {
 
         Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new EntityNotFoundException(NoticeExceptionMessage.NOT_FOUND_NOTICE.getMessage()));
 
@@ -306,7 +315,7 @@ public class NoticeServiceImpl implements NoticeService {
         List<NoticeDetailImageShowResponseDto> imageDtoList = getImageDtoList(notice);
 
         return NoticeDetailAdminShowResponseDto.builder()
-                .searchType(searchType)
+                .searchType(searchType.getParameter())
                 .searchText(searchText)
                 .noticeId(notice.getId())
                 .noticeTitle(notice.getNoticeTitle())

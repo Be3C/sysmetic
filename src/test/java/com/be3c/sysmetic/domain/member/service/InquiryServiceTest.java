@@ -1,22 +1,20 @@
 package com.be3c.sysmetic.domain.member.service;
 
 import com.be3c.sysmetic.domain.member.dto.*;
-import com.be3c.sysmetic.domain.member.entity.Inquiry;
-import com.be3c.sysmetic.domain.member.entity.InquiryStatus;
-import com.be3c.sysmetic.domain.member.entity.Member;
+import com.be3c.sysmetic.domain.member.entity.*;
 import com.be3c.sysmetic.domain.member.repository.InquiryAnswerRepository;
 import com.be3c.sysmetic.domain.member.repository.InquiryRepository;
 import com.be3c.sysmetic.domain.member.repository.MemberRepository;
 import com.be3c.sysmetic.domain.strategy.dto.StrategyStatusCode;
 import com.be3c.sysmetic.domain.strategy.entity.Method;
 import com.be3c.sysmetic.domain.strategy.entity.Strategy;
+import com.be3c.sysmetic.global.common.Code;
 import com.be3c.sysmetic.global.common.response.PageResponse;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
@@ -278,13 +276,13 @@ public class InquiryServiceTest {
 //        Strategy strategy2 = createStrategy("LG전자", StrategyStatusCode.PUBLIC.getCode(), "트레이더닉네임2");
 //
 //        InquiryAdminListShowRequestDto inquirySearch1 = new InquiryAdminListShowRequestDto();
-//        inquirySearch1.setClosed(InquiryStatus.unclosed);
-//        inquirySearch1.setSearchType("strategy");
+//        inquirySearch1.setClosed(InquiryClosed.UNCLOSED);
+//        inquirySearch1.setSearchType(InquirySearchType.STRATEGY);
 //        inquirySearch1.setSearchText("삼성전");
 //
 //        InquiryAdminListShowRequestDto inquirySearch2 = new InquiryAdminListShowRequestDto();
-//        inquirySearch2.setClosed(InquiryStatus.closed);
-//        inquirySearch2.setSearchType("strategy");
+//        inquirySearch2.setClosed(InquiryClosed.CLOSED);
+//        inquirySearch2.setSearchType(InquirySearchType.STRATEGY);
 //        inquirySearch2.setSearchText("");
 //
 //        Member member = createMember("일반닉네임1");
@@ -310,14 +308,14 @@ public class InquiryServiceTest {
 //                .build();
 //        inquiryService.registerInquiry(strategy2.getId(), inquirySaveRequestDto4);
 //        Inquiry inquiry1 = inquiryRepository.findByInquiryTitle("질문4").get(0);
-//        inquiry1.setInquiryStatus(InquiryStatus.closed);
+//        inquiry1.setStatusCode(Code.CLOSED_INQUIRY.getCode());
 //        InquirySaveRequestDto inquirySaveRequestDto5 = InquirySaveRequestDto.builder()
 //                .inquiryTitle("질문5")
 //                .inquiryContent("내용5")
 //                .build();
 //        inquiryService.registerInquiry(strategy1.getId(), inquirySaveRequestDto5);
 //        Inquiry inquiry2 = inquiryRepository.findByInquiryTitle("질문5").get(0);
-//        inquiry2.setInquiryStatus(InquiryStatus.closed);
+//        inquiry2.setStatusCode(Code.CLOSED_INQUIRY.getCode());
 //
 //        //when
 //        int page = 0;
@@ -326,7 +324,7 @@ public class InquiryServiceTest {
 //
 //        //then
 //        assertEquals(3, inquiryList1.getContent().size());
-//        assertEquals(inquiryRepository.findByInquiryStatus(InquiryStatus.closed, PageRequest.of(0, 100)).getTotalElements(), inquiryList2.getContent().size());
+//        assertEquals(inquiryRepository.findByStatusCode(Code.CLOSED_INQUIRY.getCode(), PageRequest.of(0, 100)).getTotalElements(), inquiryList2.getContent().size());
 //    }
 //
 //    @Test
@@ -368,9 +366,9 @@ public class InquiryServiceTest {
 //
 //        //when
 //        int page = 0;
-//        PageResponse<InquiryListOneShowResponseDto> inquiryList1 = inquiryService.showTraderInquiry(page, "registrationDate", InquiryStatus.all);
-//        PageResponse<InquiryListOneShowResponseDto> inquiryList2 = inquiryService.showTraderInquiry(page, "strategyName", InquiryStatus.all);
-//        PageResponse<InquiryListOneShowResponseDto> inquiryList3 = inquiryService.showTraderInquiry(page, "strategyName", InquiryStatus.all);
+//        PageResponse<InquiryListOneShowResponseDto> inquiryList1 = inquiryService.showTraderInquiry(page, InquirySort.REGISTRATION_DATE, InquiryClosed.ALL);
+//        PageResponse<InquiryListOneShowResponseDto> inquiryList2 = inquiryService.showTraderInquiry(page, InquirySort.STRATEGY_NAME, InquiryClosed.ALL);
+//        PageResponse<InquiryListOneShowResponseDto> inquiryList3 = inquiryService.showTraderInquiry(page, InquirySort.STRATEGY_NAME, InquiryClosed.ALL);
 //
 //        // then
 //        assertEquals("질문6", inquiryList1.getContent().get(0).getInquiryTitle());

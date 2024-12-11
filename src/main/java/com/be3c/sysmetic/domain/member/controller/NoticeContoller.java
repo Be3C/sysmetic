@@ -1,8 +1,8 @@
 package com.be3c.sysmetic.domain.member.controller;
 
 import com.be3c.sysmetic.domain.member.dto.*;
+import com.be3c.sysmetic.domain.member.entity.NoticeSearchType;
 import com.be3c.sysmetic.domain.member.exception.NoticeBadRequestException;
-import com.be3c.sysmetic.domain.member.message.NoticeExceptionMessage;
 import com.be3c.sysmetic.domain.member.service.NoticeService;
 import com.be3c.sysmetic.global.common.response.APIResponse;
 import com.be3c.sysmetic.global.common.response.ErrorCode;
@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,22 +37,12 @@ public class NoticeContoller implements NoticeControllerDocs {
         5. 등록하는 관리자 정보를 찾지 못했을 때 : NOT_FOUND
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_USER_MANAGER') or hasRole('ROLE_TRADER_MANAGER') or hasRole('ROLE_ADMIN')")
+//    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
     @PostMapping(value = "/admin/notice", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<APIResponse<Long>> saveAdminNotice(
             @RequestPart(value = "NoticeSaveRequestDto") @Valid NoticeSaveRequestDto noticeSaveRequestDto,
             @RequestPart(value = "fileList", required = false) List<MultipartFile> fileList,
             @RequestPart(value = "imageList", required = false) List<MultipartFile> imageList) {
-
-        if(fileList != null && fileList.size() > 3) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(APIResponse.fail(ErrorCode.BAD_REQUEST, NoticeExceptionMessage.FILE_NUMBER_EXCEEDED.getMessage()));
-        }
-
-        if(imageList != null && imageList.size() > 5) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(APIResponse.fail(ErrorCode.BAD_REQUEST, NoticeExceptionMessage.FILE_NUMBER_EXCEEDED.getMessage()));
-        }
 
         try {
 
@@ -69,6 +60,10 @@ public class NoticeContoller implements NoticeControllerDocs {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(APIResponse.fail(ErrorCode.NOT_FOUND, e.getMessage()));
         }
+        catch (NoticeBadRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(APIResponse.fail(ErrorCode.BAD_REQUEST, e.getMessage()));
+        }
     }
 
 
@@ -79,7 +74,7 @@ public class NoticeContoller implements NoticeControllerDocs {
         3. 파라미터 데이터의 형식이 올바르지 않음 : BAD_REQUEST
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_USER_MANAGER') or hasRole('ROLE_TRADER_MANAGER') or hasRole('ROLE_ADMIN')")
+//    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
     @GetMapping("/admin/notice")
     public ResponseEntity<APIResponse<PageResponse<NoticeAdminListOneShowResponseDto>>> showAdminNotice(
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
@@ -91,15 +86,18 @@ public class NoticeContoller implements NoticeControllerDocs {
                     .body(APIResponse.fail(ErrorCode.BAD_REQUEST, "페이지가 0보다 작습니다"));
         }
 
-        if (!(searchType.equals("title") || searchType.equals("content") || searchType.equals("titlecontent") || searchType.equals("writer"))) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(APIResponse.fail(ErrorCode.BAD_REQUEST, "쿼리 파라미터 searchType이 올바르지 않습니다."));
+        try {
+            NoticeSearchType noticeSearchType = NoticeSearchType.ofParameter(searchType);
+
+            PageResponse<NoticeAdminListOneShowResponseDto> adminNoticePage = noticeService.findNoticeAdmin(noticeSearchType, searchText, page);
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(APIResponse.success(adminNoticePage));
         }
-
-        PageResponse<NoticeAdminListOneShowResponseDto> adminNoticePage = noticeService.findNoticeAdmin(searchType, searchText, page);
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(APIResponse.success(adminNoticePage));
+        catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(APIResponse.fail(ErrorCode.BAD_REQUEST, e.getMessage()));
+        }
     }
 
 
@@ -111,7 +109,7 @@ public class NoticeContoller implements NoticeControllerDocs {
         4. 해당 공지사항을 찾지 못했을 때 : NOT_FOUND
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_USER_MANAGER') or hasRole('ROLE_TRADER_MANAGER') or hasRole('ROLE_ADMIN')")
+//    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
     @PutMapping("/admin/notice/{noticeId}/open-close")
     public ResponseEntity<APIResponse<Long>> modifyNoticeClosed(
             @PathVariable(name="noticeId") Long noticeId) {
@@ -140,21 +138,18 @@ public class NoticeContoller implements NoticeControllerDocs {
         4. 파라미터 데이터의 형식이 올바르지 않음 : BAD_REQUEST
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_USER_MANAGER') or hasRole('ROLE_TRADER_MANAGER') or hasRole('ROLE_ADMIN')")
+//    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
     @GetMapping("/admin/notice/{noticeId}")
     public ResponseEntity<APIResponse<NoticeDetailAdminShowResponseDto>> showAdminNoticeDetail(
             @PathVariable(name="noticeId") Long noticeId,
             @RequestParam(value = "searchType", required = false, defaultValue = "title") String searchType,
             @RequestParam(value = "searchText", required = false) String searchText) {
 
-        if (!(searchType.equals("title") || searchType.equals("content") || searchType.equals("titlecontent") || searchType.equals("writer"))) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(APIResponse.fail(ErrorCode.BAD_REQUEST, "쿼리 파라미터 searchType이 올바르지 않습니다."));
-        }
-
         try {
 
-            NoticeDetailAdminShowResponseDto noticeDetailAdminShowResponseDto = noticeService.getAdminNoticeDetail(noticeId, searchType, searchText);
+            NoticeSearchType noticeSearchType = NoticeSearchType.ofParameter(searchType);
+
+            NoticeDetailAdminShowResponseDto noticeDetailAdminShowResponseDto = noticeService.getAdminNoticeDetail(noticeId, noticeSearchType, searchText);
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(APIResponse.success(noticeDetailAdminShowResponseDto));
@@ -162,6 +157,10 @@ public class NoticeContoller implements NoticeControllerDocs {
         catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(APIResponse.fail(ErrorCode.NOT_FOUND, e.getMessage()));
+        }
+        catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(APIResponse.fail(ErrorCode.BAD_REQUEST, e.getMessage()));
         }
     }
 
@@ -173,7 +172,7 @@ public class NoticeContoller implements NoticeControllerDocs {
         3. 공지사항 수정 화면 조회에 실패했을 때 : NOT_FOUND
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_USER_MANAGER') or hasRole('ROLE_TRADER_MANAGER') or hasRole('ROLE_ADMIN')")
+//    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
     @GetMapping("/admin/notice/{noticeId}/modify")
     public ResponseEntity<APIResponse<NoticeShowModifyPageResponseDto>> showModifyAdminNotice(
             @PathVariable(name="noticeId") Long noticeId) {
@@ -202,7 +201,7 @@ public class NoticeContoller implements NoticeControllerDocs {
             +) 공지사항 수정 화면에 들어온 시간이 해당 공지사항 최종수정일시보다 작음
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_USER_MANAGER') or hasRole('ROLE_TRADER_MANAGER') or hasRole('ROLE_ADMIN')")
+//    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
     @PutMapping(value = "/admin/notice/{noticeId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<APIResponse<Long>> modifyAdminNotice(
             @PathVariable(name="noticeId") Long noticeId,
@@ -255,7 +254,7 @@ public class NoticeContoller implements NoticeControllerDocs {
         4. 해당 공지사항을 찾지 못했을 때 : NOT_FOUND
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_USER_MANAGER') or hasRole('ROLE_TRADER_MANAGER') or hasRole('ROLE_ADMIN')")
+//    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
     @DeleteMapping("/admin/notice/{noticeId}")
     public ResponseEntity<APIResponse<Long>> deleteAdminNotice(
             @PathVariable(name="noticeId") Long noticeId) {
@@ -284,7 +283,7 @@ public class NoticeContoller implements NoticeControllerDocs {
         5. 데이터의 형식이 올바르지 않음 : BAD_REQUEST
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_USER_MANAGER') or hasRole('ROLE_TRADER_MANAGER') or hasRole('ROLE_ADMIN')")
+//    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
     @DeleteMapping("/admin/notice")
     public ResponseEntity<APIResponse<Map<Long, String>>> deleteAdminNoticeList(
             @RequestBody @Valid NoticeListDeleteRequestDto noticeListDeleteRequestDto) {
@@ -316,6 +315,7 @@ public class NoticeContoller implements NoticeControllerDocs {
         2. 파라미터 데이터의 형식이 올바르지 않음 : BAD_REQUEST
      */
     @Override
+//    @PreAuthorize("permitAll()")
     @GetMapping("/notice")
     public ResponseEntity<APIResponse<PageResponse<NoticeListOneShowResponseDto>>> showNotice(
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
@@ -340,6 +340,7 @@ public class NoticeContoller implements NoticeControllerDocs {
         3. 공지사항의 상세 데이터 조회에 실패했을 때 : NOT_FOUND
      */
     @Override
+//    @PreAuthorize("permitAll()")
     @GetMapping("/notice/{noticeId}")
     public ResponseEntity<APIResponse<NoticeDetailShowResponseDto>> showNoticeDetail(
             @PathVariable(name="noticeId") Long noticeId,

@@ -1,6 +1,7 @@
 package com.be3c.sysmetic.domain.member.entity;
 
 import com.be3c.sysmetic.domain.strategy.entity.Strategy;
+import com.be3c.sysmetic.global.common.Code;
 import com.be3c.sysmetic.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -37,10 +38,8 @@ public class Inquiry extends BaseEntity {
     @JoinColumn(name = "inquirer_id", nullable = false)
     private Member inquirer;
 
-    // enum (all, unclosed, closed)
-    @Enumerated(EnumType.STRING)
-    @Column(name = "inquiry_status", nullable = false)
-    private InquiryStatus inquiryStatus;
+    @Column(name = "status_code", nullable = false)
+    private String statusCode;
 
     @Column(name = "inquiry_title", length = 100, nullable = false)
     private String inquiryTitle;
@@ -57,7 +56,7 @@ public class Inquiry extends BaseEntity {
         inquiry.setStrategy(strategy);
         inquiry.setInquirer(member);
 
-        inquiry.setInquiryStatus(InquiryStatus.unclosed);
+        inquiry.setStatusCode(Code.UNCLOSED_INQUIRY.getCode());
         inquiry.setInquiryTitle(inquiryTitle);
         inquiry.setInquiryContent(inquiryContent);
         inquiry.setInquiryRegistrationDate(LocalDateTime.now());

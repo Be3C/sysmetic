@@ -1,7 +1,6 @@
 package com.be3c.sysmetic.domain.member.repository;
 
 import com.be3c.sysmetic.domain.member.entity.Inquiry;
-import com.be3c.sysmetic.domain.member.entity.InquiryStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,7 +16,7 @@ public interface InquiryRepository extends JpaRepository<Inquiry, Long>, Inquiry
     List<Inquiry> findByInquiryTitle(String inquiryTitle);
 
     // 상태별 문의 조회
-    Page<Inquiry> findByInquiryStatus(InquiryStatus inquiryStatus, Pageable pageable);
+    Page<Inquiry> findByStatusCode(String statusCode, Pageable pageable);
 
     @Query("select i from Inquiry i where i.id = :inquiryId and i.strategy.statusCode != 'NOT_USING_STATE'")
     Optional<Inquiry> findByIdAndStatusCode(@Param("inquiryId") Long inquiryId);

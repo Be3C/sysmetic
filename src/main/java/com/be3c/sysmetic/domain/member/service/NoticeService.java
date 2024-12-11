@@ -1,6 +1,7 @@
 package com.be3c.sysmetic.domain.member.service;
 
 import com.be3c.sysmetic.domain.member.dto.*;
+import com.be3c.sysmetic.domain.member.entity.NoticeSearchType;
 import com.be3c.sysmetic.global.common.response.PageResponse;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,7 +16,7 @@ public interface NoticeService {
 
     // 관리자 검색 조회
     // 검색 (사용: title, content, titlecontent, writer) (설명: 제목, 내용, 제목+내용, 작성자)
-    PageResponse<NoticeAdminListOneShowResponseDto> findNoticeAdmin(String searchType, String searchText, Integer page);
+    PageResponse<NoticeAdminListOneShowResponseDto> findNoticeAdmin(NoticeSearchType searchType, String searchText, Integer page);
 
     // 관리자 공지사항 목록 공개여부 수정
     boolean modifyNoticeClosed(Long noticeId);
@@ -34,7 +35,7 @@ public interface NoticeService {
     // 검색 (조건: 제목+내용)
     PageResponse<NoticeListOneShowResponseDto> findNotice(String searchText, Integer page);
 
-    NoticeDetailAdminShowResponseDto getAdminNoticeDetail(Long noticeId, String searchType, String searchText);
+    NoticeDetailAdminShowResponseDto getAdminNoticeDetail(Long noticeId, NoticeSearchType searchType, String searchText);
 
     NoticeDetailShowResponseDto getNoticeDetail(Long noticeId, String searchText);
 

@@ -1,6 +1,7 @@
 package com.be3c.sysmetic.domain.member.dto;
 
-import com.be3c.sysmetic.domain.member.entity.InquiryStatus;
+import com.be3c.sysmetic.domain.member.entity.InquiryClosed;
+import com.be3c.sysmetic.domain.member.entity.InquirySort;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -20,8 +21,8 @@ public class InquiryDetailTraderShowDto {
     private Long traderId;
 
     @Schema(description = "답변 상태 탭 (all, closed, unclosed) (전체, 답변완료, 답변대기)", example = "ALL")
-    private InquiryStatus closed; // ALL, CLOSED, UNCLOSED
+    private InquiryClosed closed; // ALL, CLOSED, UNCLOSED
 
     @Schema(description = "정렬 순서 (registrationDate, strategyName) ('최신순', '전략명')", example = "최신순")
-    private String sort;
+    private InquirySort sort;
 }

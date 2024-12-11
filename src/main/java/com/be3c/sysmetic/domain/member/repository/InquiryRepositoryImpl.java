@@ -1,10 +1,9 @@
 package com.be3c.sysmetic.domain.member.repository;
 
 import com.be3c.sysmetic.domain.member.dto.*;
-import com.be3c.sysmetic.domain.member.entity.Inquiry;
-import com.be3c.sysmetic.domain.member.entity.InquiryStatus;
-import com.be3c.sysmetic.domain.member.entity.QInquiry;
+import com.be3c.sysmetic.domain.member.entity.*;
 import com.be3c.sysmetic.domain.strategy.dto.StrategyStatusCode;
+import com.be3c.sysmetic.global.common.Code;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.QueryResults;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -31,24 +30,24 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
 
         BooleanBuilder predicate = new BooleanBuilder();
 
-        InquiryStatus closed = inquiryAdminListShowRequestDto.getClosed();
-        String searchType = inquiryAdminListShowRequestDto.getSearchType();
+        InquiryClosed closed = inquiryAdminListShowRequestDto.getClosed();
+        InquirySearchType searchType = inquiryAdminListShowRequestDto.getSearchType();
         String searchText = inquiryAdminListShowRequestDto.getSearchText();
 
         // 전체, 답변 대기, 답변 완료
-        if (closed.equals(InquiryStatus.unclosed)) {
-            predicate.and(inquiry.inquiryStatus.eq(closed));
-        } else if (closed.equals(InquiryStatus.closed)) {
-            predicate.and(inquiry.inquiryStatus.eq(closed));
+        if (closed.equals(InquiryClosed.UNCLOSED)) {
+            predicate.and(inquiry.statusCode.eq(Code.UNCLOSED_INQUIRY.getCode()));
+        } else if (closed.equals(InquiryClosed.CLOSED)) {
+            predicate.and(inquiry.statusCode.eq(Code.CLOSED_INQUIRY.getCode()));
         }
 
         // 검색 (전략명, 트레이더, 질문자)
         if (StringUtils.hasText(searchText)) {
-            if (searchType.equals("strategy")) {
+            if (searchType.equals(InquirySearchType.STRATEGY)) {
                 predicate.and(inquiry.strategy.name.contains(searchText));
-            } else if (searchType.equals("trader")) {
+            } else if (searchType.equals(InquirySearchType.TRADER)) {
                 predicate.and(inquiry.strategy.trader.nickname.contains(searchText));
-            } else if (searchType.equals("inquirer")) {
+            } else if (searchType.equals(InquirySearchType.INQUIRER)) {
                 predicate.and(inquiry.inquirer.nickname.contains(searchText));
             }
         }
@@ -75,7 +74,7 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
         BooleanBuilder predicate = new BooleanBuilder();
 
         Long traderId = inquiryTraderListShowRequestDto.getTraderId();
-        InquiryStatus closed = inquiryTraderListShowRequestDto.getClosed();
+        InquiryClosed closed = inquiryTraderListShowRequestDto.getClosed();
 
         // 트레이더 별
         if (traderId != null) {
@@ -83,10 +82,10 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
         }
 
         // 전체, 답변 대기, 답변 완료
-        if (closed.equals(InquiryStatus.unclosed)) {
-            predicate.and(inquiry.inquiryStatus.eq(closed));
-        } else if (closed.equals(InquiryStatus.closed)) {
-            predicate.and(inquiry.inquiryStatus.eq(closed));
+        if (closed.equals(InquiryClosed.UNCLOSED)) {
+            predicate.and(inquiry.statusCode.eq(Code.UNCLOSED_INQUIRY.getCode()));
+        } else if (closed.equals(InquiryClosed.CLOSED)) {
+            predicate.and(inquiry.statusCode.eq(Code.CLOSED_INQUIRY.getCode()));
         }
 
         predicate.and(inquiry.strategy.statusCode.eq(StrategyStatusCode.NOT_USING_STATE.getCode()).not());
@@ -99,11 +98,8 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
                 .limit(pageable.getPageSize())
                 .fetchResults();
 
-        List<Inquiry> content = new ArrayList<>();
-        long total;
-
-        content = results.getResults();
-        total = results.getTotal();
+        List<Inquiry> content = results.getResults();
+        long total = results.getTotal();
 
         return new PageImpl<>(content, pageable, total);
     }
@@ -113,7 +109,7 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
         BooleanBuilder predicate = new BooleanBuilder();
 
         Long inquirerId = inquiryInquirerListShowRequestDto.getInquirerId();
-        InquiryStatus closed = inquiryInquirerListShowRequestDto.getClosed();
+        InquiryClosed closed = inquiryInquirerListShowRequestDto.getClosed();
 
         // 질문자 별
         if (inquirerId != null) {
@@ -121,10 +117,10 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
         }
 
         // 전체, 답변 대기, 답변 완료
-        if (closed.equals(InquiryStatus.unclosed)) {
-            predicate.and(inquiry.inquiryStatus.eq(closed));
-        } else if (closed.equals(InquiryStatus.closed)) {
-            predicate.and(inquiry.inquiryStatus.eq(closed));
+        if (closed.equals(InquiryClosed.UNCLOSED)) {
+            predicate.and(inquiry.statusCode.eq(Code.UNCLOSED_INQUIRY.getCode()));
+        } else if (closed.equals(InquiryClosed.CLOSED)) {
+            predicate.and(inquiry.statusCode.eq(Code.CLOSED_INQUIRY.getCode()));
         }
 
         predicate.and(inquiry.strategy.statusCode.eq(StrategyStatusCode.NOT_USING_STATE.getCode()).not());
@@ -137,11 +133,8 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
                 .limit(pageable.getPageSize())
                 .fetchResults();
 
-        List<Inquiry> content = new ArrayList<>();
-        long total;
-
-        content = results.getResults();
-        total = results.getTotal();
+        List<Inquiry> content = results.getResults();
+        long total = results.getTotal();
 
         return new PageImpl<>(content, pageable, total);
     }
@@ -151,7 +144,7 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
         BooleanBuilder predicate = new BooleanBuilder();
 
         Long traderId = inquiryTraderListShowRequestDto.getTraderId();
-        InquiryStatus closed = inquiryTraderListShowRequestDto.getClosed();
+        InquiryClosed closed = inquiryTraderListShowRequestDto.getClosed();
 
         // 트레이더 별
         if (traderId != null) {
@@ -159,10 +152,10 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
         }
 
         // 전체, 답변 대기, 답변 완료
-        if (closed.equals(InquiryStatus.unclosed)) {
-            predicate.and(inquiry.inquiryStatus.eq(closed));
-        } else if (closed.equals(InquiryStatus.closed)) {
-            predicate.and(inquiry.inquiryStatus.eq(closed));
+        if (closed.equals(InquiryClosed.UNCLOSED)) {
+            predicate.and(inquiry.statusCode.eq(Code.UNCLOSED_INQUIRY.getCode()));
+        } else if (closed.equals(InquiryClosed.CLOSED)) {
+            predicate.and(inquiry.statusCode.eq(Code.CLOSED_INQUIRY.getCode()));
         }
 
         predicate.and(inquiry.strategy.statusCode.eq(StrategyStatusCode.NOT_USING_STATE.getCode()).not());
@@ -175,11 +168,8 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
                 .limit(pageable.getPageSize())
                 .fetchResults();
 
-        List<Inquiry> content = new ArrayList<>();
-        long total;
-
-        content = results.getResults();
-        total = results.getTotal();
+        List<Inquiry> content = results.getResults();
+        long total = results.getTotal();
 
         return new PageImpl<>(content, pageable, total);
     }
@@ -190,7 +180,7 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
         BooleanBuilder predicate2 = new BooleanBuilder();
 
         Long inquirerId = inquiryInquirerListShowRequestDto.getInquirerId();
-        InquiryStatus closed = inquiryInquirerListShowRequestDto.getClosed();
+        InquiryClosed closed = inquiryInquirerListShowRequestDto.getClosed();
 
         // 질문자 별
         if (inquirerId != null) {
@@ -199,12 +189,12 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
         }
 
         // 전체, 답변 대기, 답변 완료
-        if (closed.equals(InquiryStatus.unclosed)) {
-            predicate1.and(inquiry.inquiryStatus.eq(closed));
-            predicate2.and(inquiry.inquiryStatus.eq(closed));
-        } else if (closed.equals(InquiryStatus.closed)) {
-            predicate1.and(inquiry.inquiryStatus.eq(closed));
-            predicate2.and(inquiry.inquiryStatus.eq(closed));
+        if (closed.equals(InquiryClosed.UNCLOSED)) {
+            predicate1.and(inquiry.statusCode.eq(Code.UNCLOSED_INQUIRY.getCode()));
+            predicate2.and(inquiry.statusCode.eq(Code.UNCLOSED_INQUIRY.getCode()));
+        } else if (closed.equals(InquiryClosed.CLOSED)) {
+            predicate1.and(inquiry.statusCode.eq(Code.CLOSED_INQUIRY.getCode()));
+            predicate2.and(inquiry.statusCode.eq(Code.CLOSED_INQUIRY.getCode()));
         }
 
         predicate1.and(inquiry.strategy.statusCode.eq(StrategyStatusCode.PUBLIC.getCode()));
@@ -235,24 +225,24 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
         BooleanBuilder predicate = new BooleanBuilder();
 
         Long inquiryId = inquiryDetailAdminShowDto.getInquiryId();
-        InquiryStatus closed = inquiryDetailAdminShowDto.getClosed();
-        String searchType = inquiryDetailAdminShowDto.getSearchType();
+        InquiryClosed closed = inquiryDetailAdminShowDto.getClosed();
+        InquirySearchType searchType = inquiryDetailAdminShowDto.getSearchType();
         String searchText = inquiryDetailAdminShowDto.getSearchText();
 
         // 전체, 답변 대기, 답변 완료
-        if (closed.equals(InquiryStatus.unclosed)) {
-            predicate.and(inquiry.inquiryStatus.eq(closed));
-        } else if (closed.equals(InquiryStatus.closed)) {
-            predicate.and(inquiry.inquiryStatus.eq(closed));
+        if (closed.equals(InquiryClosed.UNCLOSED)) {
+            predicate.and(inquiry.statusCode.eq(Code.UNCLOSED_INQUIRY.getCode()));
+        } else if (closed.equals(InquiryClosed.CLOSED)) {
+            predicate.and(inquiry.statusCode.eq(Code.CLOSED_INQUIRY.getCode()));
         }
 
         // 검색 (전략명, 트레이더, 질문자)
         if (StringUtils.hasText(searchText)) {
-            if (searchType.equals("strategy")) {
+            if (searchType.equals(InquirySearchType.STRATEGY)) {
                 predicate.and(inquiry.strategy.name.contains(searchText));
-            } else if (searchType.equals("trader")) {
+            } else if (searchType.equals(InquirySearchType.TRADER)) {
                 predicate.and(inquiry.strategy.trader.nickname.contains(searchText));
-            } else if (searchType.equals("inquirer")) {
+            } else if (searchType.equals(InquirySearchType.INQUIRER)) {
                 predicate.and(inquiry.inquirer.nickname.contains(searchText));
             }
         }
@@ -274,24 +264,24 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
         BooleanBuilder predicate = new BooleanBuilder();
 
         Long inquiryId = inquiryDetailAdminShowDto.getInquiryId();
-        InquiryStatus closed = inquiryDetailAdminShowDto.getClosed();
-        String searchType = inquiryDetailAdminShowDto.getSearchType();
+        InquiryClosed closed = inquiryDetailAdminShowDto.getClosed();
+        InquirySearchType searchType = inquiryDetailAdminShowDto.getSearchType();
         String searchText = inquiryDetailAdminShowDto.getSearchText();
 
         // 전체, 답변 대기, 답변 완료
-        if (closed.equals(InquiryStatus.unclosed)) {
-            predicate.and(inquiry.inquiryStatus.eq(closed));
-        } else if (closed.equals(InquiryStatus.closed)) {
-            predicate.and(inquiry.inquiryStatus.eq(closed));
+        if (closed.equals(InquiryClosed.UNCLOSED)) {
+            predicate.and(inquiry.statusCode.eq(Code.UNCLOSED_INQUIRY.getCode()));
+        } else if (closed.equals(InquiryClosed.CLOSED)) {
+            predicate.and(inquiry.statusCode.eq(Code.CLOSED_INQUIRY.getCode()));
         }
 
         // 검색 (전략명, 트레이더, 질문자)
         if (StringUtils.hasText(searchText)) {
-            if (searchType.equals("strategy")) {
+            if (searchType.equals(InquirySearchType.STRATEGY)) {
                 predicate.and(inquiry.strategy.name.contains(searchText));
-            } else if (searchType.equals("trader")) {
+            } else if (searchType.equals(InquirySearchType.TRADER)) {
                 predicate.and(inquiry.strategy.trader.nickname.contains(searchText));
-            } else if (searchType.equals("inquirer")) {
+            } else if (searchType.equals(InquirySearchType.INQUIRER)) {
                 predicate.and(inquiry.inquirer.nickname.contains(searchText));
             }
         }
@@ -314,7 +304,7 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
 
         Long inquiryId = inquiryDetailInquirerShowDto.getInquiryId();
         Long inquirerId = inquiryDetailInquirerShowDto.getInquirerId();
-        InquiryStatus closed = inquiryDetailInquirerShowDto.getClosed();
+        InquiryClosed closed = inquiryDetailInquirerShowDto.getClosed();
 
         // 질문자 별
         if (inquirerId != null) {
@@ -322,10 +312,10 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
         }
 
         // 전체, 답변 대기, 답변 완료
-        if (closed.equals(InquiryStatus.unclosed)) {
-            predicate.and(inquiry.inquiryStatus.eq(closed));
-        } else if (closed.equals(InquiryStatus.closed)) {
-            predicate.and(inquiry.inquiryStatus.eq(closed));
+        if (closed.equals(InquiryClosed.UNCLOSED)) {
+            predicate.and(inquiry.statusCode.eq(Code.UNCLOSED_INQUIRY.getCode()));
+        } else if (closed.equals(InquiryClosed.CLOSED)) {
+            predicate.and(inquiry.statusCode.eq(Code.CLOSED_INQUIRY.getCode()));
         }
 
         predicate.and(inquiry.strategy.statusCode.eq(StrategyStatusCode.NOT_USING_STATE.getCode()).not());
@@ -347,7 +337,7 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
 
         Long inquiryId = inquiryDetailInquirerShowDto.getInquiryId();
         Long inquirerId = inquiryDetailInquirerShowDto.getInquirerId();
-        InquiryStatus closed = inquiryDetailInquirerShowDto.getClosed();
+        InquiryClosed closed = inquiryDetailInquirerShowDto.getClosed();
 
         // 질문자 별
         if (inquirerId != null) {
@@ -356,12 +346,12 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
         }
 
         // 전체, 답변 대기, 답변 완료
-        if (closed.equals(InquiryStatus.unclosed)) {
-            predicate1.and(inquiry.inquiryStatus.eq(closed));
-            predicate2.and(inquiry.inquiryStatus.eq(closed));
-        } else if (closed.equals(InquiryStatus.closed)) {
-            predicate1.and(inquiry.inquiryStatus.eq(closed));
-            predicate2.and(inquiry.inquiryStatus.eq(closed));
+        if (closed.equals(InquiryClosed.UNCLOSED)) {
+            predicate1.and(inquiry.statusCode.eq(Code.UNCLOSED_INQUIRY.getCode()));
+            predicate2.and(inquiry.statusCode.eq(Code.UNCLOSED_INQUIRY.getCode()));
+        } else if (closed.equals(InquiryClosed.CLOSED)) {
+            predicate1.and(inquiry.statusCode.eq(Code.CLOSED_INQUIRY.getCode()));
+            predicate2.and(inquiry.statusCode.eq(Code.CLOSED_INQUIRY.getCode()));
         }
 
         predicate1.and(inquiry.strategy.statusCode.eq(StrategyStatusCode.PUBLIC.getCode()));
@@ -408,7 +398,7 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
 
         Long inquiryId = inquiryDetailInquirerShowDto.getInquiryId();
         Long inquirerId = inquiryDetailInquirerShowDto.getInquirerId();
-        InquiryStatus closed = inquiryDetailInquirerShowDto.getClosed();
+        InquiryClosed closed = inquiryDetailInquirerShowDto.getClosed();
 
         // 질문자 별
         if (inquirerId != null) {
@@ -416,10 +406,10 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
         }
 
         // 전체, 답변 대기, 답변 완료
-        if (closed.equals(InquiryStatus.unclosed)) {
-            predicate.and(inquiry.inquiryStatus.eq(closed));
-        } else if (closed.equals(InquiryStatus.closed)) {
-            predicate.and(inquiry.inquiryStatus.eq(closed));
+        if (closed.equals(InquiryClosed.UNCLOSED)) {
+            predicate.and(inquiry.statusCode.eq(Code.UNCLOSED_INQUIRY.getCode()));
+        } else if (closed.equals(InquiryClosed.CLOSED)) {
+            predicate.and(inquiry.statusCode.eq(Code.CLOSED_INQUIRY.getCode()));
         }
 
         predicate.and(inquiry.strategy.statusCode.eq(StrategyStatusCode.NOT_USING_STATE.getCode()).not());
@@ -441,7 +431,7 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
 
         Long inquiryId = inquiryDetailInquirerShowDto.getInquiryId();
         Long inquirerId = inquiryDetailInquirerShowDto.getInquirerId();
-        InquiryStatus closed = inquiryDetailInquirerShowDto.getClosed();
+        InquiryClosed closed = inquiryDetailInquirerShowDto.getClosed();
 
         // 질문자 별
         if (inquirerId != null) {
@@ -450,12 +440,12 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
         }
 
         // 전체, 답변 대기, 답변 완료
-        if (closed.equals(InquiryStatus.unclosed)) {
-            predicate1.and(inquiry.inquiryStatus.eq(closed));
-            predicate2.and(inquiry.inquiryStatus.eq(closed));
-        } else if (closed.equals(InquiryStatus.closed)) {
-            predicate1.and(inquiry.inquiryStatus.eq(closed));
-            predicate2.and(inquiry.inquiryStatus.eq(closed));
+        if (closed.equals(InquiryClosed.UNCLOSED)) {
+            predicate1.and(inquiry.statusCode.eq(Code.UNCLOSED_INQUIRY.getCode()));
+            predicate2.and(inquiry.statusCode.eq(Code.UNCLOSED_INQUIRY.getCode()));
+        } else if (closed.equals(InquiryClosed.CLOSED)) {
+            predicate1.and(inquiry.statusCode.eq(Code.CLOSED_INQUIRY.getCode()));
+            predicate2.and(inquiry.statusCode.eq(Code.CLOSED_INQUIRY.getCode()));
         }
 
         predicate1.and(inquiry.strategy.statusCode.eq(StrategyStatusCode.PUBLIC.getCode()));
@@ -502,7 +492,7 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
 
         Long inquiryId = inquiryDetailTraderShowDto.getInquiryId();
         Long traderId = inquiryDetailTraderShowDto.getTraderId();
-        InquiryStatus closed = inquiryDetailTraderShowDto.getClosed();
+        InquiryClosed closed = inquiryDetailTraderShowDto.getClosed();
 
         // 트레이더 별
         if (traderId != null) {
@@ -510,10 +500,10 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
         }
 
         // 전체, 답변 대기, 답변 완료
-        if (closed.equals(InquiryStatus.unclosed)) {
-            predicate.and(inquiry.inquiryStatus.eq(closed));
-        } else if (closed.equals(InquiryStatus.closed)) {
-            predicate.and(inquiry.inquiryStatus.eq(closed));
+        if (closed.equals(InquiryClosed.UNCLOSED)) {
+            predicate.and(inquiry.statusCode.eq(Code.UNCLOSED_INQUIRY.getCode()));
+        } else if (closed.equals(InquiryClosed.CLOSED)) {
+            predicate.and(inquiry.statusCode.eq(Code.CLOSED_INQUIRY.getCode()));
         }
 
         predicate.and(inquiry.strategy.statusCode.eq(StrategyStatusCode.NOT_USING_STATE.getCode()).not());
@@ -534,7 +524,7 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
 
         Long inquiryId = inquiryDetailTraderShowDto.getInquiryId();
         Long traderId = inquiryDetailTraderShowDto.getTraderId();
-        InquiryStatus closed = inquiryDetailTraderShowDto.getClosed();
+        InquiryClosed closed = inquiryDetailTraderShowDto.getClosed();
 
         // 트레이더 별
         if (traderId != null) {
@@ -542,10 +532,10 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
         }
 
         // 전체, 답변 대기, 답변 완료
-        if (closed.equals(InquiryStatus.unclosed)) {
-            predicate.and(inquiry.inquiryStatus.eq(closed));
-        } else if (closed.equals(InquiryStatus.closed)) {
-            predicate.and(inquiry.inquiryStatus.eq(closed));
+        if (closed.equals(InquiryClosed.UNCLOSED)) {
+            predicate.and(inquiry.statusCode.eq(Code.UNCLOSED_INQUIRY.getCode()));
+        } else if (closed.equals(InquiryClosed.CLOSED)) {
+            predicate.and(inquiry.statusCode.eq(Code.CLOSED_INQUIRY.getCode()));
         }
 
         predicate.and(inquiry.strategy.statusCode.eq(StrategyStatusCode.NOT_USING_STATE.getCode()).not());
@@ -566,7 +556,7 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
 
         Long inquiryId = inquiryDetailTraderShowDto.getInquiryId();
         Long traderId = inquiryDetailTraderShowDto.getTraderId();
-        InquiryStatus closed = inquiryDetailTraderShowDto.getClosed();
+        InquiryClosed closed = inquiryDetailTraderShowDto.getClosed();
 
         // 트레이더 별
         if (traderId != null) {
@@ -574,10 +564,10 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
         }
 
         // 전체, 답변 대기, 답변 완료
-        if (closed.equals(InquiryStatus.unclosed)) {
-            predicate.and(inquiry.inquiryStatus.eq(closed));
-        } else if (closed.equals(InquiryStatus.closed)) {
-            predicate.and(inquiry.inquiryStatus.eq(closed));
+        if (closed.equals(InquiryClosed.UNCLOSED)) {
+            predicate.and(inquiry.statusCode.eq(Code.UNCLOSED_INQUIRY.getCode()));
+        } else if (closed.equals(InquiryClosed.CLOSED)) {
+            predicate.and(inquiry.statusCode.eq(Code.CLOSED_INQUIRY.getCode()));
         }
 
         predicate.and(inquiry.strategy.statusCode.eq(StrategyStatusCode.NOT_USING_STATE.getCode()).not());
@@ -598,7 +588,7 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
 
         Long inquiryId = inquiryDetailTraderShowDto.getInquiryId();
         Long traderId = inquiryDetailTraderShowDto.getTraderId();
-        InquiryStatus closed = inquiryDetailTraderShowDto.getClosed();
+        InquiryClosed closed = inquiryDetailTraderShowDto.getClosed();
 
         // 트레이더 별
         if (traderId != null) {
@@ -606,10 +596,10 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
         }
 
         // 전체, 답변 대기, 답변 완료
-        if (closed.equals(InquiryStatus.unclosed)) {
-            predicate.and(inquiry.inquiryStatus.eq(closed));
-        } else if (closed.equals(InquiryStatus.closed)) {
-            predicate.and(inquiry.inquiryStatus.eq(closed));
+        if (closed.equals(InquiryClosed.UNCLOSED)) {
+            predicate.and(inquiry.statusCode.eq(Code.UNCLOSED_INQUIRY.getCode()));
+        } else if (closed.equals(InquiryClosed.CLOSED)) {
+            predicate.and(inquiry.statusCode.eq(Code.CLOSED_INQUIRY.getCode()));
         }
 
         predicate.and(inquiry.strategy.statusCode.eq(StrategyStatusCode.NOT_USING_STATE.getCode()).not());

@@ -1,6 +1,5 @@
 package com.be3c.sysmetic.domain.member.dto;
 
-import com.be3c.sysmetic.domain.member.entity.InquiryStatus;
 import com.be3c.sysmetic.domain.strategy.dto.StockListDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -41,7 +40,7 @@ public class InquiryDetailAdminShowResponseDto {
     private String inquirerNickname;
 
     @Schema(description = "문의 상태", example = "closed")
-    private InquiryStatus inquiryStatus;
+    private String inquiryStatus;
 
     @Schema(description = "매매방식 ID", example = "12345")
     private Long methodId;

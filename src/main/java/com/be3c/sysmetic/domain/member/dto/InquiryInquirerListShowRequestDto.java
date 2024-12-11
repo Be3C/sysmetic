@@ -1,6 +1,6 @@
 package com.be3c.sysmetic.domain.member.dto;
 
-import com.be3c.sysmetic.domain.member.entity.InquiryStatus;
+import com.be3c.sysmetic.domain.member.entity.InquiryClosed;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -18,5 +18,5 @@ public class InquiryInquirerListShowRequestDto {
 
     // 답변상태 셀렉트 박스
     @Schema(description = "답변 상태 (all, closed, unclosed)", example = "ALL")
-    private InquiryStatus closed;
+    private InquiryClosed closed;
 }

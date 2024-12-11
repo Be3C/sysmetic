@@ -1,6 +1,5 @@
 package com.be3c.sysmetic.domain.member.dto;
 
-import com.be3c.sysmetic.domain.member.entity.InquiryStatus;
 import com.be3c.sysmetic.domain.strategy.dto.StockListDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -49,6 +48,6 @@ public class InquiryListOneShowResponseDto {
     private LocalDateTime inquiryRegistrationDate;
 
     @Schema(description = "문의 상태", example = "closed")
-    private InquiryStatus inquiryStatus;
+    private String inquiryStatus;
 
 }
