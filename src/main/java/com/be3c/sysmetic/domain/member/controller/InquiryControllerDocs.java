@@ -206,7 +206,7 @@ public interface InquiryControllerDocs {
     })
     ResponseEntity<APIResponse<Long>> saveInquirerInquiry(
             @PathVariable(value = "strategyId") Long strategyId,
-            @RequestBody InquirySaveRequestDto inquirySaveRequestDto);
+            @RequestBody @Valid InquirySaveRequestDto inquirySaveRequestDto);
 
 
     // 질문자 문의 조회 API

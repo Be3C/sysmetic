@@ -43,8 +43,8 @@ public enum Code {
     ROLE_ADMIN("UR004"),
 
     // 문의 답변상태 코드
-    UNCLOSED_INQUIRY("IC001"),
-    CLOSED_INQUIRY("IC002");
+    UNCLOSED_INQUIRY("unclosed"),
+    CLOSED_INQUIRY("closed");
 
     private String code;
 }
