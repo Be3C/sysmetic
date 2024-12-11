@@ -5,7 +5,6 @@ import com.be3c.sysmetic.domain.member.entity.Inquiry;
 import com.be3c.sysmetic.domain.member.entity.InquiryAnswer;
 import com.be3c.sysmetic.domain.member.entity.InquiryStatus;
 import com.be3c.sysmetic.domain.member.entity.Member;
-import com.be3c.sysmetic.domain.member.exception.InquiryBadRequestException;
 import com.be3c.sysmetic.domain.member.exception.MemberExceptionMessage;
 import com.be3c.sysmetic.domain.member.message.InquiryExceptionMessage;
 import com.be3c.sysmetic.domain.member.repository.InquiryAnswerRepository;
@@ -33,12 +32,9 @@ public class InquiryAnswerServiceImpl implements InquiryAnswerService {
     @Transactional
     public boolean registerInquiryAnswer(Long inquiryId, InquiryAnswerSaveRequestDto inquiryAnswerSaveRequestDto) {
 
-        Inquiry inquiry = inquiryRepository.findById(inquiryId).orElseThrow(() -> new EntityNotFoundException(InquiryExceptionMessage.NOT_FOUND_INQUIRY.getMessage()));
-
         Long traderId = securityUtils.getUserIdInSecurityContext();
-        if(!traderId.equals(inquiry.getStrategy().getTrader().getId())) {
-            throw new InquiryBadRequestException(InquiryExceptionMessage.NOT_STRATEGY_TRADER.getMessage());
-        }
+
+        Inquiry inquiry = inquiryRepository.findByIdAndTraderAndStatusCode(inquiryId, traderId).orElseThrow(() -> new EntityNotFoundException(InquiryExceptionMessage.NOT_FOUND_INQUIRY.getMessage()));
 
         if(inquiry.getInquiryStatus() == InquiryStatus.closed) {
             throw new IllegalStateException(InquiryExceptionMessage.INQUIRY_CLOSED.getMessage());

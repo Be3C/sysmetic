@@ -2,7 +2,6 @@ package com.be3c.sysmetic.domain.member.service;
 
 import com.be3c.sysmetic.domain.member.dto.*;
 import com.be3c.sysmetic.domain.member.entity.*;
-import com.be3c.sysmetic.domain.member.exception.InquiryBadRequestException;
 import com.be3c.sysmetic.domain.member.exception.MemberExceptionMessage;
 import com.be3c.sysmetic.domain.member.message.InquiryExceptionMessage;
 import com.be3c.sysmetic.domain.member.repository.InquiryAnswerRepository;
@@ -105,10 +104,6 @@ public class InquiryServiceImpl implements InquiryService {
         Long userId = securityUtils.getUserIdInSecurityContext();
         Inquiry inquiry = inquiryRepository.findByIdAndInquirerAndStatusCode(inquiryId, userId).orElseThrow(() -> new EntityNotFoundException(InquiryExceptionMessage.NOT_FOUND_INQUIRY.getMessage()));
 
-        if(!userId.equals(inquiry.getInquirer().getId())) {
-            throw new InquiryBadRequestException(InquiryExceptionMessage.NOT_INQUIRY_WRITER.getMessage());
-        }
-
         if (inquiry.getInquiryStatus() == InquiryStatus.unclosed) {
             inquiry.setInquiryTitle(inquiryModifyRequestDto.getInquiryTitle());
             inquiry.setInquiryContent(inquiryModifyRequestDto.getInquiryContent());
@@ -127,10 +122,6 @@ public class InquiryServiceImpl implements InquiryService {
 
         Long userId = securityUtils.getUserIdInSecurityContext();
         Inquiry inquiry = inquiryRepository.findByIdAndInquirerAndStatusCode(inquiryId, userId).orElseThrow(() -> new EntityNotFoundException(InquiryExceptionMessage.NOT_FOUND_INQUIRY.getMessage()));
-
-        if(!userId.equals(inquiry.getInquirer().getId())) {
-            throw new InquiryBadRequestException(InquiryExceptionMessage.NOT_INQUIRY_WRITER.getMessage());
-        }
 
         if (inquiry.getInquiryStatus() == InquiryStatus.unclosed) {
             inquiryRepository.delete(inquiry);
@@ -758,11 +749,9 @@ public class InquiryServiceImpl implements InquiryService {
     @Override
     public InquiryModifyPageShowResponseDto showInquiryModifyPage(Long inquiryId) {
 
-        Inquiry inquiry = inquiryRepository.findById(inquiryId).orElseThrow(() -> new EntityNotFoundException(InquiryExceptionMessage.NOT_FOUND_INQUIRY.getMessage()));
+        Long inquirerId = securityUtils.getUserIdInSecurityContext();
 
-        if(!securityUtils.getUserIdInSecurityContext().equals(inquiry.getInquirer().getId())) {
-            throw new InquiryBadRequestException(InquiryExceptionMessage.NOT_INQUIRY_WRITER.getMessage());
-        }
+        Inquiry inquiry = inquiryRepository.findByIdAndInquirerAndStatusCode(inquiryId, inquirerId).orElseThrow(() -> new EntityNotFoundException(InquiryExceptionMessage.NOT_FOUND_INQUIRY.getMessage()));
 
         return InquiryModifyPageShowResponseDto.builder()
                 .inquiryTitle(inquiry.getInquiryTitle())

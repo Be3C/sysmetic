@@ -9,8 +9,6 @@ public enum InquiryExceptionMessage {
 
     NOT_FOUND_INQUIRY("해당 문의를 찾을 수 없습니다."),
     NOT_FOUND_INQUIRY_ANSWER("해당 문의 답변을 찾을 수 없습니다."),
-    NOT_INQUIRY_WRITER("해당 문의의 작성자가 아닙니다."),
-    NOT_STRATEGY_TRADER("해당 문의 전략의 트레이더가 아닙니다."),
     INQUIRY_CLOSED("해당 문의는 이미 답변 완료되었습니다.");
 
     private final String message;

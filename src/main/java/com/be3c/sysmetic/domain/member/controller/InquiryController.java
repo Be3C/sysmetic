@@ -2,7 +2,6 @@ package com.be3c.sysmetic.domain.member.controller;
 
 import com.be3c.sysmetic.domain.member.dto.*;
 import com.be3c.sysmetic.domain.member.entity.InquiryStatus;
-import com.be3c.sysmetic.domain.member.exception.InquiryBadRequestException;
 import com.be3c.sysmetic.domain.member.service.InquiryAnswerService;
 import com.be3c.sysmetic.domain.member.service.InquiryService;
 import com.be3c.sysmetic.global.common.response.APIResponse;
@@ -357,10 +356,6 @@ public class InquiryController implements InquiryControllerDocs {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(APIResponse.fail(ErrorCode.NOT_FOUND, e.getMessage()));
         }
-        catch (InquiryBadRequestException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(APIResponse.fail(ErrorCode.FORBIDDEN, e.getMessage()));
-        }
     }
 
 
@@ -399,12 +394,6 @@ public class InquiryController implements InquiryControllerDocs {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(APIResponse.fail(ErrorCode.NOT_FOUND, e.getMessage()));
         }
-        catch (InquiryBadRequestException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(APIResponse.fail(ErrorCode.FORBIDDEN, e.getMessage()));
-        }
-
-
     }
 
 
@@ -438,10 +427,6 @@ public class InquiryController implements InquiryControllerDocs {
         catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(APIResponse.fail(ErrorCode.BAD_REQUEST, e.getMessage()));
-        }
-        catch (InquiryBadRequestException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(APIResponse.fail(ErrorCode.FORBIDDEN, e.getMessage()));
         }
     }
 
@@ -479,10 +464,6 @@ public class InquiryController implements InquiryControllerDocs {
         catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(APIResponse.fail(ErrorCode.BAD_REQUEST, e.getMessage()));
-        }
-        catch (InquiryBadRequestException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(APIResponse.fail(ErrorCode.FORBIDDEN, e.getMessage()));
         }
     }
 
