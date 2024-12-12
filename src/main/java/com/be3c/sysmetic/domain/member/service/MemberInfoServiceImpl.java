@@ -130,9 +130,7 @@ public class MemberInfoServiceImpl implements MemberInfoService {
 
         Member member = findMemberById(userId);
 
-        if(file != null) {
-            fileService.updateImage(file, new FileRequest(FileReferenceType.MEMBER, member.getId()));
-        }
+        changeProfileImage(file, member);
 
         if(memberPatchInfoRequestDto.getNicknameDuplCheck() &&
             memberPatchInfoRequestDto.getNickname() != null &&
@@ -170,6 +168,14 @@ public class MemberInfoServiceImpl implements MemberInfoService {
         memberRepository.save(member);
 
         return true;
+    }
+
+    private void changeProfileImage(MultipartFile file, Member member) {
+        if(file != null) {
+            fileService.updateImage(file, new FileRequest(FileReferenceType.MEMBER, member.getId()));
+        } else if (fileService.getFilePathNullable(new FileRequest(FileReferenceType.MEMBER, member.getId())) != null) {
+            fileService.deleteFile(new FileRequest(FileReferenceType.MEMBER, member.getId()));
+        }
     }
 
     @Override
