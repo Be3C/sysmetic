@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -39,7 +40,7 @@ public class AdminStrategyAllowController implements AdminStrategyAllowControlle
         2. 페이지 내에 한 개의 전략도 존재하지 않을 때 : NOT_FOUND
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_MANAGER')")
+    @PreAuthorize("hasRole('ROLE_MANAGER') OR hasRole('ROLE_ADMIN')")
     @GetMapping("/admin/strategy")
     public ResponseEntity<APIResponse<PageResponse<AdminStrategyGetResponseDto>>> getAdminStrategy(
             @ModelAttribute AdminStrategySearchGetDto adminStrategySearchGetDto
@@ -59,7 +60,7 @@ public class AdminStrategyAllowController implements AdminStrategyAllowControlle
         2. 요청한 전략 중 승인에 실패했을 때 : MULTI_STATUS
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_MANAGER')")
+    @PreAuthorize("hasRole('ROLE_MANAGER') OR hasRole('ROLE_ADMIN')")
     @PatchMapping("/admin/strategy/allow")
     public ResponseEntity<APIResponse<Map<Long, String>>> strategyAllow(
             @Valid @RequestBody AllowApprovalRequestDto allowApprovalRequestDto
@@ -82,6 +83,7 @@ public class AdminStrategyAllowController implements AdminStrategyAllowControlle
         3. 해당 전략의 공개 요청을 찾지 못했을 때 : NOT_FOUND
      */
     @Override
+    @PreAuthorize("hasRole('ROLE_MANAGER') OR hasRole('ROLE_ADMIN')")
     @PatchMapping("/admin/strategy/reject")
     public ResponseEntity<APIResponse<String>> strategyReject(
             @Valid @RequestBody RejectStrategyApprovalDto rejectStrategyApprovalDto

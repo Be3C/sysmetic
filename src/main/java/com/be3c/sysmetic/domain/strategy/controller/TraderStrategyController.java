@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -46,8 +47,8 @@ public class TraderStrategyController {
             summary = "전략 등록",
             description = "트레이더가 본인의 전략을 등록"
     )
+    @PreAuthorize("hasRole('ROLE_TRADER')")
     @PostMapping(value = "/strategy", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    // @PreAuthorize("hasRole('ROLE_TRADER'))
     public ResponseEntity<APIResponse<StrategyPostResponseDto>> insertStrategy(
             @RequestPart("requestDto") @Parameter(description = "전략 등록 요청 DTO") @Valid StrategyPostRequestDto requestDto,
             @RequestPart(value = "file", required = false) MultipartFile file
@@ -61,8 +62,8 @@ public class TraderStrategyController {
             summary = "전략 수정",
             description = "트레이더가 본인의 전략을 수정"
     )
+    @PreAuthorize("hasRole('ROLE_TRADER')")
     @PatchMapping(value = "/strategy/{strategyId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    // @PreAuthorize("hasRole('ROLE_TRADER'))
     public ResponseEntity<APIResponse> updateStrategy(
             @PathVariable Long strategyId,
             @RequestPart @Valid StrategyPostRequestDto requestDto,
@@ -78,8 +79,8 @@ public class TraderStrategyController {
             summary = "전략 삭제",
             description = "트레이더가 본인의 전략 목록을 삭제"
     )
+     @PreAuthorize("hasRole('ROLE_TRADER')")
     @DeleteMapping("/strategy")
-    // @PreAuthorize("hasRole('ROLE_TRADER')")
     public ResponseEntity<APIResponse> deleteStrategy(@RequestBody StrategyDeleteRequestDto requestDto) {
         traderStrategyService.deleteStrategy(requestDto);
         return ResponseEntity.status(HttpStatus.OK)
@@ -92,7 +93,7 @@ public class TraderStrategyController {
             summary = "일간분석 등록",
             description = "트레이더가 본인의 일간분석 데이터를 등록"
     )
-    // @PreAuthorize("hasRole('ROLE_TRADER')")
+    @PreAuthorize("hasRole('ROLE_TRADER')")
     @PostMapping("/strategy/daily/{strategyId}")
     public ResponseEntity<APIResponse> insertDaily(
             @PathVariable Long strategyId,
@@ -110,8 +111,8 @@ public class TraderStrategyController {
             summary = "일간분석 수정",
             description = "트레이더가 본인의 일간분석 데이터를 수정"
     )
+    @PreAuthorize("hasRole('ROLE_TRADER')")
     @PatchMapping("/strategy/daily/{dailyId}")
-    // @PreAuthorize("hasRole('ROLE_TRADER')")
     public ResponseEntity<APIResponse> updateDaily(
             @PathVariable Long dailyId,
             @RequestBody DailyRequestDto requestDto
@@ -127,8 +128,8 @@ public class TraderStrategyController {
             summary = "일간분석 삭제",
             description = "트레이더가 본인의 일간분석 데이터를 삭제"
     )
+    @PreAuthorize("hasRole('ROLE_TRADER')")
     @DeleteMapping("/strategy/daily/{dailyId}")
-    // @PreAuthorize("hasRole('ROLE_TRADER')")
     public ResponseEntity<APIResponse> deleteDaily(@PathVariable Long dailyId) {
         dailyService.deleteDaily(dailyId);
 
@@ -141,8 +142,8 @@ public class TraderStrategyController {
             summary = "실계좌이미지 삭제",
             description = "트레이더가 본인의 실계좌이미지 삭제"
     )
+    @PreAuthorize("hasRole('ROLE_TRADER')")
     @DeleteMapping("/strategy/account-image")
-    // @PreAuthorize("hasRole('ROLE_TRADER')")
     public ResponseEntity<APIResponse> deleteAccountImage(@RequestBody AccountImageDeleteRequestDto accountImageIdList) {
         accountImageService.deleteAccountImage(accountImageIdList);
         return ResponseEntity.ok(APIResponse.success());
@@ -153,8 +154,8 @@ public class TraderStrategyController {
             summary = "실계좌이미지 등록",
             description = "트레이더가 본인의 실계좌이미지 등록"
     )
+    @PreAuthorize("hasRole('ROLE_TRADER')")
     @PostMapping(value = "/strategy/account-image/{strategyId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    // @PreAuthorize("hasRole('ROLE_TRADER')")
     public ResponseEntity<APIResponse> saveAccountImage(
             @RequestPart List<AccountImageRequestDto> requestDtoList,
             @RequestPart List<MultipartFile> images,
@@ -169,6 +170,7 @@ public class TraderStrategyController {
             summary = "매매방식, 종목 조회",
             description = "사용중인 모든 매매방식 및 종목 조회"
     )
+    @PreAuthorize("hasRole('ROLE_TRADER')")
     @GetMapping("/strategy/method-and-stock")
     public ResponseEntity<APIResponse<MethodAndStockGetResponseDto>> findMethodAndStockList() {
         return ResponseEntity.status(HttpStatus.OK)
@@ -179,6 +181,7 @@ public class TraderStrategyController {
             summary = "나의 전략 목록 조회",
             description = "자신이 등록한 전략 목록 조회"
     )
+    @PreAuthorize("hasRole('ROLE_TRADER')")
     @GetMapping("/member/strategy/{page}")
     public ResponseEntity<APIResponse<MyStrategyListResponseDto>> getMyStrategyList(
             @PathVariable Integer page
@@ -197,6 +200,7 @@ public class TraderStrategyController {
             summary = "비공개 전환",
             description = "트레이더가 본인의 전략을 비공개로 전환"
     )
+    @PreAuthorize("hasRole('ROLE_TRADER')")
     @PatchMapping("/strategy/{id}/visibility")
     public ResponseEntity<APIResponse<String>> patchStrategy(
             @NotNull @PathVariable Long id

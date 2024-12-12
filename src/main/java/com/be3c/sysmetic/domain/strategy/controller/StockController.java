@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -50,7 +51,7 @@ public class StockController implements StockControllerDocs {
         3. SecurityContext에 userId가 존재하지 않을 떄 : FORBIDDEN
      */
     @Override
-//    @PreAuthorize(("hasRole('MANAGER')"))
+    @PreAuthorize("hasRole('ROLE_MANAGER') OR hasRole('ROLE_ADMIN')")
     @GetMapping("/admin/stock/availability")
     public ResponseEntity<APIResponse<String>> getCheckDupl(
             @RequestParam String name
@@ -69,7 +70,7 @@ public class StockController implements StockControllerDocs {
         2. 해당 아이디의 종목을 찾는 데 실패했을 떄 : NOT_FOUND
      */
     @Override
-//    @PreAuthorize(("hasRole('MANAGER')"))
+    @PreAuthorize("hasRole('ROLE_MANAGER') OR hasRole('ROLE_ADMIN')")
     @GetMapping("/admin/stock/{id}")
     public ResponseEntity<APIResponse<StockGetResponseDto>> getItem(
             @PathVariable Long id
@@ -92,7 +93,7 @@ public class StockController implements StockControllerDocs {
         3. 해당 페이지의 종목을 찾는 데 실패했을 때 : INTERNAL_SERVER_ERROR
      */
     @Override
-//    @PreAuthorize(("hasRole('MANAGER')"))
+    @PreAuthorize("hasRole('ROLE_MANAGER') OR hasRole('ROLE_ADMIN')")
     @GetMapping("/admin/stocklist/{page}")
     public ResponseEntity<APIResponse<PageResponse<StockGetResponseDto>>> getStockPage(
             @PathVariable Integer page
@@ -120,7 +121,7 @@ public class StockController implements StockControllerDocs {
         5. 중복된 종목명이 존재할 때 : BAD_REQUEST
      */
     @Override
-//    @PreAuthorize(("hasRole('MANAGER')"))
+    @PreAuthorize("hasRole('ROLE_MANAGER') OR hasRole('ROLE_ADMIN')")
     @PostMapping(value = "/admin/stock", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<APIResponse<String>> saveitem(
             @Valid @RequestPart StockPostRequestDto stockPostRequestDto,
@@ -148,7 +149,7 @@ public class StockController implements StockControllerDocs {
         3. 수정해야할 종목을 찾지 못했을 때 : NOT_FOUND
      */
     @Override
-//    @PreAuthorize(("hasRole('MANAGER')"))
+    @PreAuthorize("hasRole('ROLE_MANAGER') OR hasRole('ROLE_ADMIN')")
     @PatchMapping(value = "/admin/stock", consumes = {"multipart/form-data"})
     public ResponseEntity<APIResponse<String>> updateItem(
             @Valid @RequestPart("stockPutRequestDto") StockPutRequestDto stockPutRequestDto,
@@ -179,7 +180,7 @@ public class StockController implements StockControllerDocs {
         3. 삭제할 종목을 찾지 못했을 때 : NOT_FOUND
      */
     @Override
-    //    @PreAuthorize(("hasRole('MANAGER')"))
+    @PreAuthorize("hasRole('ROLE_MANAGER') OR hasRole('ROLE_ADMIN')")
     @DeleteMapping("/admin/stock")
     public ResponseEntity<APIResponse<Map<Long, String>>> deleteItem(
             @RequestBody StockDeleteRequestDto requestDto

@@ -14,6 +14,7 @@ import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "이메일 찾기 및 비밀번호 재설정 API", description = "이메일 찾기 및 비밀번호 재설정")
@@ -30,6 +31,7 @@ public class AccountController {
             summary = "이메일 찾기",
             description = "사용자가 입력한 정보를 기반으로 이메일을 찾는 API"
     )
+    @PreAuthorize("permitAll()")
     @PostMapping("/auth/find-email")
     public ResponseEntity<APIResponse<String>> findEmail(@Valid @RequestBody FindEmailRequestDto findEmailRequestDto,
                                                          HttpServletRequest request) {
@@ -43,6 +45,7 @@ public class AccountController {
             summary = "이메일 확인 및 인증 코드 발송",
             description = "사용자가 입력한 이메일의 유효성을 확인하고 인증 코드를 발송하는 API"
     )
+    @PreAuthorize("permitAll()")
     @GetMapping("/auth/reset-password")
     public ResponseEntity<APIResponse<String>> checkEmailAndSendCode(@Email(message = "유효한 이메일 형식이 아닙니다.") @RequestParam String email) {
         accountService.isPresentEmail(email);
@@ -55,6 +58,7 @@ public class AccountController {
             summary = "비밀번호 재설정",
             description = "사용자가 새로운 비밀번호를 설정하는 API"
     )
+    @PreAuthorize("permitAll()")
     @PostMapping("/auth/reset-password")
     public ResponseEntity<APIResponse<String>> resetPassword(@Valid @RequestBody ResetPasswordRequestDto resetPasswordRequestDtoRequestDto,
                                                              HttpServletRequest request) {

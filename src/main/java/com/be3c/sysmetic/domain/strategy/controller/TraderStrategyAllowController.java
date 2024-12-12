@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -27,6 +28,7 @@ public class TraderStrategyAllowController implements TraderStrategyAllowControl
     private final StrategyAllowApprovalService strategyAllowApprovalService;
 
     @Override
+    @PreAuthorize("hasRole('ROLE_TRADER')")
     @PostMapping("/strategy/approve-open/{id}")
     public ResponseEntity<APIResponse<String>> postApproveOpenStrategy(
             @PathVariable Long id
@@ -49,6 +51,7 @@ public class TraderStrategyAllowController implements TraderStrategyAllowControl
     }
 
     @Override
+    @PreAuthorize("hasRole('ROLE_TRADER')")
     @PatchMapping("/strategy/approve-cancel/{id}")
     public ResponseEntity<APIResponse<String>> postApproveCancelStrategy(
             @PathVariable Long id

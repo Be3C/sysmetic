@@ -15,6 +15,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,7 +37,7 @@ public class InquiryController implements InquiryControllerDocs {
         3. 파라미터 데이터의 형식이 올바르지 않음 : BAD_REQUEST
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
     @GetMapping("/admin/qna")
     public ResponseEntity<APIResponse<PageResponse<InquiryAdminListOneShowResponseDto>>> showAdminInquiry (
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
@@ -79,7 +80,7 @@ public class InquiryController implements InquiryControllerDocs {
         4. 파라미터 데이터의 형식이 올바르지 않음 : BAD_REQUEST
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
     @GetMapping("/admin/qna/{qnaId}")
     public ResponseEntity<APIResponse<InquiryDetailAdminShowResponseDto>> showAdminInquiryDetail (
             @PathVariable(value = "qnaId") Long inquiryId,
@@ -123,7 +124,7 @@ public class InquiryController implements InquiryControllerDocs {
         4. 해당 문의를 찾지 못했을 때 : NOT_FOUND
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
     @DeleteMapping("/admin/qna/{qnaId}")
     public ResponseEntity<APIResponse<Long>> deleteAdminInquiry (
             @PathVariable(value = "qnaId") Long inquiryId) {
@@ -152,7 +153,7 @@ public class InquiryController implements InquiryControllerDocs {
         5. 데이터의 형식이 올바르지 않음 : BAD_REQUEST
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
     @DeleteMapping("/admin/qna")
     public ResponseEntity<APIResponse<Map<Long, String>>> deleteAdminInquiryList(
             @RequestBody @Valid InquiryAdminListDeleteRequestDto inquiryAdminListDeleteRequestDto) {
@@ -186,7 +187,7 @@ public class InquiryController implements InquiryControllerDocs {
         3. 질문자 문의 등록 화면 조회에 실패했을 때 : NOT_FOUND
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/strategy/{strategyId}/qna")
     public ResponseEntity<APIResponse<InquirySavePageShowResponseDto>> showInquirySavePage (
             @PathVariable(value = "strategyId") Long strategyId) {
@@ -214,7 +215,7 @@ public class InquiryController implements InquiryControllerDocs {
         5. 등록하는 질문자나 해당 전략의 정보를 찾지 못했을 때 : NOT_FOUND
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/strategy/{strategyId}/qna")
     public ResponseEntity<APIResponse<Long>> saveInquirerInquiry(
             @PathVariable(value = "strategyId") Long strategyId,
@@ -244,7 +245,7 @@ public class InquiryController implements InquiryControllerDocs {
         3. 파라미터 데이터의 형식이 올바르지 않음 : BAD_REQUEST
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/member/qna")
     public ResponseEntity<APIResponse<PageResponse<InquiryListOneShowResponseDto>>> showInquirerInquiry (
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
@@ -281,7 +282,7 @@ public class InquiryController implements InquiryControllerDocs {
         4. 파라미터 데이터의 형식이 올바르지 않음 : BAD_REQUEST
      */
      @Override
-//    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('ROLE_USER')")
      @GetMapping("/member/qna/{qnaId}")
     public ResponseEntity<APIResponse<InquiryDetailInquirerShowResponseDto>> showInquirerInquiryDetail (
             @PathVariable(value = "qnaId") Long inquiryId,
@@ -322,7 +323,7 @@ public class InquiryController implements InquiryControllerDocs {
         3. 해당 문의를 찾지 못했을 때 : NOT_FOUND
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/member/qna/{qnaId}/modify")
     public ResponseEntity<APIResponse<InquiryModifyPageShowResponseDto>> showInquiryModifyPage (
             @PathVariable(value = "qnaId") Long inquiryId) {
@@ -351,9 +352,9 @@ public class InquiryController implements InquiryControllerDocs {
             +) 답변이 등록된 문의를 수정 시도함
      */
      @Override
-//    @PreAuthorize("hasRole('ROLE_USER')")
+     @PreAuthorize("hasRole('ROLE_USER')")
      @PutMapping("/member/qna/{qnaId}")
-    public ResponseEntity<APIResponse<Long>> modifyInquirerInquiry (
+     public ResponseEntity<APIResponse<Long>> modifyInquirerInquiry (
             @PathVariable(value = "qnaId") Long inquiryId,
             @RequestBody @Valid InquiryModifyRequestDto inquiryModifyRequestDto) {
 
@@ -388,7 +389,7 @@ public class InquiryController implements InquiryControllerDocs {
         5. 답변이 등록된 문의를 수정 시도함 : BAD_REQUEST
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('ROLE_USER')")
     @DeleteMapping("/member/qna/{qnaId}")
     public ResponseEntity<APIResponse<Long>> deleteInquirerInquiry (
             @PathVariable(value = "qnaId") Long inquiryId) {
@@ -422,7 +423,7 @@ public class InquiryController implements InquiryControllerDocs {
         5. 등록하는 문의 정보를 찾지 못했을 때 : NOT_FOUND
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_TRADER')")
+    @PreAuthorize("hasRole('ROLE_TRADER')")
     @PostMapping("/trader/qna/{qnaId}")
     public ResponseEntity<APIResponse<Long>> saveTraderInquiryAnswer (
             @PathVariable(value = "qnaId") Long inquiryId,
@@ -457,7 +458,7 @@ public class InquiryController implements InquiryControllerDocs {
         3. 파라미터 데이터의 형식이 올바르지 않음 : BAD_REQUEST
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_TRADER')")
+    @PreAuthorize("hasRole('ROLE_TRADER')")
     @GetMapping("/trader/qna")
     public ResponseEntity<APIResponse<PageResponse<InquiryListOneShowResponseDto>>> showTraderInquiry (
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
@@ -494,7 +495,7 @@ public class InquiryController implements InquiryControllerDocs {
         4. 파라미터 데이터의 형식이 올바르지 않음 : BAD_REQUEST
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_TRADER')")
+    @PreAuthorize("hasRole('ROLE_TRADER')")
     @GetMapping("/trader/qna/{qnaId}")
     public ResponseEntity<APIResponse<InquiryDetailTraderShowResponseDto>> showTraderInquiryDetail (
             @PathVariable(value = "qnaId") Long inquiryId,

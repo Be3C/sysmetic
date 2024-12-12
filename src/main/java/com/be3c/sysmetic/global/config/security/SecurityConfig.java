@@ -24,21 +24,6 @@ import java.util.List;
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig {
-    // permitAll 에 해당되는 Url 배열
-    private final String[] permitAllUrls = {
-            "/",
-            "/v1",
-            "/**",
-            "/v1/**",
-            "/error",
-            "/swagger",
-            "/swagger-ui.html",
-            "/swagger-ui/**",
-            "/api-docs",
-            "/api-docs/**",
-            "/v3/api-docs/**"
-    };
-
     private final JwtTokenProvider jwtTokenProvider;
 
     // 단계별 역할 부여 (권한이 점차 넓어지는 방식)
@@ -59,12 +44,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOriginPattern("*"); // 모든 출처 허용
-        configuration.addAllowedMethod("*"); // 모든 HTTP 메서드 허용
-        configuration.addAllowedHeader("*"); // 모든 헤더 허용
-        configuration.addExposedHeader("Authorization");
-//        configuration.setExposedHeaders(List.of("Authorization", "Authorization-refresh")); // 인증 정보 포함 허용
+        configuration.setAllowedOrigins(List.of("http://localhost:3000","https://sysmetic.kr/")); // 허용 출처 지정
         configuration.setAllowCredentials(true); // 자격 증명 허용
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type")); // 허용할 헤더
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")); // 허용할 메서드
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration); // 모든 경로에 대해 적용
@@ -93,10 +76,10 @@ public class SecurityConfig {
                 // HTTP 요청에 대한 역할별 URL 접근 권한 부여
                 .authorizeHttpRequests(authorize ->
                         authorize
-                                .requestMatchers(permitAllUrls).permitAll()
-                                .requestMatchers("/admin/**").hasRole("ADMIN")
+                                .requestMatchers("/").permitAll()
                                 .requestMatchers("/manager/**").hasRole("MANAGER")
                                 .requestMatchers("/trader/**").hasRole("TRADER")
+                                .requestMatchers("/admin/**").hasRole("ADMIN")
                                 .anyRequest().authenticated()
                 )
 

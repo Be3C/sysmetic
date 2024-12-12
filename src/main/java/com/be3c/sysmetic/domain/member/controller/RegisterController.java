@@ -18,6 +18,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -46,6 +47,7 @@ public class RegisterController {
             summary = "이메일 중복확인",
             description = "이메일 중복 여부를 확인하는 API"
     )
+    @PreAuthorize("permitAll()")
     @GetMapping("/auth/check-duplicate-email")
     public ResponseEntity<APIResponse<String>> checkDuplicateEmail(@Email(message = "유효한 이메일 형식이 아닙니다.") @RequestParam String email) {
         registerService.checkEmailDuplication(email);
@@ -57,6 +59,7 @@ public class RegisterController {
             summary = "이메일 인증코드 전송",
             description = "사용자에게 이메일 인증코드를 전송하는 API"
     )
+    @PreAuthorize("permitAll()")
     @GetMapping("/auth/email-code")
     public ResponseEntity<APIResponse<String>> sendVerificationCode(@Email(message = "유효한 이메일 형식이 아닙니다.") @RequestParam String email) {
         registerService.sendVerifyEmailCode(email);
@@ -68,6 +71,7 @@ public class RegisterController {
             summary = "이메일 인증코드 확인",
             description = "사용자가 입력한 이메일 인증코드를 검증하는 API"
     )
+    @PreAuthorize("permitAll()")
     @PostMapping("/auth/email-code")
     public ResponseEntity<APIResponse<String>> verifyCode(@Valid @RequestBody EmailResponseDto emailResponseDto) {
         registerService.checkVerifyEmailCode(emailResponseDto.getEmail(), emailResponseDto.getAuthCode());
@@ -79,6 +83,7 @@ public class RegisterController {
             summary = "닉네임 중복확인",
             description = "닉네임 중복 여부를 확인하는 API"
     )
+    @PreAuthorize("permitAll()")
     @GetMapping("/auth/check-nickname")
     public ResponseEntity<APIResponse<String>> checkDuplicateNickname(@RequestParam @Pattern(regexp = "^[가-힣0-9]{3,10}$", message = "닉네임은 한글 또는 숫자로 3자 이상 10자 이내로 입력해야 합니다.") String nickname) {
         registerService.checkNicknameDuplication(nickname);
@@ -90,6 +95,7 @@ public class RegisterController {
             summary = "회원가입",
             description = "사용자 회원가입을 처리하는 API"
     )
+    @PreAuthorize("permitAll()")
     @PostMapping(value = "/auth/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<APIResponse<String>> register(@Valid @RequestPart RegisterRequestDto registerResponseDto,
                                                         @RequestPart(value = "file", required = false) MultipartFile file,

@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -33,7 +34,7 @@ public class InterestStrategyController implements InterestStrategyControllerDoc
         3. SecurityContext에 userId가 존재하지 않을 때 : FORBIDDEN
      */
     @Override
-    // @PreAuthorize("hasRole('ROLE_USER') and !hasRole('ROLE_TRADER')")
+    @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/member/interestStrategy")
     public ResponseEntity<APIResponse<PageResponse<InterestStrategyGetResponseDto>>> getFolderPage(
             @ModelAttribute InterestStrategyGetRequestDto interestStrategyGetRequestDto
@@ -62,7 +63,7 @@ public class InterestStrategyController implements InterestStrategyControllerDoc
         5. SecurityContext에 userId가 존재하지 않을 떄 : FORBIDDEN
      */
     @Override
-    // @PreAuthorize("hasRole('ROLE_USER') and !hasRole('ROLE_TRADER')")
+    @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/strategy/follow")
     public ResponseEntity<APIResponse<String>> follow(
         @Valid @RequestBody FollowPostRequestDto followPostRequestDto
@@ -91,6 +92,7 @@ public class InterestStrategyController implements InterestStrategyControllerDoc
         4. SecurityContext에 userId가 존재하지 않을 떄 : FORBIDDEN
      */
     @Override
+    @PreAuthorize("hasRole('ROLE_USER')")
     @PutMapping("/strategy/follow")
     public ResponseEntity<APIResponse<String>> MoveFolder(
             @Valid @RequestBody FollowPutRequestDto followPutRequestDto
@@ -109,7 +111,7 @@ public class InterestStrategyController implements InterestStrategyControllerDoc
     }
 
     @Override
-    // @PreAuthorize("hasRole('ROLE_USER') and !hasRole('ROLE_TRADER')")
+    @PreAuthorize("hasRole('ROLE_USER')")
     @DeleteMapping("/strategy/follow/{strategyId}")
     public ResponseEntity<APIResponse<String>> unFollow(
             @PathVariable Long strategyId
@@ -134,7 +136,7 @@ public class InterestStrategyController implements InterestStrategyControllerDoc
         3. SecurityContext에 userId가 존재하지 않을 떄 : FORBIDDEN
      */
     @Override
-    // @PreAuthorize("hasRole('ROLE_USER') and !hasRole('ROLE_TRADER')")
+    @PreAuthorize("hasRole('ROLE_USER')")
     @DeleteMapping("/strategy/followlist")
     public ResponseEntity<APIResponse<Map<Long, String>>> unFollowList(
             @Valid @RequestBody FollowDeleteRequestDto followPostRequestDto

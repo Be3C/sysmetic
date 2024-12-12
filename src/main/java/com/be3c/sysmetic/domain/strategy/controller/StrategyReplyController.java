@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
@@ -48,6 +49,7 @@ public class StrategyReplyController implements StrategyReplyControllerDocs {
         댓글 페이징 api
      */
     @Override
+    @PreAuthorize("permitAll()")
     @GetMapping("/strategy/{strategyId}/replies")
     public ResponseEntity<APIResponse<PageResponse<PageReplyResponseDto>>> getReplyPage(
             @PathVariable Long strategyId,
@@ -67,6 +69,7 @@ public class StrategyReplyController implements StrategyReplyControllerDocs {
         댓글 등록 api
      */
     @Override
+    @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/strategy/reply")
     public ResponseEntity<APIResponse<String>> postReply(
             @RequestBody ReplyPostRequestDto replyPostRequestDto
@@ -90,6 +93,7 @@ public class StrategyReplyController implements StrategyReplyControllerDocs {
 
     // @PreAuthorize("hasRole='ROLE_USER and !ROLE_TRADER'")
     @Override
+    @PreAuthorize("hasRole('ROLE_USER')")
     @DeleteMapping("/strategy/reply")
     public ResponseEntity<APIResponse<String>> deleteReply(
             @RequestBody ReplyDeleteRequestDto replyDeleteRequestDto
