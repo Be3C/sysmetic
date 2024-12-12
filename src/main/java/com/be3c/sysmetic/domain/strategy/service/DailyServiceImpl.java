@@ -61,12 +61,6 @@ public class DailyServiceImpl implements DailyService {
         // 일간분석 등록
         dailyRepository.saveAll(dailyList);
 
-        // 누적금액 갱신
-//        dailyList.forEach(daily -> {
-//            log.info("foreach : daily.getDate() : {}", daily.getDate());
-//            recalculateAccumulatedData(strategyId, daily.getDate());
-//        });
-
         // 기존 반복 호출 제거
         LocalDate earliestDate = dailyList.stream()
                 .map(Daily::getDate)
@@ -317,15 +311,15 @@ public class DailyServiceImpl implements DailyService {
     }
 
     public void recalculateAccumulatedData(Long strategyId, LocalDate startDate) {
-        Double accumulativeProfitLossAmount = 0.0;
+        // startDate 이전의 누적 손익 금액 조회
+        Double accumulativeProfitLossAmount = dailyRepository.findLastAccumulatedProfitLossAmount(strategyId, startDate)
+                .orElse(0.0);
 
-        // 수정 또는 삭제 이후의 데이터 조회
+        // startDate 이후의 데이터 조회
         List<Daily> dailyList = dailyRepository.findAllByStrategyIdAndDateAfterOrderByDateAsc(strategyId, startDate);
 
         for (Daily daily : dailyList) {
-            if (!daily.getDate().isBefore(startDate)) {
-                accumulativeProfitLossAmount += daily.getProfitLossAmount();
-            }
+            accumulativeProfitLossAmount += daily.getProfitLossAmount();
             daily.setAccumulatedProfitLossAmount(accumulativeProfitLossAmount);
         }
 
