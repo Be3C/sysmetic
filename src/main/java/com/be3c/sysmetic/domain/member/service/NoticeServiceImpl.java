@@ -156,8 +156,18 @@ public class NoticeServiceImpl implements NoticeService {
         int exceedNumber;
         if (fileReferenceType.equals(FileReferenceType.NOTICE_BOARD_FILE)) {
             exceedNumber = 3;
+            if(newFileList != null) {
+                for (MultipartFile file : newFileList) {
+                    fileService.uploadAnyFile(file, new FileRequest(fileReferenceType, noticeId));
+                }
+            }
         } else {
             exceedNumber = 5;
+            if(newFileList != null) {
+                for (MultipartFile file : newFileList) {
+                    fileService.uploadImage(file, new FileRequest(fileReferenceType, noticeId));
+                }
+            }
         }
 
         boolean fileExists;
@@ -203,12 +213,6 @@ public class NoticeServiceImpl implements NoticeService {
                     throw new NoticeBadRequestException(NoticeExceptionMessage.FILE_NUMBER_EXCEEDED.getMessage());
                 }
                 fileExists = true;
-            }
-        }
-
-        if(newFileList != null) {
-            for (MultipartFile file : newFileList) {
-                fileService.uploadAnyFile(file, new FileRequest(fileReferenceType, noticeId));
             }
         }
 
