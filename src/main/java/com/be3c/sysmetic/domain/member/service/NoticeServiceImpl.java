@@ -394,6 +394,7 @@ public class NoticeServiceImpl implements NoticeService {
             for (FileWithInfoResponse f : imageList) {
                 NoticeDetailImageShowResponseDto noticeDetailImageShowResponseDto = NoticeDetailImageShowResponseDto.builder()
                         .fileId(f.id())
+                        .originalName(f.originalName())
                         .path(f.url())
                         .build();
                 imageDtoList.add(noticeDetailImageShowResponseDto);
