@@ -37,7 +37,7 @@ public class NoticeContoller implements NoticeControllerDocs {
         5. 등록하는 관리자 정보를 찾지 못했을 때 : NOT_FOUND
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
     @PostMapping(value = "/admin/notice", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<APIResponse<Long>> saveAdminNotice(
             @RequestPart(value = "NoticeSaveRequestDto") @Valid NoticeSaveRequestDto noticeSaveRequestDto,
@@ -74,7 +74,7 @@ public class NoticeContoller implements NoticeControllerDocs {
         3. 파라미터 데이터의 형식이 올바르지 않음 : BAD_REQUEST
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
     @GetMapping("/admin/notice")
     public ResponseEntity<APIResponse<PageResponse<NoticeAdminListOneShowResponseDto>>> showAdminNotice(
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
@@ -109,7 +109,7 @@ public class NoticeContoller implements NoticeControllerDocs {
         4. 해당 공지사항을 찾지 못했을 때 : NOT_FOUND
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
     @PutMapping("/admin/notice/{noticeId}/open-close")
     public ResponseEntity<APIResponse<Long>> modifyNoticeClosed(
             @PathVariable(name="noticeId") Long noticeId) {
@@ -138,7 +138,7 @@ public class NoticeContoller implements NoticeControllerDocs {
         4. 파라미터 데이터의 형식이 올바르지 않음 : BAD_REQUEST
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
     @GetMapping("/admin/notice/{noticeId}")
     public ResponseEntity<APIResponse<NoticeDetailAdminShowResponseDto>> showAdminNoticeDetail(
             @PathVariable(name="noticeId") Long noticeId,
@@ -172,7 +172,7 @@ public class NoticeContoller implements NoticeControllerDocs {
         3. 공지사항 수정 화면 조회에 실패했을 때 : NOT_FOUND
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
     @GetMapping("/admin/notice/{noticeId}/modify")
     public ResponseEntity<APIResponse<NoticeShowModifyPageResponseDto>> showModifyAdminNotice(
             @PathVariable(name="noticeId") Long noticeId) {
@@ -201,7 +201,7 @@ public class NoticeContoller implements NoticeControllerDocs {
             +) 공지사항 수정 화면에 들어온 시간이 해당 공지사항 최종수정일시보다 작음
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
     @PutMapping(value = "/admin/notice/{noticeId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<APIResponse<Long>> modifyAdminNotice(
             @PathVariable(name="noticeId") Long noticeId,
@@ -254,7 +254,7 @@ public class NoticeContoller implements NoticeControllerDocs {
         4. 해당 공지사항을 찾지 못했을 때 : NOT_FOUND
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
     @DeleteMapping("/admin/notice/{noticeId}")
     public ResponseEntity<APIResponse<Long>> deleteAdminNotice(
             @PathVariable(name="noticeId") Long noticeId) {
@@ -283,7 +283,7 @@ public class NoticeContoller implements NoticeControllerDocs {
         5. 데이터의 형식이 올바르지 않음 : BAD_REQUEST
      */
     @Override
-//    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
     @DeleteMapping("/admin/notice")
     public ResponseEntity<APIResponse<Map<Long, String>>> deleteAdminNoticeList(
             @RequestBody @Valid NoticeListDeleteRequestDto noticeListDeleteRequestDto) {
@@ -315,7 +315,7 @@ public class NoticeContoller implements NoticeControllerDocs {
         2. 파라미터 데이터의 형식이 올바르지 않음 : BAD_REQUEST
      */
     @Override
-//    @PreAuthorize("permitAll()")
+    @PreAuthorize("permitAll()")
     @GetMapping("/notice")
     public ResponseEntity<APIResponse<PageResponse<NoticeListOneShowResponseDto>>> showNotice(
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
@@ -340,7 +340,7 @@ public class NoticeContoller implements NoticeControllerDocs {
         3. 공지사항의 상세 데이터 조회에 실패했을 때 : NOT_FOUND
      */
     @Override
-//    @PreAuthorize("permitAll()")
+    @PreAuthorize("permitAll()")
     @GetMapping("/notice/{noticeId}")
     public ResponseEntity<APIResponse<NoticeDetailShowResponseDto>> showNoticeDetail(
             @PathVariable(name="noticeId") Long noticeId,

@@ -11,6 +11,7 @@ import com.be3c.sysmetic.global.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,6 +34,7 @@ public class StrategyListController implements StrategyListControllerDocs {
         요청 경로 : localhost:8080/v1/strategy/list?pageNum=0
     */
     @Override
+    @PreAuthorize("permitAll()")
     @GetMapping()
     public APIResponse<PageResponse<StrategyListDto>> getStrategies(
             @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum){
@@ -50,6 +52,7 @@ public class StrategyListController implements StrategyListControllerDocs {
         요청 경로 : localhost:8080/v1/strategy/list/trader?nickname=트레이더&pageNum=0
     */
     @Override
+    @PreAuthorize("permitAll()")
     @GetMapping("/trader")
     public APIResponse<PageResponse<TraderNickNameListResponseDto>> searchByTraderNickname(
             @RequestParam("nickname") String nickname,
@@ -69,6 +72,7 @@ public class StrategyListController implements StrategyListControllerDocs {
         요청 경로 : localhost:8080/v1/strategy/list/pick?traderId=1&pageNum=0
     */
     @Override
+    @PreAuthorize("permitAll()")
     @GetMapping("/pick")
     public APIResponse<StrategyListByTraderDto> getStrategiesByTraderId(
             @RequestParam("traderId") Long traderId,
@@ -87,6 +91,7 @@ public class StrategyListController implements StrategyListControllerDocs {
 
     */
     @Override
+    @PreAuthorize("permitAll()")
     @GetMapping("/name")
     public APIResponse<PageResponse<StrategyListDto>> getStrategiesByName(
             @RequestParam("keyword") String keyword,

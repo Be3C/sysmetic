@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,6 +39,7 @@ public class MemberInfoController implements MemberInfoControllerDocs {
         4. Security Context에 userId가 존재하지 않을 때 : FORBIDDEN
      */
     @Override
+    @PreAuthorize("isAuthentication()")
     @PatchMapping("/member/info/{id}/password")
     public ResponseEntity<APIResponse<String>> putPassword(
             @PathVariable Long id,
@@ -70,6 +72,7 @@ public class MemberInfoController implements MemberInfoControllerDocs {
         4. Security Context에서 회원 Id를 찾지 못했을 때 : FORBIDDEN
      */
     @Override
+    @PreAuthorize("isAuthentication()")
     @PatchMapping(value= "/member/info/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<APIResponse<String>> updateMemberInfo(
             @PathVariable Long id,
@@ -95,6 +98,7 @@ public class MemberInfoController implements MemberInfoControllerDocs {
     }
 
     @Override
+    @PreAuthorize("isAuthentication()")
     @PatchMapping("/member/consent/{id}")
     public ResponseEntity<APIResponse<String>> updateMemberConsent(
             @PathVariable Long id,
@@ -119,6 +123,7 @@ public class MemberInfoController implements MemberInfoControllerDocs {
             4. Security Context에서 회원 아이디를 찾지 못했을 때 : FORBIDDEN
          */
     @Override
+    @PreAuthorize("isAuthentication()")
     @DeleteMapping("/member/{id}")
     public ResponseEntity<APIResponse<String>> deleteMemberInfo(
             @PathVariable(name="id") Long userId

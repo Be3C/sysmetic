@@ -11,6 +11,7 @@ import com.be3c.sysmetic.global.common.response.PageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -36,6 +37,7 @@ public class StrategySearchController implements StrategySearchControllerDocs {
         }
     */
     @Override
+    @PreAuthorize("permitAll()")
     @PostMapping("/conditions")
     public APIResponse<PageResponse<StrategySearchResponseDto>> conditionSearch(
             @RequestHeader(value = "pageNum", defaultValue = "0") Integer pageNum,
@@ -53,6 +55,7 @@ public class StrategySearchController implements StrategySearchControllerDocs {
         algorithmSearch : 알고리즘별 정렬 - 계산 후 정렬 & 페이징
     */
     @Override
+    @PreAuthorize("permitAll()")
     @GetMapping("/algorithm")
     public APIResponse<PageResponse<StrategyAlgorithmResponseDto>> algorithmSearch(
             @RequestParam(name = "pageNum", defaultValue = "0") Integer pageNum,

@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,6 +30,7 @@ public class LogoutController {
             summary = "로그아웃",
             description = "사용자를 로그아웃 처리하는 API"
     )
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/auth/logout")
     public ResponseEntity<APIResponse<String>> logout(HttpServletRequest request) {
         logoutService.logout(request);

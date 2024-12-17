@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,6 +29,7 @@ public class AdminMainController {
             summary = "메인 페이지 API",
             description = "메인 페이지 데이터 요청 API"
     )
+    @PreAuthorize("hasRole('ROLE_MANAGER') OR hasRole('ROLE_ADMIN')")
     @GetMapping("/v1/admin/main")
     public ResponseEntity<APIResponse<AdminMainResponseDto>> getAdminMain() {
         return ResponseEntity.status(HttpStatus.OK)
@@ -38,6 +40,7 @@ public class AdminMainController {
             summary = "구글 통계 조회",
             description = "기간 별 구글 통계 조회"
     )
+    @PreAuthorize("hasRole('ROLE_MANAGER') OR hasRole('ROLE_ADMIN')")
     @GetMapping("/v1/admin/main/analytics/{period}")
     public ResponseEntity<APIResponse<RunReportResponseDto>> getAdminMainAnalytics(
             @NotBlank @PathVariable String period

@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
@@ -41,7 +42,7 @@ public class FolderController implements FolderControllerDocs {
         2. 중복된 폴더명이 존재할 때 : CONFLICT
      */
     @Override
-    // @PreAuthorize("hasRole('ROLE_USER') and !hasRole('ROLE_TRADER')")
+    @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/member/folder/availability")
     public ResponseEntity<APIResponse<String>> getDuplCheck(
             @RequestParam String folderName
@@ -61,7 +62,7 @@ public class FolderController implements FolderControllerDocs {
         3. SecurityContext에 userId가 존재하지 않을 떄 : FORBIDDEN
      */
     @Override
-    // @PreAuthorize("hasRole('ROLE_USER') and !hasRole('ROLE_TRADER')")
+    @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/member/folder")
     public ResponseEntity<APIResponse<List<FolderListResponseDto>>> getAllFolder(
     ) {
@@ -86,6 +87,7 @@ public class FolderController implements FolderControllerDocs {
         6. SecurityContext에 userId가 존재하지 않을 떄 : FORBIDDEN
      */
     @Override
+    @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/member/folder")
     public ResponseEntity<APIResponse<String>> postFolder(
             @Valid @RequestBody FolderPostRequestDto folderPostRequestDto
@@ -120,7 +122,7 @@ public class FolderController implements FolderControllerDocs {
         6. SecurityContext에 userId가 존재하지 않을 떄 : FORBIDDEN
      */
     @Override
-    // @PreAuthorize("hasRole('ROLE_USER') and !hasRole('ROLE_TRADER')")
+    @PreAuthorize("hasRole('ROLE_USER')")
     @PutMapping("/member/folder")
     public ResponseEntity<APIResponse<String>> putFolder(
             @Valid @RequestBody FolderPutRequestDto folderPutRequestDto
@@ -151,6 +153,7 @@ public class FolderController implements FolderControllerDocs {
         5. SecurityContext에 userId가 존재하지 않을 떄 : FORBIDDEN
      */
     @Override
+    @PreAuthorize("hasRole('ROLE_USER')")
     @DeleteMapping("/member/folder/{id}")
     public ResponseEntity<APIResponse<String>> deleteFolder(
             @PathVariable Long id

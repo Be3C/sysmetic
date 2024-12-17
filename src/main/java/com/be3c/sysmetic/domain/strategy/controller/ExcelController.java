@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,6 +36,7 @@ public interface ExcelController {
                     )
             }
     )
+    @PreAuthorize("hasRole('ROLE_TRADER')")
     @GetMapping("/daily")
     ResponseEntity<APIResponse<String>> getExcelForm();
 
@@ -78,6 +80,7 @@ public interface ExcelController {
                     )
             }
     )
+    @PreAuthorize("permitAll()")
     @PostMapping("/daily/{strategyId}")
     ResponseEntity<APIResponse<String>> uploadExcel(
             @RequestParam("file") MultipartFile file,
@@ -113,6 +116,7 @@ public interface ExcelController {
                     )
             }
     )
+    @PreAuthorize("hasRole('ROLE_TRADER')")
     @GetMapping("/daily/{strategyId}")
     ResponseEntity<InputStreamResource> downloadDailyExcel(
             @PathVariable Long strategyId);
@@ -147,6 +151,7 @@ public interface ExcelController {
                     )
             }
     )
+    @PreAuthorize("hasRole('ROLE_TRADER')")
     @GetMapping("/daily/statistics/{strategyId}")
     ResponseEntity<InputStreamResource> downloadDailyExcelWithStatistics(
             @PathVariable Long strategyId);
@@ -181,6 +186,7 @@ public interface ExcelController {
                     )
             }
     )
+    @PreAuthorize("hasRole('ROLE_TRADER')")
     @GetMapping("/monthly/{strategyId}")
     ResponseEntity<InputStreamResource> downloadMonthlyExcel(
             @PathVariable Long strategyId);

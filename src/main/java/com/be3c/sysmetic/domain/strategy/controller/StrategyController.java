@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -36,6 +37,7 @@ public class StrategyController {
             summary = "일간분석 조회",
             description = "전략의 일간분석 데이터 조회"
     )
+    @PreAuthorize("permitAll()")
     @GetMapping("/daily/{strategyId}")
     public ResponseEntity<APIResponse<PageResponse<DailyGetResponseDto>>> findDaily(
             @PathVariable Long strategyId,
@@ -52,6 +54,7 @@ public class StrategyController {
             summary = "월간분석 조회",
             description = "전략의 월간분석 데이터 조회"
     )
+    @PreAuthorize("permitAll()")
     @GetMapping("/monthly/{strategyId}")
     public ResponseEntity<APIResponse<PageResponse<MonthlyGetResponseDto>>> findMonthly(
             @PathVariable Long strategyId,
@@ -68,6 +71,7 @@ public class StrategyController {
             summary = "실계좌이미지 조회",
             description = "전략의 실계좌이미지 조회"
     )
+    @PreAuthorize("permitAll()")
     @GetMapping("/account-image/{strategyId}")
     public ResponseEntity<APIResponse<PageResponse<AccountImageResponseDto>>> getAccountImage(
             @PathVariable Long strategyId,
@@ -77,6 +81,7 @@ public class StrategyController {
         return ResponseEntity.status(HttpStatus.OK).body(APIResponse.success(responseDto));
     }
 
+    @PreAuthorize("permitAll()")
     @GetMapping("{id}")
     public ResponseEntity<APIResponse<StrategyDetailDto>> getStrategy(
             @PathVariable Long id
@@ -97,6 +102,7 @@ public class StrategyController {
             summary = "통계 조회",
             description = "전략의 통계 정보 조회"
     )
+    @PreAuthorize("permitAll()")
     @GetMapping("/statistics/{strategyId}")
     public ResponseEntity<APIResponse<StrategyStatisticsGetResponseDto>> findStatistics(@PathVariable Long strategyId) {
         return ResponseEntity.status(HttpStatus.OK)
