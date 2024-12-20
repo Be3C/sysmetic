@@ -65,7 +65,7 @@ public interface DailyRepository extends JpaRepository<Daily, Long> {
 
     // 특정 일자 이후의 일간분석데이터 목록 조회 - 오래된순 정렬
     @Query("""
-        SELECT d FROM Daily d 
+        SELECT d FROM Daily d
         WHERE d.strategy.id = :strategyId
         AND d.date > :startDate
         ORDER BY d.date ASC
@@ -74,6 +74,11 @@ public interface DailyRepository extends JpaRepository<Daily, Long> {
             @Param("strategyId") Long strategyId,
             @Param("startDate") LocalDate startDate
     );
+
+    @Query("SELECT d.accumulatedProfitLossAmount FROM Daily d " +
+            "WHERE d.strategy.id = :strategyId AND d.date < :date " +
+            "ORDER BY d.date DESC LIMIT 1")
+    Optional<Double> findLastAccumulatedProfitLossAmount(@Param("strategyId") Long strategyId, @Param("date") LocalDate date);
 
     // 특정 일자 이전의 일간분석데이터 조회
     @Query("""
