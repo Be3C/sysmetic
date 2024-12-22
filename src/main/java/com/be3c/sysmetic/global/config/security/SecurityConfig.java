@@ -80,7 +80,7 @@ public class SecurityConfig {
                                 .requestMatchers("/manager/**").hasRole("MANAGER")
                                 .requestMatchers("/trader/**").hasRole("TRADER")
                                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                                .anyRequest().authenticated()
+                                .anyRequest().permitAll()
                 )
 
                 // 예외 처리
